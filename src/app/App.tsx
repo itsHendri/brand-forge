@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useState } from "react"
 import { resolveTokens } from "../engine/resolve"
 import { ExportDialog } from "./ExportDialog"
+import { BrandPanel } from "./panels/BrandPanel"
 import { ColorPanel } from "./panels/ColorPanel"
+import { MotionPanel } from "./panels/MotionPanel"
+import { RulesPanel } from "./panels/RulesPanel"
 import { SemanticsPanel } from "./panels/SemanticsPanel"
+import { ShapePanel } from "./panels/ShapePanel"
+import { TypePanel } from "./panels/TypePanel"
 import { ComponentsSheet } from "./preview/contexts/ComponentsSheet"
 import { PreviewCanvas } from "./preview/PreviewCanvas"
 import { useStore, type PanelId } from "./store"
@@ -93,16 +98,13 @@ export function App() {
                 </nav>
 
                 <div className="min-h-0 flex-1 overflow-auto p-4">
-                    {panel === "color" ? (
-                        <ColorPanel resolved={resolved} />
-                    ) : panel === "semantics" ? (
-                        <SemanticsPanel resolved={resolved} />
-                    ) : (
-                        <p className="text-sm text-[var(--app-ink-soft)]">
-                            The {PANELS.find((p) => p.id === panel)?.label.toLowerCase()} panel lands in a
-                            later phase.
-                        </p>
-                    )}
+                    {panel === "brand" && <BrandPanel />}
+                    {panel === "color" && <ColorPanel resolved={resolved} />}
+                    {panel === "semantics" && <SemanticsPanel resolved={resolved} />}
+                    {panel === "type" && <TypePanel />}
+                    {panel === "shape" && <ShapePanel resolved={resolved} />}
+                    {panel === "motion" && <MotionPanel />}
+                    {panel === "rules" && <RulesPanel />}
                 </div>
             </aside>
 

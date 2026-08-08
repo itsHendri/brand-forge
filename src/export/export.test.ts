@@ -3,6 +3,7 @@ import { resolveTokens } from "../engine/resolve"
 import { hendriPreset } from "../presets/hendri"
 import { buildExport, exportBudget } from "./bundle"
 import { previewCss } from "./css"
+import { toSkillMd } from "./skillMd"
 
 const resolved = resolveTokens(hendriPreset)
 const files = buildExport(resolved)
@@ -130,6 +131,18 @@ describe("SKILL.md", () => {
 
     it("points at its own reference file", () => {
         expect(skill).toContain("references/DESIGN_SYSTEM.md")
+    })
+
+    it("ships only the craft rules that are switched on", () => {
+        // The Rules panel is not decoration: toggling a rule off has to remove it
+        // from the skill, or the panel is lying about what the agent will be told.
+        expect(skill).toContain("Concentric radius")
+
+        const withoutConcentric = structuredClone(hendriPreset)
+        withoutConcentric.rules.polish["concentric-radius"] = false
+        const trimmed = toSkillMd(resolveTokens(withoutConcentric))
+        expect(trimmed).not.toContain("**Concentric radius.**")
+        expect(trimmed).toContain("Tabular numbers") // the others survive
     })
 
     it("states the rules that stop a model reaching past the semantic layer", () => {
