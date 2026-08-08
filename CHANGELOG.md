@@ -20,6 +20,11 @@ Keep-a-Changelog style. Newest first.
   `brand.json`.
 - `lint:preview-colors` — fails on any colour literal in a preview context.
 
+- All seven editing panels. Brand (identity, voice, deviations), Type (families, font links, role
+  table), Space & shape (radius knob with derived steps, a live concentric-radius demo driven by a
+  padding slider, and a spacing editor that refuses off-grid values), Motion (playable durations and
+  easings, enter and exit side by side), Rules (craft toggles wired to SKILL.md).
+
 ### Fixed — 2026-08-08
 
 Found by the acceptance test (a subagent building from the exported docs alone):

@@ -4,15 +4,13 @@ Start here next session. Read `STATUS.md` first for where things actually stand.
 
 ## Immediate next step
 
-**Phase 3 — the remaining panels.** Brand (meta, voice, deviations), Type (families + role table),
-Space & shape (blessed-spacing chips, the single radius slider with a live concentric demo), Motion
-(durations/easings with a play button), Rules (polish toggles). All these values already exist in
-`BrandConfig`, already flow through `resolveTokens`, and already export correctly — they just have
-no editing UI. `ColorPanel.tsx` and `SemanticsPanel.tsx` are the patterns to copy; every panel
-mutates through `useStore().patch()` so autosave stays automatic.
+**Phase 5 — multi-brand.** A brand switcher over `brands/*.json` (`listBrands()` in
+`persistence.ts` already exists and is unused), and "new client from Hendri template" — which is
+just a config clone with a new slug. Then the Dashboard and MarketingHero preview contexts, so the
+canvas exercises layout as well as components. Then Phase 6, the static guideline page.
 
-Then: Dashboard and MarketingHero preview contexts, brand switcher + "new client from Hendri
-template", static guideline page.
+Panels are all built; `ColorPanel.tsx` and `ShapePanel.tsx` are the patterns to copy if another one
+is needed. Every panel mutates through `useStore().patch()`, which keeps autosave automatic.
 
 ## Gaps the acceptance test exposed
 

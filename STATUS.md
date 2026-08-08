@@ -1,8 +1,8 @@
 # Status — 2026-08-08
 
-**Phases 0, 1, 2 and 4 done. Phase 3 (remaining panels) not started.**
+**Phases 0–4 done. Every value in the system is editable and exports correctly.**
 
-Session 1. 54 tests pass, typecheck clean, preview-colour lint clean.
+Session 1. 55 tests pass, typecheck clean, preview-colour lint clean.
 
 ## What works end to end
 
@@ -12,9 +12,12 @@ follow. That whole loop runs today.
 - **Engine.** `generateScale` (OKLCH ramps, shared lightness targets, chroma bell, hue rotation,
   gamut clamp, seed warping), `defaultSemanticMapping` (49 tokens chosen by measuring contrast, not
   by step index), `resolveTokens` (the one pipeline), `validateContrast` (APCA judges, WCAG reports).
-- **App** at `localhost:5300`: colour panel with per-step override, semantics panel, live preview
-  canvas (ComponentsSheet), light/dark, contrast badge + warnings drawer with one-click fixes,
-  export dialog with a token-budget meter. Autosave writes `brands/hendri.json`.
+- **App** at `localhost:5300`: all seven panels — Brand (identity, voice, deviations), Colour
+  (seeds + per-step override), Semantics (re-point any token), Type (families + role table), Space &
+  shape (radius knob, live concentric demo, blessed-spacing editor that refuses off-grid values),
+  Motion (playable durations/easings), Rules (craft toggles that really do change SKILL.md) —
+  plus the live preview canvas, light/dark, contrast badge + warnings drawer with one-click fixes,
+  and an export dialog with a token-budget meter. Autosave writes `brands/hendri.json`.
 - **Export** writes `exports/hendri/`: `skill/SKILL.md`, `skill/references/DESIGN_SYSTEM.md`,
   `tokens.css` (+ Tailwind v4 `@theme`), `tokens.json` (DTCG), `brand.json`.
 
@@ -41,6 +44,8 @@ washed button labels, and the `foreground-secondary` collision). See CHANGELOG.
 
 ## Next
 
-Phase 3: the Brand, Type, Space & shape, Motion and Rules panels (the values already exist and
-export correctly; they're just not editable in the UI yet). Then Dashboard and MarketingHero preview
-contexts, and multi-brand.
+Phase 5: multi-brand (brand switcher over `brands/*.json`, "new client from Hendri template"), plus
+the Dashboard and MarketingHero preview contexts. Then Phase 6, the static guideline page.
+
+Worth doing before either: close the gaps in `FUTURE.md` that the acceptance test exposed —
+breakpoints first, since a multi-column layout can't be specified without them.
