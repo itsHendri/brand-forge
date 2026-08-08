@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* The app's own chrome is deliberately plain — it must never compete with the
+   preview canvas, which is the only place brand colour belongs. */
+:root {
+    --app-bg: #ffffff;
+    --app-panel: #fafafa;
+    --app-border: #e5e5e5;
+    --app-ink: #171717;
+    --app-ink-soft: #737373;
+    color-scheme: light;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--app-bg);
+    color: var(--app-ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
