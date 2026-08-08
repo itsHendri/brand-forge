@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { resolveTokens } from "../engine/resolve"
+import { ExportDialog } from "./ExportDialog"
 import { ColorPanel } from "./panels/ColorPanel"
 import { SemanticsPanel } from "./panels/SemanticsPanel"
 import { ComponentsSheet } from "./preview/contexts/ComponentsSheet"
@@ -21,6 +22,7 @@ export function App() {
     const { config, mode, panel, setMode, setPanel, saving, hydrate } = useStore()
     const resolved = useMemo(() => resolveTokens(config), [config])
     const [showWarnings, setShowWarnings] = useState(false)
+    const [showExport, setShowExport] = useState(false)
     const failures = resolved.warnings.filter((w) => w.level === "fail").length
 
     useEffect(() => {
@@ -62,6 +64,13 @@ export function App() {
                             </button>
                         ))}
                     </div>
+                    <button
+                        type="button"
+                        onClick={() => setShowExport(true)}
+                        className="rounded-md bg-[var(--app-ink)] px-3 py-1.5 text-xs text-white"
+                    >
+                        Export
+                    </button>
                 </div>
             </header>
 
@@ -106,6 +115,7 @@ export function App() {
             {showWarnings && (
                 <WarningsDrawer resolved={resolved} onClose={() => setShowWarnings(false)} />
             )}
+            {showExport && <ExportDialog resolved={resolved} onClose={() => setShowExport(false)} />}
         </div>
     )
 }

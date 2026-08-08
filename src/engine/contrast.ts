@@ -65,8 +65,10 @@ export function wcag(aHex: string, bHex: string): number {
 export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; usage: Usage }> = [
     { fg: "foreground", bg: "background", usage: "body" },
     { fg: "foreground", bg: "surface", usage: "body" },
-    { fg: "foreground-secondary", bg: "background", usage: "body" },
-    { fg: "foreground-secondary", bg: "surface", usage: "body" },
+    // `foreground-secondary` is defined as a large-text colour (body-lg and up);
+    // small supporting text uses the darker `muted-foreground`.
+    { fg: "foreground-secondary", bg: "background", usage: "large" },
+    { fg: "foreground-secondary", bg: "surface", usage: "large" },
     { fg: "muted-foreground", bg: "background", usage: "body" },
     { fg: "muted-foreground", bg: "surface", usage: "body" },
     { fg: "muted-foreground", bg: "muted", usage: "body" },

@@ -8,17 +8,19 @@
 
 import type { CSSProperties, ReactNode } from "react"
 
+// Border, no shadow: the border is the structure, and --shadow-sm carries its own
+// hairline layer, so both together double the edge. Matches the Card recipe.
 const card: CSSProperties = {
     background: "var(--surface)",
     border: "1px solid var(--border)",
     borderRadius: "var(--radius-lg)",
     padding: "var(--space-6)",
-    boxShadow: "var(--shadow-sm)",
 }
 
 const buttonBase: CSSProperties = {
-    fontFamily: "inherit",
+    fontFamily: "var(--font-sans)",
     fontSize: "var(--text-label)",
+    lineHeight: "var(--text-label--line-height)",
     fontWeight: "var(--text-label--font-weight)" as unknown as number,
     letterSpacing: "var(--text-label--letter-spacing)",
     // Concentric-radius rule: inner radius = outer − padding, floored at 0.
@@ -106,7 +108,7 @@ export function ComponentsSheet() {
                     <button
                         style={{
                             ...buttonBase,
-                            background: "var(--surface)",
+                            background: "transparent",
                             color: "var(--foreground)",
                             borderColor: "var(--input)",
                         }}
@@ -196,10 +198,13 @@ export function ComponentsSheet() {
                             key={surface.name}
                             style={{
                                 background: surface.token,
-                                border: "1px solid var(--border)",
+                                // Raised surfaces float (shadow, no border); flat ones
+                                // are structured (border, no shadow). Never both.
+                                ...(surface.name === "surface-raised"
+                                    ? { boxShadow: "var(--shadow-lg)", border: "none" }
+                                    : { border: "1px solid var(--border)" }),
                                 borderRadius: "var(--radius-lg)",
                                 padding: "var(--space-6)",
-                                boxShadow: surface.name === "surface-raised" ? "var(--shadow-lg)" : "var(--shadow-sm)",
                             }}
                         >
                             <div style={{ fontSize: "var(--text-heading-sm)", fontWeight: 600 }}>{surface.label}</div>

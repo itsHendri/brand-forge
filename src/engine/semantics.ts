@@ -71,6 +71,7 @@ function pickAgainst(
     backgroundHex: string,
     candidates: readonly Step[],
     required: number,
+    prefer: "quietest" | "strongest" = "quietest",
 ): Step {
     let best: { step: Step; lc: number } | undefined
     let strongest: { step: Step; lc: number } | undefined
@@ -80,7 +81,7 @@ function pickAgainst(
         if (!strongest || lc > strongest.lc) strongest = { step, lc }
         if (lc >= required && (!best || lc < best.lc)) best = { step, lc }
     }
-    return (best ?? strongest!).step
+    return prefer === "strongest" ? strongest!.step : (best ?? strongest!).step
 }
 
 const INK_CANDIDATES = [950, 900, 800, 700, 600] as const
@@ -97,11 +98,16 @@ const PAPER_CANDIDATES = [50, 100, 200, 300] as const
 function onFill(neutralRamp: Record<Step, string>, fillHex: string): { scale: ScaleRole; step: Step } {
     return {
         scale: "neutral",
+        // Strongest, not quietest: a button label wants to be crisp. The
+        // "smallest passing jump" rule is right for text on a page, where a
+        // quieter colour reads as hierarchy, and wrong on a solid fill, where
+        // it just looks washed out.
         step: pickAgainst(
             neutralRamp,
             fillHex,
             [...PAPER_CANDIDATES, ...INK_CANDIDATES],
             LC_THRESHOLD.ui,
+            "strongest",
         ),
     }
 }
@@ -321,8 +327,12 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
         {
             name: "surface-raised",
             group: "surface",
-            ...n(50, 800),
-            description: "Popovers, dropdowns, dialogs — one level above `surface`.",
+            // Dark mode climbs the ramp to show elevation. Light mode has nowhere
+            // lighter to go than `surface`, so the two match there on purpose and
+            // the separation comes from `--shadow-lg`.
+            ...n(50, 700),
+            description:
+                "Popovers, dropdowns, dialogs — one level above `surface`. In light mode this equals `surface`: elevation there is `--shadow-lg`, not a lighter fill.",
         },
         {
             name: "muted",
@@ -341,8 +351,14 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
         {
             name: "foreground-secondary",
             group: "text",
-            ...textOnSurfaces(LC_THRESHOLD.body + 8),
-            description: "Supporting text one notch below `foreground` — subtitles, descriptions.",
+            // Held to the large-text bar, not the body bar, which is what makes
+            // it a genuinely distinct step rather than a duplicate of
+            // `--foreground` or `--muted-foreground`. It reads lighter than
+            // `--muted-foreground` on purpose: this is for larger supporting
+            // copy, and smaller text needs MORE contrast, not less.
+            ...textOnSurfaces(LC_THRESHOLD.large),
+            description:
+                "Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. For anything at `body-sm` or below use `muted-foreground`, which is darker because small text needs more contrast.",
         },
         {
             name: "muted-foreground",

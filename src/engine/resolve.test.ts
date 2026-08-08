@@ -74,6 +74,42 @@ describe("resolveTokens", () => {
         })
     })
 
+    it("keeps the surface ladder distinguishable where it claims to be", () => {
+        const value = (name: string, mode: "light" | "dark") =>
+            semanticByName(resolved, name)!.values[mode]!.hex
+
+        // Dark mode shows elevation by climbing the ramp, so these must differ.
+        expect(value("background", "dark")).not.toBe(value("surface", "dark"))
+        expect(value("surface", "dark")).not.toBe(value("surface-raised", "dark"))
+        expect(value("surface-raised", "dark")).not.toBe(value("muted", "dark"))
+        expect(value("background", "light")).not.toBe(value("surface", "light"))
+        expect(value("muted", "light")).not.toBe(value("surface", "light"))
+    })
+
+    it("keeps the three text levels genuinely distinct", () => {
+        // A hierarchy the docs promise but the values don't make is worse than
+        // no hierarchy: picking the wrong one looks correct until the ramp moves.
+        for (const mode of ["light", "dark"] as const) {
+            const levels = ["foreground", "foreground-secondary", "muted-foreground", "foreground-tertiary"]
+            const hexes = levels.map((name) => semanticByName(resolved, name)!.values[mode]!.hex)
+            expect(new Set(hexes).size, `${mode}: ${levels.join("/")} → ${hexes.join(", ")}`).toBe(
+                levels.length,
+            )
+        }
+    })
+
+    it("puts a crisp label on solid fills, not a washed mid-grey", () => {
+        for (const name of ["primary", "secondary", "danger", "success", "warning", "info"]) {
+            for (const mode of ["light", "dark"] as const) {
+                const step = semanticByName(resolved, `${name}-foreground`)![mode].step
+                expect(
+                    step <= 100 || step >= 900,
+                    `${name}-foreground (${mode}) sits at neutral-${step} — a label on a fill should come from an end of the ramp`,
+                ).toBe(true)
+            }
+        }
+    })
+
     it("derives radius from one knob", () => {
         expect(resolved.radius.md).toBe(hendriPreset.radius.basePx)
         expect(resolved.radius.sm).toBeLessThan(resolved.radius.md)

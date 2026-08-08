@@ -64,7 +64,11 @@ export function toTokensCss(resolved: ResolvedTokens, options: { darkMedia?: boo
         declarationBlock(resolved.declarations.dark, '[data-theme="dark"]'),
     ]
 
-    if (options.darkMedia !== false) {
+    // Off by default. Shipping a prefers-color-scheme block alongside the
+    // attribute makes the docs' "dark mode is an attribute, not a media query"
+    // a lie, and worse: on a dark-preference OS a toggle that only removes
+    // `data-theme` can never get back to light. Opt in knowingly or not at all.
+    if (options.darkMedia === true) {
         parts.push(
             `@media (prefers-color-scheme: dark) {\n${indent(
                 declarationBlock(resolved.declarations.dark, ':root:not([data-theme="light"])'),
