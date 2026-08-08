@@ -1,0 +1,866 @@
+{
+    "$schemaVersion": 1,
+    "meta": {
+        "id": "hendri",
+        "name": "Hendri",
+        "slug": "hendri",
+        "domain": "hendri.design",
+        "voice": [
+            "considered",
+            "warm",
+            "precise",
+            "unfussy"
+        ],
+        "deviations": [
+            "The secondary scale is provisional — hendri.design has no declared secondary brand colour yet.",
+            "Type families are placeholders pending confirmation against the live site."
+        ]
+    },
+    "color": {
+        "scales": [
+            {
+                "role": "primary",
+                "name": "Signal",
+                "seed": "#574cff"
+            },
+            {
+                "role": "secondary",
+                "name": "Slate",
+                "seed": "#40525e"
+            },
+            {
+                "role": "neutral",
+                "name": "Ink",
+                "seed": "#1f262d",
+                "tuning": {
+                    "light": {
+                        "maxChroma": 0.03,
+                        "hueShift": 1
+                    },
+                    "dark": {
+                        "maxChroma": 0.035,
+                        "hueShift": 1
+                    }
+                }
+            },
+            {
+                "role": "success",
+                "name": "Grow",
+                "seed": "#16a34a"
+            },
+            {
+                "role": "warning",
+                "name": "Flag",
+                "seed": "#d97706"
+            },
+            {
+                "role": "danger",
+                "name": "Stop",
+                "seed": "#dc2626"
+            },
+            {
+                "role": "info",
+                "name": "Note",
+                "seed": "#0284c7"
+            }
+        ],
+        "semantics": [
+            {
+                "name": "background",
+                "group": "surface",
+                "light": {
+                    "scale": "neutral",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 950
+                },
+                "description": "The page. Every screen starts here."
+            },
+            {
+                "name": "surface",
+                "group": "surface",
+                "light": {
+                    "scale": "neutral",
+                    "step": 50
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 900
+                },
+                "description": "Cards, panels and anything sitting one level above the page."
+            },
+            {
+                "name": "surface-raised",
+                "group": "surface",
+                "light": {
+                    "scale": "neutral",
+                    "step": 50
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 800
+                },
+                "description": "Popovers, dropdowns, dialogs — one level above `surface`."
+            },
+            {
+                "name": "muted",
+                "group": "surface",
+                "light": {
+                    "scale": "neutral",
+                    "step": 200
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 800
+                },
+                "description": "Quiet neutral fill — table headers, inactive tabs, code blocks."
+            },
+            {
+                "name": "foreground",
+                "group": "text",
+                "light": {
+                    "scale": "neutral",
+                    "step": 950
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 50
+                },
+                "description": "Primary text and icons. The default ink for body copy and headings."
+            },
+            {
+                "name": "foreground-secondary",
+                "group": "text",
+                "light": {
+                    "scale": "neutral",
+                    "step": 900
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 100
+                },
+                "description": "Supporting text one notch below `foreground` — subtitles, descriptions."
+            },
+            {
+                "name": "muted-foreground",
+                "group": "text",
+                "light": {
+                    "scale": "neutral",
+                    "step": 900
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 100
+                },
+                "description": "Secondary text on `muted` or `background` — captions, helper text, metadata."
+            },
+            {
+                "name": "foreground-tertiary",
+                "group": "text",
+                "light": {
+                    "scale": "neutral",
+                    "step": 500
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 500
+                },
+                "description": "Deliberately faint text: placeholders, disabled labels, watermarks. NEVER body copy — it does not meet contrast for reading."
+            },
+            {
+                "name": "state-hover",
+                "group": "state",
+                "light": {
+                    "scale": "neutral",
+                    "step": 200
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 800
+                },
+                "description": "Hover wash on a neutral interactive surface — menu items, table rows, ghost buttons."
+            },
+            {
+                "name": "state-active",
+                "group": "state",
+                "light": {
+                    "scale": "neutral",
+                    "step": 300
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 700
+                },
+                "description": "Pressed state of a neutral interactive surface."
+            },
+            {
+                "name": "state-selected",
+                "group": "state",
+                "light": {
+                    "scale": "primary",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "primary",
+                    "step": 900
+                },
+                "description": "Selected/current state — brand-tinted so selection reads as intent, not hover."
+            },
+            {
+                "name": "state-disabled",
+                "group": "state",
+                "light": {
+                    "scale": "neutral",
+                    "step": 200
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 800
+                },
+                "description": "Fill of a disabled control. Pair with `foreground-tertiary`."
+            },
+            {
+                "name": "border",
+                "group": "border",
+                "light": {
+                    "scale": "neutral",
+                    "step": 300
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 700
+                },
+                "description": "Default hairline between regions — card edges, dividers, table rules."
+            },
+            {
+                "name": "border-subtle",
+                "group": "border",
+                "light": {
+                    "scale": "neutral",
+                    "step": 200
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 800
+                },
+                "description": "Barely-there separator inside an already-bounded area."
+            },
+            {
+                "name": "border-strong",
+                "group": "border",
+                "light": {
+                    "scale": "neutral",
+                    "step": 400
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 600
+                },
+                "description": "Emphasised border — hovered fields, pulled-out quotes."
+            },
+            {
+                "name": "input",
+                "group": "border",
+                "light": {
+                    "scale": "neutral",
+                    "step": 300
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 700
+                },
+                "description": "Border of a form control at rest."
+            },
+            {
+                "name": "ring",
+                "group": "border",
+                "light": {
+                    "scale": "primary",
+                    "step": 700
+                },
+                "dark": {
+                    "scale": "primary",
+                    "step": 500
+                },
+                "description": "Focus ring. Always visible on keyboard focus — never remove it."
+            },
+            {
+                "name": "primary",
+                "group": "brand",
+                "light": {
+                    "scale": "primary",
+                    "step": 700
+                },
+                "dark": {
+                    "scale": "primary",
+                    "step": 600
+                },
+                "description": "Solid primary fill — primary buttons, active nav, key accents."
+            },
+            {
+                "name": "primary-foreground",
+                "group": "brand",
+                "light": {
+                    "scale": "neutral",
+                    "step": 200
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 100
+                },
+                "description": "Text and icons on a solid `primary` fill. Never use it on a page background."
+            },
+            {
+                "name": "primary-hover",
+                "group": "state",
+                "light": {
+                    "scale": "primary",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "primary",
+                    "step": 700
+                },
+                "description": "Hover state of a solid `primary` fill."
+            },
+            {
+                "name": "primary-active",
+                "group": "state",
+                "light": {
+                    "scale": "primary",
+                    "step": 900
+                },
+                "dark": {
+                    "scale": "primary",
+                    "step": 800
+                },
+                "description": "Pressed/active state of a solid `primary` fill."
+            },
+            {
+                "name": "primary-subtle",
+                "group": "brand",
+                "light": {
+                    "scale": "primary",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "primary",
+                    "step": 900
+                },
+                "description": "Tinted primary wash — quiet badges, selected rows, callouts. Not a text colour."
+            },
+            {
+                "name": "primary-subtle-foreground",
+                "group": "brand",
+                "light": {
+                    "scale": "primary",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "primary",
+                    "step": 200
+                },
+                "description": "Text on `primary-subtle`."
+            },
+            {
+                "name": "secondary",
+                "group": "brand",
+                "light": {
+                    "scale": "secondary",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "secondary",
+                    "step": 600
+                },
+                "description": "Solid secondary fill — secondary buttons and supporting accents."
+            },
+            {
+                "name": "secondary-foreground",
+                "group": "brand",
+                "light": {
+                    "scale": "neutral",
+                    "step": 300
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 100
+                },
+                "description": "Text and icons on a solid `secondary` fill. Never use it on a page background."
+            },
+            {
+                "name": "secondary-hover",
+                "group": "state",
+                "light": {
+                    "scale": "secondary",
+                    "step": 900
+                },
+                "dark": {
+                    "scale": "secondary",
+                    "step": 700
+                },
+                "description": "Hover state of a solid `secondary` fill."
+            },
+            {
+                "name": "secondary-active",
+                "group": "state",
+                "light": {
+                    "scale": "secondary",
+                    "step": 950
+                },
+                "dark": {
+                    "scale": "secondary",
+                    "step": 800
+                },
+                "description": "Pressed/active state of a solid `secondary` fill."
+            },
+            {
+                "name": "secondary-subtle",
+                "group": "brand",
+                "light": {
+                    "scale": "secondary",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "secondary",
+                    "step": 900
+                },
+                "description": "Tinted secondary wash — quiet badges, selected rows, callouts. Not a text colour."
+            },
+            {
+                "name": "secondary-subtle-foreground",
+                "group": "brand",
+                "light": {
+                    "scale": "secondary",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "secondary",
+                    "step": 200
+                },
+                "description": "Text on `secondary-subtle`."
+            },
+            {
+                "name": "success",
+                "group": "status",
+                "light": {
+                    "scale": "success",
+                    "step": 600
+                },
+                "dark": {
+                    "scale": "success",
+                    "step": 600
+                },
+                "description": "Solid success fill — success buttons, filled badges, chart series."
+            },
+            {
+                "name": "success-foreground",
+                "group": "status",
+                "light": {
+                    "scale": "neutral",
+                    "step": 50
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 50
+                },
+                "description": "Text and icons on a solid `success` fill."
+            },
+            {
+                "name": "success-subtle",
+                "group": "status",
+                "light": {
+                    "scale": "success",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "success",
+                    "step": 900
+                },
+                "description": "Background of a success banner, alert or inline message."
+            },
+            {
+                "name": "success-subtle-foreground",
+                "group": "status",
+                "light": {
+                    "scale": "success",
+                    "step": 900
+                },
+                "dark": {
+                    "scale": "success",
+                    "step": 200
+                },
+                "description": "Text on `success-subtle`. This is the success text colour — not `success`."
+            },
+            {
+                "name": "success-border",
+                "group": "status",
+                "light": {
+                    "scale": "success",
+                    "step": 200
+                },
+                "dark": {
+                    "scale": "success",
+                    "step": 800
+                },
+                "description": "Border of a success banner or field."
+            },
+            {
+                "name": "warning",
+                "group": "status",
+                "light": {
+                    "scale": "warning",
+                    "step": 600
+                },
+                "dark": {
+                    "scale": "warning",
+                    "step": 300
+                },
+                "description": "Solid warning fill — warning buttons, filled badges, chart series."
+            },
+            {
+                "name": "warning-foreground",
+                "group": "status",
+                "light": {
+                    "scale": "neutral",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 900
+                },
+                "description": "Text and icons on a solid `warning` fill."
+            },
+            {
+                "name": "warning-subtle",
+                "group": "status",
+                "light": {
+                    "scale": "warning",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "warning",
+                    "step": 900
+                },
+                "description": "Background of a warning banner, alert or inline message."
+            },
+            {
+                "name": "warning-subtle-foreground",
+                "group": "status",
+                "light": {
+                    "scale": "warning",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "warning",
+                    "step": 200
+                },
+                "description": "Text on `warning-subtle`. This is the warning text colour — not `warning`."
+            },
+            {
+                "name": "warning-border",
+                "group": "status",
+                "light": {
+                    "scale": "warning",
+                    "step": 200
+                },
+                "dark": {
+                    "scale": "warning",
+                    "step": 800
+                },
+                "description": "Border of a warning banner or field."
+            },
+            {
+                "name": "danger",
+                "group": "status",
+                "light": {
+                    "scale": "danger",
+                    "step": 600
+                },
+                "dark": {
+                    "scale": "danger",
+                    "step": 600
+                },
+                "description": "Solid destructive fill — destructive buttons, filled badges, chart series."
+            },
+            {
+                "name": "danger-foreground",
+                "group": "status",
+                "light": {
+                    "scale": "neutral",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 100
+                },
+                "description": "Text and icons on a solid `danger` fill."
+            },
+            {
+                "name": "danger-subtle",
+                "group": "status",
+                "light": {
+                    "scale": "danger",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "danger",
+                    "step": 900
+                },
+                "description": "Background of a destructive banner, alert or inline message."
+            },
+            {
+                "name": "danger-subtle-foreground",
+                "group": "status",
+                "light": {
+                    "scale": "danger",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "danger",
+                    "step": 200
+                },
+                "description": "Text on `danger-subtle`. This is the destructive text colour — not `danger`."
+            },
+            {
+                "name": "danger-border",
+                "group": "status",
+                "light": {
+                    "scale": "danger",
+                    "step": 200
+                },
+                "dark": {
+                    "scale": "danger",
+                    "step": 800
+                },
+                "description": "Border of a destructive banner or field."
+            },
+            {
+                "name": "info",
+                "group": "status",
+                "light": {
+                    "scale": "info",
+                    "step": 600
+                },
+                "dark": {
+                    "scale": "info",
+                    "step": 600
+                },
+                "description": "Solid info fill — info buttons, filled badges, chart series."
+            },
+            {
+                "name": "info-foreground",
+                "group": "status",
+                "light": {
+                    "scale": "neutral",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "neutral",
+                    "step": 100
+                },
+                "description": "Text and icons on a solid `info` fill."
+            },
+            {
+                "name": "info-subtle",
+                "group": "status",
+                "light": {
+                    "scale": "info",
+                    "step": 100
+                },
+                "dark": {
+                    "scale": "info",
+                    "step": 900
+                },
+                "description": "Background of a info banner, alert or inline message."
+            },
+            {
+                "name": "info-subtle-foreground",
+                "group": "status",
+                "light": {
+                    "scale": "info",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "info",
+                    "step": 200
+                },
+                "description": "Text on `info-subtle`. This is the info text colour — not `info`."
+            },
+            {
+                "name": "info-border",
+                "group": "status",
+                "light": {
+                    "scale": "info",
+                    "step": 200
+                },
+                "dark": {
+                    "scale": "info",
+                    "step": 800
+                },
+                "description": "Border of a info banner or field."
+            }
+        ]
+    },
+    "typography": {
+        "families": {
+            "sans": "\"Geist\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+            "mono": "\"Geist Mono\", ui-monospace, SFMono-Regular, Menlo, monospace"
+        },
+        "roles": [
+            {
+                "role": "display",
+                "family": "sans",
+                "sizeRem": 3.5,
+                "lineHeight": 1.05,
+                "weight": 600,
+                "tracking": "-0.03em"
+            },
+            {
+                "role": "heading-lg",
+                "family": "sans",
+                "sizeRem": 2.25,
+                "lineHeight": 1.15,
+                "weight": 600,
+                "tracking": "-0.02em"
+            },
+            {
+                "role": "heading",
+                "family": "sans",
+                "sizeRem": 1.5,
+                "lineHeight": 1.25,
+                "weight": 600,
+                "tracking": "-0.01em"
+            },
+            {
+                "role": "heading-sm",
+                "family": "sans",
+                "sizeRem": 1.125,
+                "lineHeight": 1.4,
+                "weight": 600
+            },
+            {
+                "role": "body-lg",
+                "family": "sans",
+                "sizeRem": 1.125,
+                "lineHeight": 1.6,
+                "weight": 400
+            },
+            {
+                "role": "body",
+                "family": "sans",
+                "sizeRem": 1,
+                "lineHeight": 1.6,
+                "weight": 400
+            },
+            {
+                "role": "body-sm",
+                "family": "sans",
+                "sizeRem": 0.875,
+                "lineHeight": 1.55,
+                "weight": 400
+            },
+            {
+                "role": "label",
+                "family": "sans",
+                "sizeRem": 0.8125,
+                "lineHeight": 1.3,
+                "weight": 500,
+                "tracking": "0.01em"
+            },
+            {
+                "role": "code",
+                "family": "mono",
+                "sizeRem": 0.875,
+                "lineHeight": 1.5,
+                "weight": 400
+            }
+        ]
+    },
+    "spacing": {
+        "basePx": 4,
+        "blessed": [
+            4,
+            8,
+            12,
+            16,
+            24,
+            32,
+            48,
+            64,
+            96
+        ]
+    },
+    "radius": {
+        "basePx": 10,
+        "concentric": true
+    },
+    "shadows": {
+        "levels": [
+            {
+                "name": "sm",
+                "layers": [
+                    "0 1px 2px -1px oklch(0 0 0 / 0.08)",
+                    "0 0 0 1px oklch(0 0 0 / 0.04)"
+                ]
+            },
+            {
+                "name": "md",
+                "layers": [
+                    "0 0 0 1px oklch(0 0 0 / 0.05)",
+                    "0 1px 2px -1px oklch(0 0 0 / 0.06)",
+                    "0 2px 4px 0 oklch(0 0 0 / 0.04)"
+                ]
+            },
+            {
+                "name": "lg",
+                "layers": [
+                    "0 0 0 1px oklch(0 0 0 / 0.05)",
+                    "0 4px 8px -2px oklch(0 0 0 / 0.08)",
+                    "0 12px 24px -4px oklch(0 0 0 / 0.06)"
+                ]
+            },
+            {
+                "name": "overlay",
+                "layers": [
+                    "0 0 0 1px oklch(0 0 0 / 0.06)",
+                    "0 12px 32px -8px oklch(0 0 0 / 0.16)",
+                    "0 24px 64px -12px oklch(0 0 0 / 0.12)"
+                ]
+            }
+        ]
+    },
+    "motion": {
+        "durations": {
+            "instant": 100,
+            "fast": 150,
+            "base": 200,
+            "slow": 320
+        },
+        "easings": {
+            "out": "cubic-bezier(0.2, 0, 0, 1)",
+            "in": "cubic-bezier(0.4, 0, 1, 1)",
+            "in-out": "cubic-bezier(0.4, 0, 0.2, 1)",
+            "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+        }
+    },
+    "rules": {
+        "polish": {
+            "concentric-radius": true,
+            "optical-alignment": true,
+            "shadow-vs-border": true,
+            "interruptible-motion": true,
+            "enter-exit-asymmetry": true,
+            "press-feedback": true,
+            "no-transition-all": true,
+            "tabular-numbers": true,
+            "text-wrap": true,
+            "hit-areas": true,
+            "icon-stroke": true,
+            "focus-visible": true,
+            "reduced-motion": true
+        }
+    }
+}

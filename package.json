@@ -13,6 +13,7 @@
     "lint:preview-colors": "./scripts/check-preview-colors.sh"
   },
   "dependencies": {
+    "apca-w3": "^0.1.9",
     "culori": "^4.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

@@ -6,6 +6,7 @@
  * serialization of the system, so the preview and the export cannot disagree.
  */
 
+import { validateContrast } from "./contrast"
 import { DARK_SHADOWS, deriveRadius, spaceName } from "./defaults"
 import { generateScale, oklchToCss, oklchToHex, parseSeed } from "./scale"
 import {
@@ -195,7 +196,7 @@ export function resolveTokens(config: BrandConfig): ResolvedTokens {
     const radius = deriveRadius(config.radius.basePx, config.radius.steps)
     const declarations = buildDeclarations(config, scales, semantics, radius)
 
-    return {
+    const resolved: ResolvedTokens = {
         config,
         scales,
         semantics,
@@ -203,18 +204,10 @@ export function resolveTokens(config: BrandConfig): ResolvedTokens {
         declarations,
         warnings: [...scaleWarnings, ...semanticWarnings],
     }
-}
 
-/**
- * Where each seed lands on its ramp. `defaultSemanticMapping` needs this so the
- * colour you typed becomes the colour of your buttons — not a near neighbour.
- */
-export function anchorsFrom(scaleConfigs: BrandConfig["color"]["scales"]): Record<ScaleRole, Step> {
-    const anchors = {} as Record<ScaleRole, Step>
-    for (const scale of scaleConfigs) {
-        anchors[scale.role] = generateScale(scale.seed, "light", scale.tuning?.light ?? {}).anchorStep
-    }
-    return anchors
+    // Contrast runs last: it reads resolved values, so it needs the finished object.
+    resolved.warnings = [...resolved.warnings, ...validateContrast(resolved)]
+    return resolved
 }
 
 /** Look up a resolved semantic by name — used by the contrast pass and the docs. */

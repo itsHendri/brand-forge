@@ -1,116 +1,110 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { resolveTokens } from "../engine/resolve"
-import { SCALE_ROLES, STEPS, type Mode } from "../engine/types"
-import { hendriPreset } from "../presets/hendri"
+import { ColorPanel } from "./panels/ColorPanel"
+import { SemanticsPanel } from "./panels/SemanticsPanel"
+import { ComponentsSheet } from "./preview/contexts/ComponentsSheet"
+import { PreviewCanvas } from "./preview/PreviewCanvas"
+import { useStore, type PanelId } from "./store"
+import { WarningsDrawer } from "./warnings/WarningsDrawer"
 
-/**
- * P0 surface: dump every generated ramp so the scale maths can be judged by eye
- * before any editing UI exists. P1 replaces this with the real editor + preview.
- */
+const PANELS: Array<{ id: PanelId; label: string }> = [
+    { id: "brand", label: "Brand" },
+    { id: "color", label: "Colour" },
+    { id: "semantics", label: "Semantics" },
+    { id: "type", label: "Type" },
+    { id: "shape", label: "Space & shape" },
+    { id: "motion", label: "Motion" },
+    { id: "rules", label: "Rules" },
+]
+
 export function App() {
-    const [mode, setMode] = useState<Mode>("light")
-    const resolved = useMemo(() => resolveTokens(hendriPreset), [])
+    const { config, mode, panel, setMode, setPanel, saving, hydrate } = useStore()
+    const resolved = useMemo(() => resolveTokens(config), [config])
+    const [showWarnings, setShowWarnings] = useState(false)
+    const failures = resolved.warnings.filter((w) => w.level === "fail").length
+
+    useEffect(() => {
+        void hydrate()
+    }, [hydrate])
 
     return (
-        <div className="min-h-full p-8">
-            <header className="mb-8 flex items-baseline gap-4">
-                <h1 className="text-xl font-semibold">Brand Forge</h1>
-                <span className="text-sm text-[var(--app-ink-soft)]">
-                    {resolved.config.meta.name} · {resolved.semantics.length} semantic tokens ·{" "}
-                    {resolved.warnings.length} warnings
-                </span>
-                <button
-                    type="button"
-                    onClick={() => setMode(mode === "light" ? "dark" : "light")}
-                    className="ml-auto rounded-md border border-[var(--app-border)] px-3 py-1.5 text-sm"
-                >
-                    {mode === "light" ? "Light" : "Dark"} ramps
-                </button>
+        <div className="relative grid h-full grid-cols-[340px_1fr] grid-rows-[52px_1fr]">
+            <header className="col-span-2 flex items-center gap-4 border-b border-[var(--app-border)] px-4">
+                <strong className="text-sm">Brand Forge</strong>
+                <span className="text-sm text-[var(--app-ink-soft)]">{config.meta.name}</span>
+
+                <div className="ml-auto flex items-center gap-3">
+                    <span className="text-xs text-[var(--app-ink-soft)]">
+                        {saving ? "Saving…" : "Saved"}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => setShowWarnings((open) => !open)}
+                        className={`rounded-md border px-2.5 py-1.5 text-xs ${
+                            failures > 0
+                                ? "border-red-200 bg-red-50 text-red-800"
+                                : "border-[var(--app-border)] text-[var(--app-ink-soft)]"
+                        }`}
+                    >
+                        {failures > 0 ? `${failures} failing` : "Contrast clear"}
+                    </button>
+                    <div className="flex overflow-hidden rounded-md border border-[var(--app-border)] text-xs">
+                        {(["light", "dark"] as const).map((option) => (
+                            <button
+                                key={option}
+                                type="button"
+                                onClick={() => setMode(option)}
+                                className={`px-3 py-1.5 capitalize ${
+                                    mode === option ? "bg-[var(--app-ink)] text-white" : ""
+                                }`}
+                            >
+                                {option}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </header>
 
-            <section className="mb-10">
-                <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--app-ink-soft)]">
-                    Primitives
-                </h2>
-                <div className="space-y-2">
-                    {SCALE_ROLES.map((role) => {
-                        const scale = resolved.scales[role]
-                        if (!scale) return null
-                        return (
-                            <div key={role} className="flex items-center gap-3">
-                                <div className="w-28 shrink-0 text-sm">
-                                    <div className="font-medium">{scale.name}</div>
-                                    <div className="text-xs text-[var(--app-ink-soft)]">{role}</div>
-                                </div>
-                                <div className="flex flex-1 gap-1">
-                                    {STEPS.map((step) => {
-                                        const swatch = scale.steps[mode][step]!
-                                        const isAnchor = step === scale.anchorStep
-                                        return (
-                                            <div key={step} className="flex-1">
-                                                <div
-                                                    className="h-12 rounded"
-                                                    style={{
-                                                        background: swatch.css,
-                                                        outline: isAnchor ? "2px solid var(--app-ink)" : undefined,
-                                                        outlineOffset: 1,
-                                                    }}
-                                                    title={`${role}-${step} · ${swatch.hex}`}
-                                                />
-                                                <div className="mt-1 text-center text-[10px] text-[var(--app-ink-soft)]">
-                                                    {step}
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-                <p className="mt-3 text-xs text-[var(--app-ink-soft)]">
-                    Outlined swatch = the step the typed seed landed on.
-                </p>
-            </section>
-
-            <section>
-                <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--app-ink-soft)]">
-                    Semantics
-                </h2>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
-                    {resolved.semantics.map((token) => (
-                        <div
-                            key={token.name}
-                            className="flex items-center gap-2 rounded-md border border-[var(--app-border)] p-2"
+            <aside className="flex min-h-0 flex-col border-r border-[var(--app-border)] bg-[var(--app-panel)]">
+                <nav className="flex flex-wrap gap-1 border-b border-[var(--app-border)] p-2">
+                    {PANELS.map((entry) => (
+                        <button
+                            key={entry.id}
+                            type="button"
+                            onClick={() => setPanel(entry.id)}
+                            className={`rounded px-2 py-1 text-xs ${
+                                panel === entry.id
+                                    ? "bg-white text-[var(--app-ink)] shadow-sm"
+                                    : "text-[var(--app-ink-soft)]"
+                            }`}
                         >
-                            <div
-                                className="h-9 w-9 shrink-0 rounded border border-[var(--app-border)]"
-                                style={{ background: token.values[mode]!.css }}
-                            />
-                            <div className="min-w-0">
-                                <div className="truncate font-mono text-xs">--{token.name}</div>
-                                <div className="truncate text-[11px] text-[var(--app-ink-soft)]">
-                                    {token[mode].scale}-{token[mode].step} · {token.values[mode]!.hex}
-                                </div>
-                            </div>
-                        </div>
+                            {entry.label}
+                        </button>
                     ))}
-                </div>
-            </section>
+                </nav>
 
-            {resolved.warnings.length > 0 && (
-                <section className="mt-10">
-                    <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--app-ink-soft)]">
-                        Warnings
-                    </h2>
-                    <ul className="space-y-1 text-sm">
-                        {resolved.warnings.map((warning, i) => (
-                            <li key={i}>
-                                <span className="font-mono text-xs">[{warning.level}]</span> {warning.message}
-                            </li>
-                        ))}
-                    </ul>
-                </section>
+                <div className="min-h-0 flex-1 overflow-auto p-4">
+                    {panel === "color" ? (
+                        <ColorPanel resolved={resolved} />
+                    ) : panel === "semantics" ? (
+                        <SemanticsPanel resolved={resolved} />
+                    ) : (
+                        <p className="text-sm text-[var(--app-ink-soft)]">
+                            The {PANELS.find((p) => p.id === panel)?.label.toLowerCase()} panel lands in a
+                            later phase.
+                        </p>
+                    )}
+                </div>
+            </aside>
+
+            <main className="min-h-0 overflow-auto">
+                <PreviewCanvas resolved={resolved} mode={mode}>
+                    <ComponentsSheet />
+                </PreviewCanvas>
+            </main>
+
+            {showWarnings && (
+                <WarningsDrawer resolved={resolved} onClose={() => setShowWarnings(false)} />
             )}
         </div>
     )

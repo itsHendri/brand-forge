@@ -12,7 +12,6 @@ import {
     DEFAULT_SPACING,
     DEFAULT_TYPE_ROLES,
 } from "../engine/defaults"
-import { anchorsFrom } from "../engine/resolve"
 import { defaultSemanticMapping } from "../engine/semantics"
 import type { BrandConfig, ScaleConfig } from "../engine/types"
 
@@ -60,7 +59,7 @@ export const hendriPreset: BrandConfig = {
     },
     color: {
         scales,
-        semantics: defaultSemanticMapping(anchorsFrom(scales)),
+        semantics: defaultSemanticMapping(scales),
     },
     typography: {
         families: {
