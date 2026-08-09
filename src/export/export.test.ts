@@ -106,8 +106,7 @@ describe("assets", () => {
     it("names the @font-face after the first family in the stack, not the stack", () => {
         // `font-family: "Geist", ui-sans-serif, …` only picks up a face called
         // exactly `Geist`; naming the rule after the whole stack loads nothing.
-        expect(css).toContain('font-family: "Geist";')
-        expect(css).toContain('font-family: "Geist Mono";')
+        expect(css).toContain('font-family: "Space Grotesk";')
         // The full stack still belongs in the --font-sans token; it just must
         // not leak into the @font-face rule.
         const faces = css.slice(0, css.indexOf(":root"))
@@ -175,10 +174,15 @@ describe("assets in the docs", () => {
     })
 
     it("says something useful when a brand has no assets at all", () => {
-        // The empty branch has to give an instruction, not go silent.
-        const bare = fileAt("DESIGN_SYSTEM.md")
-        expect(bare).toContain("**No mark is defined.**")
-        expect(bare).toMatch(/No font files ship|No font files and no hosted links/)
+        // The empty branch has to give an instruction, not go silent. The shipped
+        // preset now has a mark, so this needs a brand stripped of one.
+        const bare = structuredClone(hendriPreset)
+        bare.meta.logoSvg = undefined
+        bare.meta.logoFile = undefined
+        bare.typography.fontLinks = []
+        const md = fileAt2(resolveTokens(bare), "DESIGN_SYSTEM.md")
+        expect(md).toContain("**No mark is defined.**")
+        expect(md).toContain("**No font files and no hosted links.**")
     })
 
     it("does not tell an agent to add a <link> when the fonts already ship", () => {

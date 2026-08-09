@@ -13,8 +13,12 @@ export function Logo({ config, height = 24 }: { config: BrandConfig; height?: nu
     const { logoSvg, logoFile, name, slug } = config.meta
 
     if (logoSvg) {
-        const themed = logoSvg
-            .replace(/fill="(?!none)[^"]*"/g, 'fill="currentColor"')
+        // Only force currentColor onto a mark that hasn't been prepared. A logo
+        // already using currentColor was authored deliberately — often a
+        // two-colour lockup where one path follows the ink and another holds a
+        // brand colour — and rewriting every fill would flatten it to one tone.
+        const prepared = logoSvg.includes("currentColor")
+        const themed = (prepared ? logoSvg : logoSvg.replace(/fill="(?!none)[^"]*"/g, 'fill="currentColor"'))
             .replace(/<svg /, `<svg style="height:${height}px;width:auto;display:block" `)
         return (
             <span

@@ -16,6 +16,7 @@ import {
 } from "../engine/defaults"
 import { defaultSemanticMapping } from "../engine/semantics"
 import type { BrandConfig, ScaleConfig } from "../engine/types"
+import { HENDRI_WORDMARK } from "./hendriWordmark"
 
 const scales: ScaleConfig[] = [
     {
@@ -25,10 +26,12 @@ const scales: ScaleConfig[] = [
     },
     {
         role: "secondary",
-        name: "Slate",
-        // PROVISIONAL: hendri.design has no declared secondary brand colour. This is
-        // Foreground Secondary (#40525e), which is what its quiet buttons already use.
-        seed: "#40525e",
+        name: "Ember",
+        // The real Brand Secondary from hendri.design, read off the live site's
+        // token layer. It is the orange in the wordmark's flourish — so the
+        // system and the mark now reference the same colour rather than agreeing
+        // by coincidence.
+        seed: "#f1760f",
     },
     {
         role: "neutral",
@@ -53,10 +56,11 @@ export const hendriPreset: BrandConfig = {
         name: "Hendri",
         slug: "hendri",
         domain: "hendri.design",
+        logoSvg: HENDRI_WORDMARK,
         voice: ["considered", "warm", "precise", "unfussy"],
         deviations: [
-            "The secondary scale is provisional — hendri.design has no declared secondary brand colour yet.",
-            "Type families are placeholders pending confirmation against the live site.",
+            "hendri.design also uses Inter and Alpha Lyrae Medium for specific roles — Inter for the machine-view panel, Alpha Lyrae for the Human/Machine toggle. This system's sans/serif/mono model has no slot for a third face, so those are not represented here.",
+            "No mono face is declared on the live site; `--font-mono` is a neutral system stack until one is chosen.",
         ],
     },
     color: {
@@ -65,15 +69,25 @@ export const hendriPreset: BrandConfig = {
     },
     typography: {
         families: {
-            sans: '"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
-            mono: '"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
+            // Space Grotesk does nearly all the work on hendri.design — headings
+            // and body both — so it is the sans, not a display face.
+            sans: '"Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif',
+            // Undeclared on the live site; a neutral stack until Hendri picks one.
+            mono: "ui-monospace, SFMono-Regular, Menlo, monospace",
         },
-        // Without these the families above are just names and every page renders
-        // in the fallback stack — which is what an acceptance test found happening.
         fontLinks: [
-            "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap",
+            "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap",
         ],
-        roles: DEFAULT_TYPE_ROLES,
+        // Tracking and weights measured off the live site rather than guessed:
+        // Space Grotesk runs negative at every size, and its headings sit at 500.
+        roles: DEFAULT_TYPE_ROLES.map((role) => {
+            if (role.family !== "sans") return role
+            if (role.role.startsWith("heading") || role.role === "display") {
+                return { ...role, weight: 500, tracking: role.role === "heading-sm" ? "-0.02em" : "-0.04em" }
+            }
+            if (role.role.startsWith("body")) return { ...role, tracking: "-0.02em" }
+            return role
+        }),
     },
     layout: { breakpoints: DEFAULT_BREAKPOINTS, containers: DEFAULT_CONTAINERS },
     spacing: DEFAULT_SPACING,

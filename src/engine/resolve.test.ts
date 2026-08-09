@@ -45,6 +45,21 @@ describe("resolveTokens", () => {
         expect(primary.values.light!.hex).toBe("#574cff")
     })
 
+    it("keeps the exact secondary seed in the ramp even when it can't be the fill", () => {
+        // #f1760f is a mid-lightness orange: the best label any neutral manages
+        // on it is Lc 55, under the 60 bar. So `--secondary` steps darker to
+        // something that can carry a label, while the ramp still holds the real
+        // brand colour — which is what the wordmark points at.
+        const scale = resolved.scales.secondary!
+        expect(scale.steps.light[scale.anchorStep]!.hex).toBe("#f1760f")
+        expect(semanticByName(resolved, "secondary")!.values.light!.hex).not.toBe("#f1760f")
+    })
+
+    it("still gives primary the verbatim promise", () => {
+        const scale = resolved.scales.primary!
+        expect(semanticByName(resolved, "primary")!.light.step).toBe(scale.anchorStep)
+    })
+
     it("lifts the brand fill in dark mode rather than reusing the light value", () => {
         const primary = semanticByName(resolved, "primary")!
         expect(primary.values.dark!.oklch.l).toBeGreaterThan(primary.values.light!.oklch.l)

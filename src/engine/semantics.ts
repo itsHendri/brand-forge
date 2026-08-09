@@ -166,7 +166,13 @@ function actionTokens(
     const ramp = ramps[role]
     const neutral = ramps.neutral
     const fill: Record<Mode, Step> = {
-        light: anchor, // the brand promise: your seed IS your button
+        // `primary` keeps the verbatim promise — your seed IS your button — and
+        // the audit reports it when that costs contrast, because the identity
+        // colour is worth defending. `secondary` does not get that: it is an
+        // accent, its token is defined as a solid fill, and a fill that cannot
+        // carry its own label is not a fill. The exact seed still sits at its
+        // anchor step in the ramp either way.
+        light: role === "primary" ? anchor : pickFill(ramp.light, neutral.light, anchor),
         dark: pickFill(ramp.dark, neutral.dark, shift(anchor, -DARK_LIFT)),
     }
     const foreground: Record<Mode, { scale: ScaleRole; step: Step }> = {
