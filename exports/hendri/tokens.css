@@ -217,6 +217,18 @@
     --container-narrow: 30rem;
     --container-page: 72rem;
     --container-wide: 90rem;
+    --shell-header: 3.5rem;
+    --shell-sidebar: 16rem;
+    --shell-sidebar-collapsed: 3.5rem;
+    --shell-aside: 20rem;
+    --shell-table-min: 40rem;
+    --z-sticky: 100;
+    --z-nav: 200;
+    --z-dropdown: 300;
+    --z-scrim: 400;
+    --z-modal: 410;
+    --z-toast: 500;
+    --z-tooltip: 600;
     --radius-sm: 5px;
     --radius-md: 10px;
     --radius-lg: 15px;

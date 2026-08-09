@@ -10,10 +10,12 @@ import {
     DEFAULT_CONTAINERS,
     DEFAULT_MOTION,
     DEFAULT_OPACITY,
+    DEFAULT_SHELL,
     DEFAULT_POLISH,
     DEFAULT_SHADOWS,
     DEFAULT_SPACING,
     DEFAULT_TYPE_ROLES,
+    DEFAULT_Z_LAYERS,
 } from "../engine/defaults"
 import type { BrandConfig, ScaleConfig } from "../engine/types"
 import { HENDRI_WORDMARK } from "./hendriWordmark"
@@ -104,7 +106,12 @@ export const hendriPreset: BrandConfig = {
             return role
         }),
     },
-    layout: { breakpoints: DEFAULT_BREAKPOINTS, containers: DEFAULT_CONTAINERS },
+    layout: {
+        breakpoints: DEFAULT_BREAKPOINTS,
+        containers: DEFAULT_CONTAINERS,
+        zLayers: DEFAULT_Z_LAYERS,
+        shell: DEFAULT_SHELL,
+    },
     spacing: DEFAULT_SPACING,
     opacity: DEFAULT_OPACITY,
     radius: { basePx: 10, concentric: true },

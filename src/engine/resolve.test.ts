@@ -485,3 +485,56 @@ describe("the state washes", () => {
         }
     })
 })
+
+/**
+ * Step 4. Every acceptance run has invented a z-index and a sidebar width,
+ * differently each time, because `--container-*` bounds the page and nothing
+ * bounded what sits around it.
+ */
+describe("stacking order and the app frame", () => {
+    const decl = (name: string) => resolved.declarations.light.find(([n]) => n === name)?.[1]
+    const z = (name: string) => Number(decl(`--z-${name}`))
+
+    it("emits a z token for every layer and a shell token for every dimension", () => {
+        for (const layer of hendriPreset.layout.zLayers) expect(decl(`--z-${layer.name}`)).toBeDefined()
+        for (const dim of hendriPreset.layout.shell) expect(decl(`--shell-${dim.name}`)).toBeDefined()
+    })
+
+    it("keeps the stacking order strictly ascending, so the names are the order", () => {
+        const values = hendriPreset.layout.zLayers.map((layer) => layer.value)
+        expect([...values].sort((a, b) => a - b)).toEqual(values)
+        expect(new Set(values).size).toBe(values.length)
+    })
+
+    it("puts a modal immediately above its own scrim, not a whole step above", () => {
+        // The pairing people get wrong. A hundred apart invites something to be
+        // placed between a dialog and its backdrop, which is never correct.
+        expect(z("modal")).toBeGreaterThan(z("scrim"))
+        expect(z("modal") - z("scrim")).toBeLessThan(50)
+    })
+
+    it("puts a toast above a modal, and a tooltip above everything", () => {
+        // A save confirmation behind the dialog that triggered it is invisible
+        // exactly when it matters.
+        expect(z("toast")).toBeGreaterThan(z("modal"))
+        expect(z("tooltip")).toBe(Math.max(...hendriPreset.layout.zLayers.map((l) => l.value)))
+    })
+
+    it("keeps nav below anything that opens out of it", () => {
+        expect(z("nav")).toBeGreaterThan(z("sticky"))
+        expect(z("dropdown")).toBeGreaterThan(z("nav"))
+    })
+
+    it("matches the collapsed rail to the header, so the logo cell is square", () => {
+        const rem = (name: string) =>
+            hendriPreset.layout.shell.find((dimension) => dimension.name === name)!.rem
+        expect(rem("sidebar-collapsed")).toBe(rem("header"))
+        expect(rem("sidebar")).toBeGreaterThan(rem("sidebar-collapsed"))
+    })
+
+    it("keeps the frame out of the dark block — none of it changes with theme", () => {
+        const darkNames = resolved.declarations.dark.map(([n]) => n)
+        expect(darkNames.some((n) => n.startsWith("--z-"))).toBe(false)
+        expect(darkNames.some((n) => n.startsWith("--shell-"))).toBe(false)
+    })
+})

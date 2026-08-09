@@ -153,6 +153,28 @@ export interface Breakpoint {
     note: string
 }
 
+/**
+ * A stacking layer. A closed, named set for the same reason breakpoints are one:
+ * the alternative is every component inventing a number, and the loser of that
+ * argument is whoever ships last.
+ */
+export interface ZLayer {
+    name: string
+    value: number
+    /** What lives here, and why it sits where it does relative to its neighbours. */
+    note: string
+}
+
+/**
+ * A fixed dimension inside the app frame — the things `--container-*` does not
+ * bound, because containers describe the page and these describe its furniture.
+ */
+export interface ShellDimension {
+    name: string
+    rem: number
+    note: string
+}
+
 /** A max-width. Named for the job it does, like everything else in the system. */
 export interface Container {
     name: string
@@ -222,7 +244,12 @@ export interface BrandConfig {
         fontFiles?: FontFile[]
         roles: TypeRole[]
     }
-    layout: { breakpoints: Breakpoint[]; containers: Container[] }
+    layout: {
+        breakpoints: Breakpoint[]
+        containers: Container[]
+        zLayers: ZLayer[]
+        shell: ShellDimension[]
+    }
     spacing: { basePx: number; blessed: number[] }
     /**
      * The only two opacities the system blesses. Deliberately not a ramp:

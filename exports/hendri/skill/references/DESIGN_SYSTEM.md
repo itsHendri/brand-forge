@@ -558,6 +558,39 @@ part of the system:
 - **Touch-target switching.** The craft rules ask for 44px on touch, but the breakpoint set is
   width-based and CSS cannot detect touch from it. Pick a rule and state it.
 
+## Stacking order
+
+Every layer that can overlap another has a number here. Writing a raw `z-index` is how two
+components end up fighting and the loser is whoever shipped last.
+
+| Token | Value | What lives here |
+| --- | --- | --- |
+| `--z-sticky` | 100 | Sticky table headers and section headers. Below the nav, so it scrolls under it. |
+| `--z-nav` | 200 | The app header and side nav — persistent chrome. |
+| `--z-dropdown` | 300 | Menus, comboboxes, popovers. Above the nav they belong to. |
+| `--z-scrim` | 400 | The modal backdrop. Pair with `--scrim`. |
+| `--z-modal` | 410 | Dialogs and drawers — ten above their own scrim, never a hundred. |
+| `--z-toast` | 500 | Flags and notifications. Above a modal on purpose: a confirmation behind the dialog that caused it is useless. |
+| `--z-tooltip` | 600 | Always last. A tooltip is never covered by anything. |
+
+Two of these are load-bearing and easy to get wrong. `--z-modal` sits **ten** above `--z-scrim`,
+not a hundred: a dialog belongs immediately on top of its own backdrop and nothing should ever land
+between them. And `--z-toast` deliberately outranks `--z-modal` — a confirmation that renders
+behind the dialog that triggered it is invisible exactly when someone needs it.
+
+## App frame
+
+`--container-*` bounds the page. These bound its furniture — the numbers every implementation
+otherwise invents, differently, on each screen.
+
+| Token | Value | What it is |
+| --- | --- | --- |
+| `--shell-header` | 3.5rem (56px) | App header / top bar height. 56px — two 44px touch targets do not fit, one does with room. |
+| `--shell-sidebar` | 16rem (256px) | Primary side navigation. 256px holds a label plus an icon without truncating. |
+| `--shell-sidebar-collapsed` | 3.5rem (56px) | The icon rail. Matches the header height, so the logo cell is square. |
+| `--shell-aside` | 20rem (320px) | Secondary panel — filters, details, activity. 320px is a readable narrow column. |
+| `--shell-table-min` | 40rem (640px) | Minimum table width before it scrolls horizontally instead of crushing columns. |
+
 ## Contrast
 
 Text pairs are validated with APCA (Lc), which unlike WCAG 2 models dark-mode perception correctly.

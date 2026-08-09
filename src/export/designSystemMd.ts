@@ -742,6 +742,35 @@ ${collisions(resolved)}
 
 ${NOT_DEFINED}
 
+## Stacking order
+
+Every layer that can overlap another has a number here. Writing a raw \`z-index\` is how two
+components end up fighting and the loser is whoever shipped last.
+
+${table(
+        ["Token", "Value", "What lives here"],
+        resolved.config.layout.zLayers.map((layer) => [`\`--z-${layer.name}\``, String(layer.value), layer.note]),
+    )}
+
+Two of these are load-bearing and easy to get wrong. \`--z-modal\` sits **ten** above \`--z-scrim\`,
+not a hundred: a dialog belongs immediately on top of its own backdrop and nothing should ever land
+between them. And \`--z-toast\` deliberately outranks \`--z-modal\` — a confirmation that renders
+behind the dialog that triggered it is invisible exactly when someone needs it.
+
+## App frame
+
+\`--container-*\` bounds the page. These bound its furniture — the numbers every implementation
+otherwise invents, differently, on each screen.
+
+${table(
+        ["Token", "Value", "What it is"],
+        resolved.config.layout.shell.map((dimension) => [
+            `\`--shell-${dimension.name}\``,
+            `${dimension.rem}rem (${dimension.rem * 16}px)`,
+            dimension.note,
+        ]),
+    )}
+
 ## Contrast
 
 Text pairs are validated with APCA (Lc), which unlike WCAG 2 models dark-mode perception correctly.

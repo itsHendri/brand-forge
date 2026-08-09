@@ -117,22 +117,32 @@ Full token tables, component recipes and wrong/right pairs live in
     \`opacity\`. The only blessed opacities are \`--opacity-disabled\` and \`--opacity-loading\`,
     and neither is for live text — fading text defeats the contrast audit, because the result
     depends on a ground the system cannot see.
-13. **Spacing comes from the blessed subset only:**
+13. **Stacking order is a closed set:**
+    ${config.layout.zLayers.map((l) => `\`--z-${l.name}\` ${l.value}`).join(", ")}. Never write a raw
+    \`z-index\`, and never invent a number between two of them without saying why. The pairing that
+    matters: \`--z-modal\` is ten above \`--z-scrim\`, not a hundred, because a dialog belongs
+    immediately on top of its own backdrop. \`--z-toast\` outranks \`--z-modal\` on purpose — a
+    confirmation rendered behind the dialog that triggered it is invisible when it matters most.
+14. **The app frame has fixed dimensions too:**
+    ${config.layout.shell.map((d) => `\`--shell-${d.name}\` ${d.rem}rem`).join(", ")}. \`--container-*\`
+    bounds the page; these bound its furniture. A sidebar, a header height or a table's minimum width
+    invented per-screen is how two pages in the same app stop lining up.
+15. **Spacing comes from the blessed subset only:**
     ${config.spacing.blessed.map((px) => `${px}px`).join(", ")}. Nothing between them.
-14. **Breakpoints are mobile-first and closed:**
+16. **Breakpoints are mobile-first and closed:**
     ${config.layout.breakpoints.map((b) => `${b.minPx}px (\`${b.name}\`)`).join(", ")}. Write base
     styles for the narrowest case and add \`min-width\` queries on top. Never a \`max-width\`
     breakpoint, never a number outside this set, and never \`var(--breakpoint-*)\` inside a media
     query — custom properties do not resolve there and the rule is dropped in silence.
-15. **No content spans the viewport.** Every region's content sits in a container, centred with
+17. **No content spans the viewport.** Every region's content sits in a container, centred with
     \`margin-inline: auto\`: ${config.layout.containers.map((c) => `\`--container-${c.name}\` (${c.maxRem}rem)`).join(", ")}.
     Running text takes \`--container-prose\` even inside a wider frame — a full-bleed paragraph is a
     bug, not a stylistic choice. Backgrounds and borders may span the window; a sticky bar is a
     full-bleed background with contained content inside it.
-16. **Radius:** \`--radius-sm\` ${resolved.radius.sm}px, \`--radius-md\` ${resolved.radius.md}px,
+18. **Radius:** \`--radius-sm\` ${resolved.radius.sm}px, \`--radius-md\` ${resolved.radius.md}px,
     \`--radius-lg\` ${resolved.radius.lg}px, \`--radius-xl\` ${resolved.radius.xl}px. A rounded box
     inside another uses \`inner = outer − padding\`, floored at 0.
-17. **Type is role-named.** Use \`--text-body\`, \`--text-heading\`, \`--text-label\` and friends.
+19. **Type is role-named.** Use \`--text-body\`, \`--text-heading\`, \`--text-label\` and friends.
     Heading *level* is about document outline; heading *size* is about the role token. Never size
     text with an arbitrary rem value.${
         config.typography.roles.some((role) => role.minSizeRem !== undefined)
@@ -148,7 +158,7 @@ Full token tables, component recipes and wrong/right pairs live in
     heavier weight of the body font, and not for headings or UI.`
             : ""
     }
-18. **Motion:** \`--duration-fast\` ${config.motion.durations.fast}ms,
+20. **Motion:** \`--duration-fast\` ${config.motion.durations.fast}ms,
     \`--duration-base\` ${config.motion.durations.base}ms, easing \`--ease-out\` for entrances.
     Exits are faster than entrances. Never \`transition: all\` — name the properties.
 

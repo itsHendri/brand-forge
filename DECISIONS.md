@@ -429,3 +429,40 @@ but never reconciled one whose shape had changed, so a saved brand kept `md`/`lg
 its dark-mode elevation entirely** — `DARK_SHADOWS` is keyed by name and no longer had an entry.
 Unknown levels are now dropped and missing ones restored, and a test asserts light and dark emit the
 same shadow names.
+
+### 28. Stacking order and the app frame are closed sets — 2026-08-09
+
+`--container-*` bounds the page; nothing bounded the furniture around it. Every acceptance run
+invented a z-index, a sidebar width and a header height, differently each time, and the docs listed
+that honestly without fixing it.
+
+Both are now closed, named sets, for the same reason breakpoints are (#10): the alternative to one
+stated list is every component inventing its own number, and the loser of that argument is whoever
+ships last.
+
+Two values in the stacking order carry an argument rather than a convention, both lifted from
+Atlassian's table:
+
+- **`--z-modal` is ten above `--z-scrim`, not a hundred.** A dialog belongs immediately on top of its
+  own backdrop, and a gap of a hundred is an invitation for something to be placed between them.
+- **`--z-toast` outranks `--z-modal`.** A save confirmation rendered behind the dialog that triggered
+  it is invisible exactly when someone needs it.
+
+The rest are spaced by 100 so a genuine one-off can slot in without a renumber.
+
+The shell dimensions carry their reasoning in the token notes, which is what makes them arguable
+rather than arbitrary — `sidebar-collapsed` matches `header` so the logo cell is square; `table-min`
+is the width below which a table scrolls instead of crushing its columns.
+
+**A third instance of the same migration bug, and this time the fix is general.** `migrateConfig`
+merged *blocks* but replaced each one wholesale, so a block that gained a field handed back
+`undefined` and crashed at first render with nothing pointing at the cause. That was #12's bug
+(`layout` absent), then it recurred when `shadows` changed shape, and again here when `layout` gained
+`zLayers` and `shell`. Blocks are now merged **key by key** over the default, and missing keys are
+reported rather than filled in silence.
+
+That change had a sharp edge worth recording: filling defaults into the `color` block made a
+pre-override file look like a current one — it now carried `semanticOverrides: []` — so the legacy
+conversion would have skipped it and discarded every hand edit. The format check reads `raw`, not the
+merged block. Caught by the test written for #22, which is the argument for testing a migration's
+*behaviour* rather than its output.

@@ -198,6 +198,70 @@
                 "maxRem": 90,
                 "note": "Dashboards and tables that genuinely need the room."
             }
+        ],
+        "zLayers": [
+            {
+                "name": "sticky",
+                "value": 100,
+                "note": "Sticky table headers and section headers. Below the nav, so it scrolls under it."
+            },
+            {
+                "name": "nav",
+                "value": 200,
+                "note": "The app header and side nav — persistent chrome."
+            },
+            {
+                "name": "dropdown",
+                "value": 300,
+                "note": "Menus, comboboxes, popovers. Above the nav they belong to."
+            },
+            {
+                "name": "scrim",
+                "value": 400,
+                "note": "The modal backdrop. Pair with `--scrim`."
+            },
+            {
+                "name": "modal",
+                "value": 410,
+                "note": "Dialogs and drawers — ten above their own scrim, never a hundred."
+            },
+            {
+                "name": "toast",
+                "value": 500,
+                "note": "Flags and notifications. Above a modal on purpose: a confirmation behind the dialog that caused it is useless."
+            },
+            {
+                "name": "tooltip",
+                "value": 600,
+                "note": "Always last. A tooltip is never covered by anything."
+            }
+        ],
+        "shell": [
+            {
+                "name": "header",
+                "rem": 3.5,
+                "note": "App header / top bar height. 56px — two 44px touch targets do not fit, one does with room."
+            },
+            {
+                "name": "sidebar",
+                "rem": 16,
+                "note": "Primary side navigation. 256px holds a label plus an icon without truncating."
+            },
+            {
+                "name": "sidebar-collapsed",
+                "rem": 3.5,
+                "note": "The icon rail. Matches the header height, so the logo cell is square."
+            },
+            {
+                "name": "aside",
+                "rem": 20,
+                "note": "Secondary panel — filters, details, activity. 320px is a readable narrow column."
+            },
+            {
+                "name": "table-min",
+                "rem": 40,
+                "note": "Minimum table width before it scrolls horizontally instead of crushing columns."
+            }
         ]
     },
     "spacing": {

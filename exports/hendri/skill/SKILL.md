@@ -89,29 +89,39 @@ Full token tables, component recipes and wrong/right pairs live in
     `opacity`. The only blessed opacities are `--opacity-disabled` and `--opacity-loading`,
     and neither is for live text — fading text defeats the contrast audit, because the result
     depends on a ground the system cannot see.
-13. **Spacing comes from the blessed subset only:**
+13. **Stacking order is a closed set:**
+    `--z-sticky` 100, `--z-nav` 200, `--z-dropdown` 300, `--z-scrim` 400, `--z-modal` 410, `--z-toast` 500, `--z-tooltip` 600. Never write a raw
+    `z-index`, and never invent a number between two of them without saying why. The pairing that
+    matters: `--z-modal` is ten above `--z-scrim`, not a hundred, because a dialog belongs
+    immediately on top of its own backdrop. `--z-toast` outranks `--z-modal` on purpose — a
+    confirmation rendered behind the dialog that triggered it is invisible when it matters most.
+14. **The app frame has fixed dimensions too:**
+    `--shell-header` 3.5rem, `--shell-sidebar` 16rem, `--shell-sidebar-collapsed` 3.5rem, `--shell-aside` 20rem, `--shell-table-min` 40rem. `--container-*`
+    bounds the page; these bound its furniture. A sidebar, a header height or a table's minimum width
+    invented per-screen is how two pages in the same app stop lining up.
+15. **Spacing comes from the blessed subset only:**
     4px, 8px, 12px, 16px, 24px, 32px, 48px, 64px, 96px. Nothing between them.
-14. **Breakpoints are mobile-first and closed:**
+16. **Breakpoints are mobile-first and closed:**
     640px (`sm`), 768px (`md`), 1024px (`lg`), 1280px (`xl`). Write base
     styles for the narrowest case and add `min-width` queries on top. Never a `max-width`
     breakpoint, never a number outside this set, and never `var(--breakpoint-*)` inside a media
     query — custom properties do not resolve there and the rule is dropped in silence.
-15. **No content spans the viewport.** Every region's content sits in a container, centred with
+17. **No content spans the viewport.** Every region's content sits in a container, centred with
     `margin-inline: auto`: `--container-prose` (42rem), `--container-narrow` (30rem), `--container-page` (72rem), `--container-wide` (90rem).
     Running text takes `--container-prose` even inside a wider frame — a full-bleed paragraph is a
     bug, not a stylistic choice. Backgrounds and borders may span the window; a sticky bar is a
     full-bleed background with contained content inside it.
-16. **Radius:** `--radius-sm` 5px, `--radius-md` 10px,
+18. **Radius:** `--radius-sm` 5px, `--radius-md` 10px,
     `--radius-lg` 15px, `--radius-xl` 20px. A rounded box
     inside another uses `inner = outer − padding`, floored at 0.
-17. **Type is role-named.** Use `--text-body`, `--text-heading`, `--text-label` and friends.
+19. **Type is role-named.** Use `--text-body`, `--text-heading`, `--text-label` and friends.
     Heading *level* is about document outline; heading *size* is about the role token. Never size
     text with an arbitrary rem value.
     `--text-display` and `--text-heading-lg` are **fluid** — they already scale with the viewport. Never pin
     them to a fixed size or wrap them in a media query; both throw the scaling away.
     `--font-display` is a separate typeface for the `display` role only — not a
     heavier weight of the body font, and not for headings or UI.
-18. **Motion:** `--duration-fast` 150ms,
+20. **Motion:** `--duration-fast` 150ms,
     `--duration-base` 200ms, easing `--ease-out` for entrances.
     Exits are faster than entrances. Never `transition: all` — name the properties.
 

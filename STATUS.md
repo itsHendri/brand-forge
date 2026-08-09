@@ -1,7 +1,7 @@
 # Status — 2026-08-09
 
 **Phases 0–5 done, plus assets. The tool does the whole loop it was built for.**
-Three sessions. 137 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
+Three sessions. 147 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
 
 Type a seed colour → get a complete system → see it on realistic UI → export it as something an AI
 agent can actually build from. That runs end to end today.
@@ -35,7 +35,7 @@ with duplicate / new / delete, and an export dialog with a token-budget meter.
 
 **Export** writes `exports/<slug>/`: `skill/SKILL.md`, `skill/references/DESIGN_SYSTEM.md`,
 `tokens.css` (+ Tailwind v4 `@theme`, + `@font-face`), `tokens.json` (DTCG), `brand.json`, and
-`assets/` when the brand carries any. Docs total ~14.3k LLM tokens against an 18k budget. The
+`assets/` when the brand carries any. Docs total ~15.0k LLM tokens against an 18k budget. The
 shipped brand is Hendri's real one — Signal `#574cff`, Ember `#f1760f`, Space Grotesk with Syne
 for display, and the wordmark lifted from hendri.design. No fonts are bundled.
 

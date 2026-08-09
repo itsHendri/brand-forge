@@ -80,21 +80,30 @@ ladder and there is no fifth level to be had.
 That left no opaque step for `--muted`, so **`--muted` is now a translucent wash** (Hendri's call).
 Anything nesting a quiet fill inside a surface should layer it rather than replace the surface.
 
-### 4. Z-index and app-shell interiors
+### 4. ~~Z-index and app-shell interiors~~ — done 2026-08-09
 
-Atlassian ships an actual z-index table (100 nav → 500 blanket → 510 modal → 600 flag → 800 tooltip)
-with the elevation level each layer sits at. The gap list says every acceptance run invents z-index;
-there is now a proven shape to copy. Sidebar and column widths go in the same pass.
+Seven stacking layers (`--z-sticky` 100 → `--z-tooltip` 600) and five frame dimensions
+(`--shell-header`, `--shell-sidebar`, `--shell-sidebar-collapsed`, `--shell-aside`,
+`--shell-table-min`). Both closed sets, both carrying their reasoning in the notes. See
+`DECISIONS.md` #28.
+
+The Dashboard context now uses them instead of the numbers it had invented, which is the honest test
+of whether they are the right ones.
 
 ### 5. Then run the acceptance test, on an app shell
 
 Brief it on an app shell — the shape never yet used, and the one these tokens are meant to unblock.
 
-### Cost so far
+### Cost so far — and the budget is now the binding constraint
 
-Steps 0 and 1 took the system from 57 to 68 semantic tokens and the docs from ~11.3k to ~13.1k
-against an 18k budget — 73%. Steps 2–4 add few new tokens (step 2 changes values, step 3 renames,
-step 4 adds layout numbers rather than colours), so the budget should hold. Watch the meter anyway.
+Steps 0–4 took the system from 57 to 70 semantic tokens plus the frame, and the docs from ~11.3k to
+**~15.2k against an 18k budget — 84%**. That is no longer comfortable.
+
+Nothing left in the plan adds much: step 5 is an acceptance run, and Phase 6 is a separate artifact.
+But the next person to add a token family should look at the meter first, and the honest fix when it
+runs out is not a bigger budget — it is that `DESIGN_SYSTEM.md` has grown a lot of prose that an
+acceptance run has never been asked to justify. Splitting the reference so `SKILL.md` points at two
+smaller files is the obvious move, and nobody has tested whether it helps or hurts.
 
 ## After that — Phase 6
 

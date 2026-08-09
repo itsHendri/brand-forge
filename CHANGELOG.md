@@ -4,6 +4,17 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- **A stacking order and an app frame**, the last two things every acceptance run had to invent.
+  Seven z layers (`--z-sticky` 100 → `--z-tooltip` 600) and five shell dimensions (`--shell-header`,
+  `--shell-sidebar`, `--shell-sidebar-collapsed`, `--shell-aside`, `--shell-table-min`). Two values
+  carry an argument rather than a convention: `--z-modal` sits ten above `--z-scrim` because a dialog
+  belongs immediately on top of its own backdrop, and `--z-toast` outranks `--z-modal` because a
+  confirmation behind the dialog that caused it is invisible when it matters. `DECISIONS.md` #28.
+- **Fixed, generally this time: a block that gains a field no longer arrives `undefined`.**
+  `migrateConfig` merged blocks but replaced each wholesale, so a saved brand crashed at first render
+  when the schema grew — the same failure three times now (`layout` absent, `shadows` changing shape,
+  `layout` gaining `zLayers`/`shell`). Blocks merge key by key, and missing keys are reported.
+
 - **The elevation ladder is five named levels** — `--surface-sunken`, `--background`, `--surface`,
   `--surface-raised`, `--surface-overlay` — and shadows are renamed to pair with them (`--shadow-sm`,
   `--shadow-raised`, `--shadow-overlay`; `md` and `lg` are gone). An overlay shadow with no overlay

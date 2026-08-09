@@ -3,7 +3,7 @@
  * brand-specific values. Brand config overrides these; they are never silent.
  */
 
-import type { BrandConfig, Breakpoint, Container, RadiusStep, TypeRole } from "./types"
+import type { BrandConfig, Breakpoint, Container, RadiusStep, ShellDimension, TypeRole, ZLayer } from "./types"
 
 /**
  * Mobile-first min-widths. The values are the industry-standard set — the ones
@@ -29,6 +29,40 @@ export const DEFAULT_CONTAINERS: Container[] = [
     { name: "narrow", maxRem: 30, note: "Forms, dialogs, sign-in — anything with one column of controls." },
     { name: "page", maxRem: 72, note: "The default page frame. Most layouts live here." },
     { name: "wide", maxRem: 90, note: "Dashboards and tables that genuinely need the room." },
+]
+
+/**
+ * The stacking order, as a closed set.
+ *
+ * Values are spaced by 100 so a one-off can slot between two of them without a
+ * renumber, and the gaps are the point: `modal` sits ten above `scrim` rather
+ * than a hundred, because a dialog belongs immediately on top of its own
+ * backdrop and nothing is ever meant to land between them. That pairing is the
+ * one people get wrong — a modal at 300 under a nav at 400 is the classic bug.
+ *
+ * `toast` deliberately outranks `modal`: a save confirmation that renders behind
+ * the dialog that triggered it is invisible exactly when it matters.
+ */
+export const DEFAULT_Z_LAYERS: ZLayer[] = [
+    { name: "sticky", value: 100, note: "Sticky table headers and section headers. Below the nav, so it scrolls under it." },
+    { name: "nav", value: 200, note: "The app header and side nav — persistent chrome." },
+    { name: "dropdown", value: 300, note: "Menus, comboboxes, popovers. Above the nav they belong to." },
+    { name: "scrim", value: 400, note: "The modal backdrop. Pair with `--scrim`." },
+    { name: "modal", value: 410, note: "Dialogs and drawers — ten above their own scrim, never a hundred." },
+    { name: "toast", value: 500, note: "Flags and notifications. Above a modal on purpose: a confirmation behind the dialog that caused it is useless." },
+    { name: "tooltip", value: 600, note: "Always last. A tooltip is never covered by anything." },
+]
+
+/**
+ * The app frame's furniture. `--container-*` bounds the page; these bound what
+ * lives around it, which is the set every acceptance run has had to invent.
+ */
+export const DEFAULT_SHELL: ShellDimension[] = [
+    { name: "header", rem: 3.5, note: "App header / top bar height. 56px — two 44px touch targets do not fit, one does with room." },
+    { name: "sidebar", rem: 16, note: "Primary side navigation. 256px holds a label plus an icon without truncating." },
+    { name: "sidebar-collapsed", rem: 3.5, note: "The icon rail. Matches the header height, so the logo cell is square." },
+    { name: "aside", rem: 20, note: "Secondary panel — filters, details, activity. 320px is a readable narrow column." },
+    { name: "table-min", rem: 40, note: "Minimum table width before it scrolls horizontally instead of crushing columns." },
 ]
 
 /**

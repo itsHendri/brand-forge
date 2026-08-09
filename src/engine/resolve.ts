@@ -217,6 +217,16 @@ function buildDeclarations(
         light.push([`--container-${container.name}`, `${container.maxRem}rem`])
     }
 
+    // The app frame's interior, and the stacking order it lives in. Both are
+    // mode-invariant, so they go in the light block like every other structure.
+    for (const dimension of config.layout.shell) {
+        light.push([`--shell-${dimension.name}`, `${dimension.rem}rem`])
+    }
+
+    for (const layer of config.layout.zLayers) {
+        light.push([`--z-${layer.name}`, String(layer.value)])
+    }
+
     for (const [step, px] of Object.entries(radius)) {
         light.push([`--radius-${step}`, step === "full" ? "9999px" : `${px}px`])
     }

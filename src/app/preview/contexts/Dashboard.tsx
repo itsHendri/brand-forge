@@ -36,7 +36,10 @@ export function Dashboard() {
                     borderBottom: "1px solid var(--border)",
                     position: "sticky",
                     top: 0,
-                    zIndex: 10,
+                    // The chrome layer, from the token — not a number picked
+                    // because it looked big enough.
+                    zIndex: "var(--z-nav)" as unknown as number,
+                    minHeight: "var(--shell-header)",
                 }}
             >
                 <div
@@ -82,7 +85,18 @@ export function Dashboard() {
                     alignItems: "flex-start",
                 }}
             >
-                <nav style={{ display: "grid", gap: "var(--space-1)", flex: "1 1 180px" }}>
+                {/* The sidebar has a width in the system now; it used to be a
+                    number invented right here, which is the gap the acceptance
+                    runs kept reporting. */}
+                <nav
+                    style={{
+                        display: "grid",
+                        gap: "var(--space-1)",
+                        alignContent: "start",
+                        flex: "1 1 var(--shell-sidebar)",
+                        maxWidth: "var(--shell-sidebar)",
+                    }}
+                >
                     {NAV.map((item, index) => (
                         <a
                             key={item}
@@ -143,7 +157,16 @@ export function Dashboard() {
                         </div>
 
                         <div style={{ overflowX: "auto" }} tabIndex={0}>
-                            <table style={{ width: "100%", borderCollapse: "collapse", ...typeRole("body-sm") }}>
+                            {/* The table scrolls rather than crushing its columns,
+                                and the floor it scrolls below is a token. */}
+                            <table
+                                style={{
+                                    width: "100%",
+                                    minWidth: "var(--shell-table-min)",
+                                    borderCollapse: "collapse",
+                                    ...typeRole("body-sm"),
+                                }}
+                            >
                                 <thead>
                                     <tr style={{ background: "var(--muted)" }}>
                                         {["Deployment", "Branch", "Status", "Build", "Size"].map((heading) => (

@@ -87,20 +87,50 @@ export function migrateConfig(raw: unknown, defaults: BrandConfig): MigrationRes
 
     for (const block of BLOCKS) {
         const value = raw[block]
-        if (isObject(value)) config[block] = value
-        else filled.push(block)
+        if (!isObject(value)) {
+            filled.push(block)
+            continue
+        }
+        /**
+         * Merged key-by-key over the default rather than swapped in wholesale.
+         *
+         * A block that gains a field after a file is written used to hand back
+         * `undefined` for it, and the failure was a crash at first render with
+         * no clue attached. That is the bug DECISIONS #12 was written about, and
+         * it recurred twice more — once when `shadows` changed shape, once when
+         * `layout` gained `zLayers` and `shell` — because the fix then was
+         * per-block and this is per-key. Missing keys are reported, not filled
+         * in silence.
+         */
+        const defaultBlock = (defaults as unknown as Record<string, unknown>)[block]
+        if (isObject(defaultBlock)) {
+            const missing = Object.keys(defaultBlock).filter((key) => !(key in value))
+            if (missing.length > 0) filled.push(`${block}.{${missing.join(", ")}}`)
+            config[block] = { ...defaultBlock, ...value }
+        } else {
+            config[block] = value
+        }
     }
 
     // The colour block needs more than a wholesale swap: it changed shape when
     // the semantic set stopped being persisted.
-    const color = config.color as { scales?: ScaleConfig[]; semanticOverrides?: unknown; semantics?: unknown }
+    // Read from `raw`, not from the merged block: the key-merge above fills in
+    // the default `semanticOverrides: []`, and trusting that would make a
+    // pre-override file look like a current one and skip the conversion —
+    // silently discarding every hand edit it carried.
+    const rawColor = (isObject(raw.color) ? raw.color : {}) as {
+        scales?: ScaleConfig[]
+        semanticOverrides?: unknown
+        semantics?: unknown
+    }
+    const color = config.color as { scales?: ScaleConfig[] }
     const scales = Array.isArray(color?.scales) ? color.scales : defaults.color.scales
     let inferredOverrides: string[] = []
 
-    if (Array.isArray(color?.semanticOverrides)) {
-        config.color = { scales, semanticOverrides: color.semanticOverrides as SemanticOverride[] }
+    if (Array.isArray(rawColor.semanticOverrides)) {
+        config.color = { scales, semanticOverrides: rawColor.semanticOverrides as SemanticOverride[] }
     } else {
-        const overrides = inferOverrides(color?.semantics, scales)
+        const overrides = inferOverrides(rawColor.semantics, scales)
         inferredOverrides = overrides.map((override) => override.name)
         config.color = { scales, semanticOverrides: overrides }
     }

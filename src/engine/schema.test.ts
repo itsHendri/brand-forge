@@ -41,6 +41,48 @@ describe("migrateConfig", () => {
         expect(() => resolveTokens(config)).not.toThrow()
     })
 
+    it("fills a KEY a block gained, not just a whole missing block", () => {
+        // Three times now: `layout` arriving absent, `shadows` changing shape,
+        // and `layout` gaining `zLayers`/`shell`. Each time the block was
+        // present so it was taken wholesale, the new field came back undefined,
+        // and the failure was a crash at first render with nothing pointing at
+        // the cause.
+        const old = structuredClone(hendriPreset) as { layout: Partial<typeof hendriPreset.layout> }
+        delete old.layout.zLayers
+        delete old.layout.shell
+
+        const { config, filled } = migrateConfig(old, hendriPreset)
+        expect(config.layout.zLayers.length).toBeGreaterThan(0)
+        expect(config.layout.shell.length).toBeGreaterThan(0)
+        // And it says so rather than filling in silence.
+        expect(filled.some((entry) => entry.includes("zLayers"))).toBe(true)
+        expect(() => resolveTokens(config)).not.toThrow()
+    })
+
+    it("keeps the file's own value for a key it does have", () => {
+        const saved = structuredClone(hendriPreset)
+        saved.layout.containers = [{ name: "only", maxRem: 10, note: "mine" }]
+
+        const { config } = migrateConfig(saved, hendriPreset)
+        expect(config.layout.containers).toEqual([{ name: "only", maxRem: 10, note: "mine" }])
+        // …while still gaining the keys it was missing.
+        expect(config.layout.zLayers.length).toBeGreaterThan(0)
+    })
+
+    it("drops a shadow level whose name the system no longer knows", () => {
+        // A renamed level kept its old name AND lost its dark-mode override,
+        // because DARK_SHADOWS is keyed by name and had no entry for it.
+        const saved = structuredClone(hendriPreset)
+        saved.shadows = { levels: [{ name: "lg" as never, layers: ["0 0 0 1px red"] }] }
+
+        const { config } = migrateConfig(saved, hendriPreset)
+        expect(config.shadows.levels.map((level) => level.name)).toEqual(["sm", "raised", "overlay"])
+        const resolved = resolveTokens(config)
+        const shadowNames = (mode: "light" | "dark") =>
+            resolved.declarations[mode].filter(([n]) => n.startsWith("--shadow-")).map(([n]) => n).sort()
+        expect(shadowNames("dark")).toEqual(shadowNames("light"))
+    })
+
     // ── The pre-override format ─────────────────────────────────────────────
     // Files written before the semantic set stopped being persisted still store
     // all 57 resolved tokens. They have to keep working, and a hand edit inside
