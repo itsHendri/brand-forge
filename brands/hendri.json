@@ -15,7 +15,6 @@
         "deviations": [
             "`--text-display` and `--text-heading-lg` are fluid — they scale with the viewport between 390px and 1280px rather than holding one size. Never override them with a fixed rem value.",
             "`--font-display` is Syne, a different typeface from the body sans — it belongs on the `display` role only, never on headings, buttons or UI. Hendri's own site uses Alpha Lyrae here; that face is licensed and deliberately not bundled, so Syne stands in as the open equivalent.",
-            "hendri.design also uses Inter for its machine-view panel. This system has no slot for a fourth family, so it is not represented here.",
             "No mono face is declared on the live site; `--font-mono` is a neutral system stack until one is chosen."
         ]
     },

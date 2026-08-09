@@ -19,7 +19,6 @@ The voice is considered, warm, precise, unfussy. Let that show in copy and restr
 - **Labels on solid fills come from the neutral ramp**, not from the fill's own scale, and their polarity is chosen by measuring contrast against each fill. That means they do not all match — in both modes. `--warning-foreground` can be dark while `--primary-foreground` is light. Do not "correct" this to a single colour.
 - `--text-display` and `--text-heading-lg` are fluid — they scale with the viewport between 390px and 1280px rather than holding one size. Never override them with a fixed rem value.
 - `--font-display` is Syne, a different typeface from the body sans — it belongs on the `display` role only, never on headings, buttons or UI. Hendri's own site uses Alpha Lyrae here; that face is licensed and deliberately not bundled, so Syne stands in as the open equivalent.
-- hendri.design also uses Inter for its machine-view panel. This system has no slot for a fourth family, so it is not represented here.
 - No mono face is declared on the live site; `--font-mono` is a neutral system stack until one is chosen.
 
 ## How the layers work

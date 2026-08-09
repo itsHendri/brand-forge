@@ -73,7 +73,7 @@ has tried to build from it.
    compromise.
 3. **`--font-display` is Syne**, standing in for Alpha Lyrae — which is licensed and deliberately
    not bundled. Both faces are hosted (Google Fonts), so the export links and ships no font files.
-   Inter, which your machine panel uses, still has no slot in the sans/serif/mono/display model.
+   The four-family model (sans/serif/mono/display) covers the brand; nothing is missing a slot.
 4. **No mono face is declared** on the live site; `--font-mono` is a neutral system stack.
 6. **Assets are committed, not ignored.** Fine for your own brand; a licensing decision the moment a
    client's licensed font is involved. See DECISIONS #14.
