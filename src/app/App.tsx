@@ -11,7 +11,16 @@ import { SemanticsPanel } from "./panels/SemanticsPanel"
 import { ShapePanel } from "./panels/ShapePanel"
 import { TypePanel } from "./panels/TypePanel"
 import { ComponentsSheet } from "./preview/contexts/ComponentsSheet"
+import { Dashboard } from "./preview/contexts/Dashboard"
+import { SurfacesSheet } from "./preview/contexts/SurfacesSheet"
 import { PreviewCanvas } from "./preview/PreviewCanvas"
+import type { PreviewContextId } from "./store"
+
+const CONTEXTS: Array<{ id: PreviewContextId; label: string }> = [
+    { id: "components", label: "Components" },
+    { id: "surfaces", label: "Surfaces" },
+    { id: "dashboard", label: "Dashboard" },
+]
 import { useStore, type PanelId } from "./store"
 import { WarningsDrawer } from "./warnings/WarningsDrawer"
 
@@ -41,6 +50,8 @@ export function App() {
         redo,
         canUndo,
         canRedo,
+        context,
+        setContext,
     } = useStore()
     const resolved = useMemo(() => resolveTokens(config), [config])
     const [showWarnings, setShowWarnings] = useState(false)
@@ -90,6 +101,21 @@ export function App() {
                 </div>
 
                 <div className="ml-auto flex items-center gap-3">
+                    <div className="flex overflow-hidden rounded-md border border-[var(--app-border)] text-xs">
+                        {CONTEXTS.map((entry) => (
+                            <button
+                                key={entry.id}
+                                type="button"
+                                onClick={() => setContext(entry.id)}
+                                className={`px-2.5 py-1.5 ${
+                                    context === entry.id ? "bg-[var(--app-ink)] text-white" : ""
+                                }`}
+                            >
+                                {entry.label}
+                            </button>
+                        ))}
+                    </div>
+
                     {/* Pinning the canvas to a breakpoint is how the responsive
                         rules stop being numbers in a doc and start being visible. */}
                     <div className="flex overflow-hidden rounded-md border border-[var(--app-border)] text-xs">
@@ -185,7 +211,9 @@ export function App() {
 
             <main className="min-h-0 overflow-auto">
                 <PreviewCanvas resolved={resolved} mode={mode} width={previewWidth}>
-                    <ComponentsSheet />
+                    {context === "components" && <ComponentsSheet />}
+                    {context === "surfaces" && <SurfacesSheet />}
+                    {context === "dashboard" && <Dashboard />}
                 </PreviewCanvas>
             </main>
 
