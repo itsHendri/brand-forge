@@ -2,7 +2,7 @@
 
 **Phases 0–4 done. Every value in the system is editable and exports correctly.**
 
-Session 1. 73 tests pass, typecheck clean, preview-colour lint clean.
+Sessions 1-2. 94 tests pass, typecheck clean, preview-colour lint clean.
 
 ## What works end to end
 
@@ -28,7 +28,7 @@ Browser-checked at 5300 in both modes. The generated system passes its own contr
 failures. `npm run lint:preview-colors` proves the preview contains no colour literals, so it cannot
 render anything the export can't express.
 
-**The acceptance test has run three times**, each with a subagent that had no knowledge of this
+**The acceptance test has run four times**, each with a subagent that had no knowledge of this
 project, building a real page from the exported skill folder alone. All three succeeded, and every
 critique found genuine defects — see CHANGELOG for the full list.
 
@@ -41,6 +41,10 @@ critique found genuine defects — see CHANGELOG for the full list.
 3. **Settings page** — found the deepest ones: every status border sitting at Lc 0, a contrast claim
    that counted only half its warnings, supporting text failing on raised surfaces, and status
    colours with no hover state at all.
+4. **Plans/upgrade page**, briefed to hit the newest rules — confirmed the brand-band guidance
+   ("impossible to get wrong") and found that focus was invisible on a brand field, that four type
+   roles shipped no `letter-spacing` so the documented pattern failed silently, and that the
+   contrast claim still over-reached.
 
 Runs 2 and 3 independently recomputed every token hex from the OKLCH sources in `tokens.css` and
 confirmed the doc tables and the shared-value list are exact, with no drift.

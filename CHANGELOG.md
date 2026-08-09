@@ -53,6 +53,25 @@ Keep-a-Changelog style. Newest first.
 - `migrateConfig` — a loaded brand is merged over a complete default block by block, so adding a
   field to `BrandConfig` no longer crashes every file written before it existed.
 
+### Fixed — 2026-08-09 (fourth acceptance run)
+
+- **Focus was invisible on a brand field.** `--ring` and `--primary` are the same value in light
+  mode, so the mandated `outline: 2px solid var(--ring)` measured Lc 0 on exactly the section the
+  docs flag as dangerous. The on-brand rule now covers the ring.
+- **Four of nine type roles shipped no `letter-spacing`**, so copying the documented
+  four-property pattern produced `letter-spacing: var(--undefined)` — invalid, dropped silently.
+  Every role emits it now, `normal` when unset.
+- The contrast claim still over-reached: `--border-subtle` and `--foreground-tertiary` are defined
+  as below the visible threshold and are never validated. The section now names what is checked and
+  what is exempt, and defines "large text", which two thresholds depended on.
+- The concentric rule contradicted itself on buttons — a full-width control is flush and follows
+  the formula; an auto-width one keeps its radius.
+- Copy on a brand field is limited to `body-lg` and up; `--primary-foreground` is validated as a
+  label colour and nothing smaller passes there.
+- `tokens.css` warns that `--color-*` exists only inside the `@theme` block.
+- Declared four more gaps rather than leaving them to be discovered: card emphasis, a scrim, a
+  wordmark treatment, and the hover wash reading as a darkening on raised surfaces in dark.
+
 ### Fixed — 2026-08-08 (second acceptance run)
 
 - **Every status border was invisible.** `--{status}-border` sat one step from `--{status}-subtle`,
