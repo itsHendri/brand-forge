@@ -13,9 +13,8 @@ Full token tables, component recipes and wrong/right pairs live in
 
 ## Before you write a line
 
-1. Check that `tokens.css` is imported. Dark mode is `data-theme="dark"` on `<html>`; light is
-   either `data-theme="light"` or no attribute at all — both are defined, so a toggle can write
-   either value or remove it.
+1. Check that `tokens.css` is imported. Dark mode is `data-theme="dark"` on `<html>`; light is either `data-theme="light"` or no
+   attribute at all — both are defined, so a toggle can write either value or remove it.
 2. Work out which semantic tokens the thing you're building needs. If you cannot name them, you do
    not understand the component yet.
 3. If no semantic token fits, **say so and stop**. Do not reach for a primitive or invent a hex.
@@ -36,6 +35,10 @@ Full token tables, component recipes and wrong/right pairs live in
 6. **On a solid fill, use its paired `-foreground`.** `--primary` takes
    `--primary-foreground`; `--danger` takes `--danger-foreground`. The polarity differs between
    fills on purpose — some are light, some dark. Do not unify them.
+   **This extends to everything inside that fill**, not just the label: a button on a `--primary`
+   band takes `--primary-foreground` for its text *and* its border, because `--foreground` is
+   dark ink and unreadable there. Never soften the result with `opacity` — the pair was
+   contrast-checked at full strength.
 7. **Status is success, warning, danger, info** — not `destructive`. A banner is
    `--<status>-subtle` + `--<status>-subtle-foreground` + `--<status>-border`, and so is a
    badge. The solid `--<status>` is for things that act or plot — buttons, status dots, chart

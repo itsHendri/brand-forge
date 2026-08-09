@@ -10,6 +10,7 @@ The voice is considered, warm, precise, unfussy. Let that show in copy and restr
 - **This is not shadcn's token set.** These common names do not exist here: `card` → `surface`, `card-foreground` → `foreground`, `popover` → `surface-raised`, `popover-foreground` → `foreground`, `accent` → `state-hover`, `accent-foreground` → `foreground`, `destructive` → `danger`, `destructive-foreground` → `danger-foreground`. Using one produces an unstyled element, silently.
 - **Dark mode is an attribute, not a media query.** Every token re-points under `[data-theme="dark"]`. Set that attribute on `<html>`; do not write `dark:` variants of colour utilities — the token already changed.
 - **Never use a primitive (`--primary-600`) in a component.** Primitives exist so a human can tune the ramp. Components and generated code use semantics only. If no semantic fits, say so rather than reaching past the layer.
+- **On a coloured fill, the neutral text tokens are wrong.** Inside a `--primary` band or a solid status banner, text and controls take that fill's own `-foreground` — for text *and* border. `--foreground` is dark ink and is unreadable there. Full-bleed call-to-action sections are where this bites.
 - **Radius is derived from one base of 10px**, not from Tailwind's defaults: `--radius-sm` 5px, `--radius-md` 10px, `--radius-lg` 15px, `--radius-xl` 20px.
 - **Breakpoints are a closed set and mobile-first only:** 640px (`sm`), 768px (`md`), 1024px (`lg`), 1280px (`xl`). Any other number is not a breakpoint, and there are no `max-width` breakpoints. `var(--breakpoint-*)` does not work inside a media query — write the pixel value.
 - **No content spans the viewport.** Every region's *content* sits in a `--container-*`, centred with `margin-inline: auto`, and running text takes `--container-prose` even inside a wider frame. Backgrounds and borders may still go full-bleed — a sticky top bar or a footer rule spans the window while the things inside it stay contained. A full-bleed paragraph is a bug; a full-bleed background is not.
@@ -139,6 +140,24 @@ Families: `--font-sans` is `"Geist", ui-sans-serif, system-ui, -apple-system, "S
 ```html
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 ```
+
+## Brand assets
+
+### Logo
+
+**No mark is defined.** Set the brand name in type rather than inventing a logo, and say that you
+did.
+
+### Typefaces
+
+No font files ship with this system. The faces are hosted, and `<head>` needs:
+
+```html
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+```
+
+Without them the named families only render where they happen to be installed already, and
+everything else falls back to the system stack.
 
 ## Layout — breakpoints and containers
 
@@ -270,7 +289,31 @@ minimum; on touch, raise it to 44px or extend the hit area with a pseudo-element
 **Button (outline)** — `background: transparent`, `color: var(--foreground)`,
 `border: 1px solid var(--input)`. Transparent, not `--surface`: an outline button sits inside
 cards as often as on the page, and a fixed fill makes it vanish against whichever one it didn't
-expect. Hover fills with `--state-hover`.
+expect. Hover fills with `--state-hover`. **This recipe assumes a neutral ground** — see below for
+what to do on a brand field.
+
+**Anything on a brand field.** A full-bleed `--primary` band, a solid status banner, a filled card:
+inside one, the neutral text tokens are wrong. `--foreground` is dark ink, and dark ink on a dark
+brand colour is unreadable. The rule is that **a control or a piece of text sitting on a fill takes
+that fill's own `-foreground` — for its text and its border both**:
+
+```css
+.brand-band { background: var(--primary); color: var(--primary-foreground); }
+
+/* ✅ a button on that band */
+.brand-band .button {
+    background: transparent;
+    color: var(--primary-foreground);
+    border: 1px solid var(--primary-foreground);
+}
+
+/* ❌ the outline recipe, unchanged — dark ink on dark indigo */
+.brand-band .button { color: var(--foreground); border-color: var(--input); }
+```
+
+The same holds for `--danger`, `--success` and the rest. And do not fade the result with
+`opacity` to soften it: that pair was contrast-checked at full strength, and dimming it is how a
+validated colour quietly stops being valid.
 
 **Card** — `background: var(--surface)`, `border: 1px solid var(--border)`,
 `border-radius: var(--radius-lg)` (15px), `padding: var(--space-6)`. **No shadow**: the

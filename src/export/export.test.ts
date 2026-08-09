@@ -153,6 +153,63 @@ describe("assets", () => {
     })
 })
 
+describe("assets in the docs", () => {
+    const branded = structuredClone(hendriPreset)
+    branded.meta.logoSvg = '<svg viewBox="0 0 10 10"><path fill="#574cff" d="M0 0h10v10H0z"/></svg>'
+    branded.typography.fontFiles = [
+        { fileName: "Geist-Regular.woff2", family: "sans", weight: 400, style: "normal" },
+    ]
+    const md = fileAt2(resolveTokens(branded), "DESIGN_SYSTEM.md")
+    const skill = fileAt2(resolveTokens(branded), "SKILL.md")
+
+    it("tells an agent the mark exists and how to colour it", () => {
+        expect(md).toContain("### Logo")
+        expect(md).toContain("currentColor")
+        expect(skill).toContain("brand mark is inline SVG")
+    })
+
+    it("lists the font files and warns about moving them", () => {
+        expect(md).toContain("`assets/Geist-Regular.woff2`")
+        expect(md).toContain("first family in each stack")
+        expect(skill).toContain("`assets/` sits beside it")
+    })
+
+    it("says something useful when a brand has no assets at all", () => {
+        // The empty branch has to give an instruction, not go silent.
+        const bare = fileAt("DESIGN_SYSTEM.md")
+        expect(bare).toContain("**No mark is defined.**")
+        expect(bare).toMatch(/No font files ship|No font files and no hosted links/)
+    })
+
+    it("does not tell an agent to add a <link> when the fonts already ship", () => {
+        expect(md).toContain("there is no separate `<link>` to add")
+    })
+})
+
+describe("the on-brand rule", () => {
+    const md = fileAt("DESIGN_SYSTEM.md")
+    const skill = fileAt("SKILL.md")
+
+    it("appears in the deviations, because it is a trap rather than a gap", () => {
+        const deviations = md.slice(md.indexOf("🚨"), md.indexOf("## How the layers work"))
+        expect(deviations).toContain("On a coloured fill, the neutral text tokens are wrong")
+    })
+
+    it("gives the composition rule for text AND border", () => {
+        expect(md).toContain("for its text and its border both")
+        expect(md).toContain("border: 1px solid var(--primary-foreground)")
+    })
+
+    it("marks the outline recipe as assuming a neutral ground", () => {
+        expect(md).toContain("This recipe assumes a neutral ground")
+    })
+
+    it("forbids dimming a contrast-checked pair with opacity", () => {
+        expect(md).toContain("do not fade the result with")
+        expect(skill).toContain("Never soften the result with `opacity`")
+    })
+})
+
 describe("DESIGN_SYSTEM.md", () => {
     const md = fileAt("DESIGN_SYSTEM.md")
 

@@ -10,6 +10,7 @@
 
 import { spaceName } from "../engine/defaults"
 import type { ResolvedTokens, SemanticGroup } from "../engine/types"
+import { primaryFamily } from "./css"
 
 /** shadcn's vocabulary, which is what a model reaches for unprompted. */
 const SHADCN_NAMES = [
@@ -87,6 +88,10 @@ function deviations(resolved: ResolvedTokens): string[] {
 
     out.push(
         `**Never use a primitive (\`--${resolved.scales.primary?.role ?? "primary"}-600\`) in a component.** Primitives exist so a human can tune the ramp. Components and generated code use semantics only. If no semantic fits, say so rather than reaching past the layer.`,
+    )
+
+    out.push(
+        `**On a coloured fill, the neutral text tokens are wrong.** Inside a \`--primary\` band or a solid status banner, text and controls take that fill's own \`-foreground\` — for text *and* border. \`--foreground\` is dark ink and is unreadable there. Full-bleed call-to-action sections are where this bites.`,
     )
 
     if (config.radius.basePx !== 8) {
@@ -181,7 +186,31 @@ minimum; on touch, raise it to 44px or extend the hit area with a pseudo-element
 **Button (outline)** — \`background: transparent\`, \`color: var(--foreground)\`,
 \`border: 1px solid var(--input)\`. Transparent, not \`--surface\`: an outline button sits inside
 cards as often as on the page, and a fixed fill makes it vanish against whichever one it didn't
-expect. Hover fills with \`--state-hover\`.
+expect. Hover fills with \`--state-hover\`. **This recipe assumes a neutral ground** — see below for
+what to do on a brand field.
+
+**Anything on a brand field.** A full-bleed \`--primary\` band, a solid status banner, a filled card:
+inside one, the neutral text tokens are wrong. \`--foreground\` is dark ink, and dark ink on a dark
+brand colour is unreadable. The rule is that **a control or a piece of text sitting on a fill takes
+that fill's own \`-foreground\` — for its text and its border both**:
+
+\`\`\`css
+.brand-band { background: var(--primary); color: var(--primary-foreground); }
+
+/* ✅ a button on that band */
+.brand-band .button {
+    background: transparent;
+    color: var(--primary-foreground);
+    border: 1px solid var(--primary-foreground);
+}
+
+/* ❌ the outline recipe, unchanged — dark ink on dark indigo */
+.brand-band .button { color: var(--foreground); border-color: var(--input); }
+\`\`\`
+
+The same holds for \`--danger\`, \`--success\` and the rest. And do not fade the result with
+\`opacity\` to soften it: that pair was contrast-checked at full strength, and dimming it is how a
+validated colour quietly stops being valid.
 
 **Card** — \`background: var(--surface)\`, \`border: 1px solid var(--border)\`,
 \`border-radius: var(--radius-lg)\` (${r.lg}px), \`padding: var(--space-6)\`. **No shadow**: the
@@ -331,6 +360,92 @@ part of the system:
 - **Touch-target switching.** The craft rules ask for 44px on touch, but the breakpoint set is
   width-based and CSS cannot detect touch from it. Pick a rule and state it.`
 
+/**
+ * The mark and the typeface files. Neither was documented at all, which meant an
+ * agent handed the export could not tell that a logo existed.
+ */
+function assetsSection(resolved: ResolvedTokens): string {
+    const { meta, typography } = resolved.config
+    const fonts = typography.fontFiles ?? []
+    const parts: string[] = []
+
+    if (meta.logoSvg) {
+        parts.push(`### Logo
+
+The mark ships as **inline SVG inside \`brand.json\`** rather than as a file, and that is a
+functional choice, not a packaging one: inline means its fills can be set to \`currentColor\`, so one
+mark follows whatever text colour surrounds it and inverts in dark mode without a second asset.
+
+\`\`\`html
+<!-- ✅ inherits the surrounding ink; correct in both modes -->
+<span style="color: var(--foreground)">
+    <svg viewBox="…"><path fill="currentColor" d="…"/></svg>
+</span>
+\`\`\`
+
+Replace every explicit \`fill\` with \`currentColor\` when you place it. Do not hardcode the brand
+colour into the mark — on a \`--primary\` field it would disappear into its own background.`)
+    } else if (meta.logoFile) {
+        parts.push(`### Logo
+
+The mark is a raster file, \`assets/${meta.logoFile}\`, and ships in the export beside the
+stylesheet. It **cannot be recoloured**, so check it against \`--background\` in both modes before
+placing it on a dark surface, and never place it on a \`--primary\` field without checking.`)
+    } else {
+        parts.push(`### Logo
+
+**No mark is defined.** Set the brand name in type rather than inventing a logo, and say that you
+did.`)
+    }
+
+    if (fonts.length > 0) {
+        const families = [...new Set(fonts.map((font) => font.family))]
+        parts.push(`### Typefaces
+
+The font files ship in \`assets/\` and \`tokens.css\` already declares them — importing the
+stylesheet is all that is required, there is no separate \`<link>\` to add.
+
+${table(
+            ["File", "Family", "Weight", "Style"],
+            fonts.map((font) => [
+                `\`assets/${font.fileName}\``,
+                `\`--font-${font.family}\``,
+                String(font.weight),
+                font.style,
+            ]),
+        )}
+
+The \`@font-face\` rules are named after the **first family in each stack** — ${families
+            .map((family) => `\`${primaryFamily(typography.families[family] ?? "")}\``)
+            .join(", ")} — not after the stack itself. If you regenerate those rules by hand, keep
+that: a face declared as \`"${primaryFamily(typography.families.sans)}", ui-sans-serif, …\` matches
+nothing and loads nothing, silently.
+
+Keep \`assets/\` next to \`tokens.css\`. The \`src\` URLs are relative, so moving one without the
+other leaves the page rendering in a fallback stack — which looks like a design decision rather
+than a missing file.`)
+    } else if ((typography.fontLinks ?? []).length > 0) {
+        parts.push(`### Typefaces
+
+No font files ship with this system. The faces are hosted, and \`<head>\` needs:
+
+\`\`\`html
+${(typography.fontLinks ?? []).map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}
+\`\`\`
+
+Without them the named families only render where they happen to be installed already, and
+everything else falls back to the system stack.`)
+    } else {
+        parts.push(`### Typefaces
+
+**No font files and no hosted links.** The families named above only render where they are already
+installed; everywhere else falls back to the system stack. Either load them yourself or treat the
+fallback as the design.`)
+    }
+
+    return parts.join("\n\n")
+}
+
 function layoutSection(resolved: ResolvedTokens): string {
     const { breakpoints, containers } = resolved.config.layout
     const smallest = breakpoints[0]
@@ -455,6 +570,10 @@ ${
             ? `**The faces have to be loaded or the stack silently falls back to system fonts.** Put this in \`<head>\`:\n\n\`\`\`html\n${config.typography.fontLinks.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}\n\`\`\``
             : `**No webfont source is declared**, so the named families only render where they are already installed. Everything else falls back to the system stack. Load them yourself, or say so.`
     }
+
+## Brand assets
+
+${assetsSection(resolved)}
 
 ## Layout — breakpoints and containers
 

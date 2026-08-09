@@ -6,14 +6,6 @@
  * Use the semantic names. Reach for a primitive only when no semantic fits.
  */
 
-@font-face {
-    font-family: "Geist";
-    src: url("./assets/Geist-Regular.woff2") format("woff2");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
 :root,
 [data-theme="light"] {
     --primary-50: oklch(98% 0.0095 280.95);
