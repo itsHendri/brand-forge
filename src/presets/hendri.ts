@@ -6,6 +6,8 @@
  */
 
 import {
+    DEFAULT_BREAKPOINTS,
+    DEFAULT_CONTAINERS,
     DEFAULT_MOTION,
     DEFAULT_POLISH,
     DEFAULT_SHADOWS,
@@ -68,6 +70,7 @@ export const hendriPreset: BrandConfig = {
         },
         roles: DEFAULT_TYPE_ROLES,
     },
+    layout: { breakpoints: DEFAULT_BREAKPOINTS, containers: DEFAULT_CONTAINERS },
     spacing: DEFAULT_SPACING,
     radius: { basePx: 10, concentric: true },
     shadows: DEFAULT_SHADOWS,

@@ -25,7 +25,22 @@ Keep-a-Changelog style. Newest first.
   padding slider, and a spacing editor that refuses off-grid values), Motion (playable durations and
   easings, enter and exit side by side), Rules (craft toggles wired to SKILL.md).
 
+- **Breakpoints and container widths** — the two largest gaps the acceptance test found. Four
+  mobile-first min-widths and four named max-widths, a Layout panel to edit them, a documented
+  layout section with the media-query trap spelled out, and DTCG output. The preview can be pinned
+  to any breakpoint, at its real width, so the responsive rules are visible rather than asserted.
+- `migrateConfig` — a loaded brand is merged over a complete default block by block, so adding a
+  field to `BrandConfig` no longer crashes every file written before it existed.
+
 ### Fixed — 2026-08-08
+
+- **Tailwind's `lg:` variants silently never applied.** The `@theme` block emitted
+  `--breakpoint-lg: var(--breakpoint-lg)`, which Tailwind compiles into
+  `@media (width >= var(--breakpoint-lg))` — invalid CSS, dropped without a warning. Breakpoints now
+  ship as literal values. Found by compiling the exported stylesheet with a real Tailwind v4 build;
+  the docs had warned about this exact trap while the export walked into it.
+- **The preview hardcoded a `980px` page width** — the same invented value the acceptance test
+  complained about. It now uses `--container-page`, and its intro copy uses `--container-prose`.
 
 Found by the acceptance test (a subagent building from the exported docs alone):
 

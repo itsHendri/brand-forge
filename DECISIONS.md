@@ -77,7 +77,41 @@ and its own chroma bell. Naive inversion of a light scale produces neon accents 
 because dark grounds amplify perceived saturation. Elevation follows the same logic: light mode uses
 layered shadows, dark mode uses a hairline ring plus a lighter surface.
 
-### 10. Scope deliberately refused — 2026-08-08
+### 10. Breakpoints are mobile-first only, and a closed set — 2026-08-08
+
+Four min-widths (640/768/1024/1280) using the industry-standard names, so they cost nothing to learn
+and interoperate with Tailwind for free. No `max-width` breakpoints: a system carrying both
+directions has two sources of truth for the same layout and they drift. No `xs` either — the
+narrowest case is the base styles, not a breakpoint.
+
+Breakpoints ship as tokens even though CSS cannot read a custom property inside a media query. They
+exist to state the legitimate set once, and to feed Tailwind's `--breakpoint-*` namespace.
+
+**In the `@theme` block they must be literal values, never `var()`.** Tailwind compiles its variants
+into `@media` rules, so `--breakpoint-lg: var(--breakpoint-lg)` becomes
+`@media (width >= var(--breakpoint-lg))` — invalid CSS, and every `lg:` utility silently stops
+applying. Found by compiling the exported stylesheet with a real Tailwind v4 build rather than
+reasoning about it; a test now pins the literal form. Colour tokens keep the `var()` form because
+they have to re-point per mode and are never used in a media query.
+
+### 11. Containers are named for the job, and nothing spans the viewport — 2026-08-08
+
+`prose` (42rem) is the load-bearing one: running text at laptop width is unreadable regardless of
+how good the type is, so body copy takes it even inside a wider `page` frame. Nesting the two is the
+normal case, not an exception.
+
+This closes the largest gap the acceptance test found — the previous system defined neither, so
+every page invented its own max-widths and its own breakpoints. The preview's own ComponentsSheet
+was guilty of it too, with a hardcoded `980px`.
+
+### 12. A loaded brand is merged over defaults, never trusted as-is — 2026-08-08
+
+Adding `layout` to `BrandConfig` hard-crashed every brand file written before it existed —
+`config.layout.breakpoints` on undefined, at first render. `migrateConfig` now merges a loaded file
+over a complete default block by block, and logs which blocks it filled rather than doing it
+silently. Migrate on read, persist on write: the file on disk stays as it was until the next edit.
+
+### 13. Scope deliberately refused — 2026-08-08
 
 Not in v1, and not by accident: component tokens (see #2), Figma sync, font-file management (type
 families are CSS stacks plus an optional `<link>`), per-brand preview content, and hosting/auth.

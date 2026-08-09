@@ -17,10 +17,7 @@ is needed. Every panel mutates through `useStore().patch()`, which keeps autosav
 A subagent built a page from the exported docs and listed what it had to invent. The docs now
 *declare* these gaps honestly, but declaring is not solving:
 
-- **Breakpoints.** The highest-value missing thing. A three-column layout is responsive by
-  definition, and the system says nothing. Needs a `breakpoints` block in `BrandConfig` and a
-  section in the docs.
-- **Container widths / measure.** Page max-width and paragraph measure. Everyone invents both.
+- ~~**Breakpoints**~~ and ~~**container widths**~~ — done. See `DECISIONS.md` #10 and #11.
 - **Icon box size.** The craft rules specify stroke weight to a fraction of a pixel and never the box.
 - **Link colour in body copy.** `--primary` is documented as a fill; there is no `--link`.
 - **Standalone font weights**, **opacity**, **z-index**, **blur** — not modelled at all.
@@ -32,12 +29,16 @@ A subagent built a page from the exported docs and listed what it had to invent.
 - **Saved brands don't pick up improved defaults.** `brands/*.json` stores the resolved semantic
   mapping, so when `defaultSemanticMapping` gets smarter, existing files keep the old wiring. That's
   correct for user edits and wrong for untouched defaults. Needs either a "regenerate defaults"
-  action or a flag marking which tokens a human actually touched. During this session the workaround
-  was deleting `brands/hendri.json` and letting it rebuild.
-- **`zod` and `client-zip` are in the plan but not installed.** Config loading is currently an
-  unchecked cast in `persistence.ts`; a malformed file will fail confusingly. The download path
-  writes one file at a time instead of a zip.
-- **No schema migration yet**, though `$schemaVersion` exists and is written.
+  action or a flag marking which tokens a human actually touched. The workaround is deleting
+  `brands/<slug>.json` and letting it rebuild. (Distinct from the *missing-block* case, which
+  `migrateConfig` now handles.)
+- **A stray click can write a real edit.** The colour swatches are `<input type="color">`, so an
+  accidental interaction autosaves a changed seed. It happened twice during browser automation this
+  session. Worth an undo stack, or at least a "revert to preset" action.
+- **`client-zip` is in the plan but not installed** — the download path writes one file at a time
+  instead of a zip.
+- **`migrateConfig` fills missing blocks but does not validate their contents.** A file with
+  `radius: "nonsense"` still gets through. `zod` was planned for this and isn't installed yet.
 - **Preview contexts are `style={{}}` objects, not CSS**, which is fine for now but will not
   translate directly to the static guideline page (Phase 6) — it needs real stylesheets.
 - **`DARK_LIFT` interacts with `pickFill` in a way worth revisiting.** The lift decides where the

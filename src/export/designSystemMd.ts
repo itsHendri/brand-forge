@@ -95,6 +95,17 @@ function deviations(resolved: ResolvedTokens): string[] {
         )
     }
 
+    const breakpointList = config.layout.breakpoints
+        .map((breakpoint) => `${breakpoint.minPx}px (\`${breakpoint.name}\`)`)
+        .join(", ")
+    out.push(
+        `**Breakpoints are a closed set and mobile-first only:** ${breakpointList}. Any other number is not a breakpoint, and there are no \`max-width\` breakpoints. \`var(--breakpoint-*)\` does not work inside a media query — write the pixel value.`,
+    )
+
+    out.push(
+        `**Nothing spans the viewport.** Every region sits in a \`--container-*\`, and running text takes \`--container-prose\` even inside a wider frame. A full-bleed paragraph is a bug.`,
+    )
+
     const blessed = config.spacing.blessed
     out.push(
         `**Spacing is a blessed subset, not every multiple of ${config.spacing.basePx}.** Only ${blessed.map((px) => `\`--space-${spaceName(px, config.spacing.basePx)}\` (${px}px)`).join(", ")} exist. A value between two of them is a bug, not a refinement.`,
@@ -274,12 +285,71 @@ const NOT_DEFINED = `The system stops here on purpose. These have **no tokens**,
 pick a value, keep it consistent within the file you're writing, and flag it — do not present it as
 part of the system:
 
-- **Breakpoints.** No responsive scale is defined. A multi-column layout needs one and will be your invention.
-- **Container widths / measure.** No max-width for a page or a paragraph.
 - **Icon box size.** The icon *stroke* is specified (see the craft rules); the box is not.
 - **Link colour in body copy.** \`--primary\` is documented as a fill. There is no \`--link\`.
 - **Font weights as standalone tokens.** Weight arrives with a type role and nothing else.
 - **Opacity, z-index, blur.** Not modelled at all.`
+
+function layoutSection(resolved: ResolvedTokens): string {
+    const { breakpoints, containers } = resolved.config.layout
+    const smallest = breakpoints[0]
+    const widest = [...containers].sort((a, b) => b.maxRem - a.maxRem)[0]
+
+    return `The system is **mobile-first**. Base styles are the narrowest case, and every breakpoint is
+an upgrade written as \`min-width\`. There are no \`max-width\` breakpoints: a system with both
+directions has two sources of truth for the same layout, and they drift.
+
+${table(
+        ["Token", "Min width", "What changes here"],
+        breakpoints.map((breakpoint) => [
+            `\`--breakpoint-${breakpoint.name}\``,
+            `${breakpoint.minPx}px`,
+            breakpoint.note,
+        ]),
+    )}
+
+CSS cannot read a custom property inside a media query, so **write the pixel value literally** and
+treat the table above as the source of truth for which values are legitimate:
+
+\`\`\`css
+/* ✅ a breakpoint from the set */
+@media (min-width: ${smallest?.minPx ?? 640}px) { … }
+
+/* ❌ a number nobody agreed to */
+@media (min-width: 900px) { … }
+
+/* ❌ var() does not resolve here — the rule is silently ignored */
+@media (min-width: var(--breakpoint-${smallest?.name ?? "sm"})) { … }
+\`\`\`
+
+If you use Tailwind, these are already its variants (\`md:\`, \`lg:\`) — the \`@theme\` block in
+\`tokens.css\` defines them, so no config file is needed.
+
+### Containers
+
+Nothing spans the viewport. Every region sits in one of these, centred with \`margin-inline: auto\`.
+
+${table(
+        ["Token", "Max width", "Use it for"],
+        containers.map((container) => [
+            `\`--container-${container.name}\``,
+            `${container.maxRem}rem (${container.maxRem * 16}px)`,
+            container.note,
+        ]),
+    )}
+
+**\`--container-prose\` is the one that gets skipped.** Running text set to the full width of a
+laptop is unreadable regardless of how good the type is, so body copy takes \`prose\` even when it
+sits inside a wider \`page\` frame. Nesting the two is normal:
+
+\`\`\`css
+.page { max-width: var(--container-page); margin-inline: auto; padding-inline: var(--space-6); }
+.page > p { max-width: var(--container-prose); }
+\`\`\`
+
+Note that \`--container-${widest?.name ?? "wide"}\` (${widest?.maxRem ?? 90}rem) is wider than the
+\`xl\` breakpoint, so it only has an effect on genuinely large displays.`
+}
 
 export function toDesignSystemMd(resolved: ResolvedTokens): string {
     const { config } = resolved
@@ -338,6 +408,10 @@ ${table(["Token", "Size", "Line height", "Weight", "Tracking"], typeRows)}
 
 Families: \`--font-sans\` is \`${config.typography.families.sans}\`, \`--font-mono\` is
 \`${config.typography.families.mono}\`.
+
+## Layout — breakpoints and containers
+
+${layoutSection(resolved)}
 
 ## Space, radius, elevation
 

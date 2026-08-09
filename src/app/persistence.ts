@@ -4,6 +4,7 @@
  * every change has a git history.
  */
 
+import { migrateConfig } from "../engine/schema"
 import type { BrandConfig } from "../engine/types"
 
 export async function listBrands(): Promise<string[]> {
@@ -12,11 +13,17 @@ export async function listBrands(): Promise<string[]> {
     return response.json()
 }
 
-export async function loadBrand(slug: string): Promise<BrandConfig | null> {
+export async function loadBrand(slug: string, defaults: BrandConfig): Promise<BrandConfig | null> {
     const response = await fetch(`/api/brands/${slug}`)
     if (!response.ok) return null
     try {
-        return (await response.json()) as BrandConfig
+        const { config, filled } = migrateConfig(await response.json(), defaults)
+        if (filled.length > 0) {
+            // Worth saying out loud: the file on disk is older than the schema,
+            // and the next autosave will rewrite it with these blocks included.
+            console.info(`[brand-forge] ${slug}: filled missing blocks from defaults — ${filled.join(", ")}`)
+        }
+        return config
     } catch {
         return null
     }

@@ -11,6 +11,8 @@ The voice is considered, warm, precise, unfussy. Let that show in copy and restr
 - **Dark mode is an attribute, not a media query.** Every token re-points under `[data-theme="dark"]`. Set that attribute on `<html>`; do not write `dark:` variants of colour utilities — the token already changed.
 - **Never use a primitive (`--primary-600`) in a component.** Primitives exist so a human can tune the ramp. Components and generated code use semantics only. If no semantic fits, say so rather than reaching past the layer.
 - **Radius is derived from one base of 10px**, not from Tailwind's defaults: `--radius-sm` 5px, `--radius-md` 10px, `--radius-lg` 15px, `--radius-xl` 20px.
+- **Breakpoints are a closed set and mobile-first only:** 640px (`sm`), 768px (`md`), 1024px (`lg`), 1280px (`xl`). Any other number is not a breakpoint, and there are no `max-width` breakpoints. `var(--breakpoint-*)` does not work inside a media query — write the pixel value.
+- **Nothing spans the viewport.** Every region sits in a `--container-*`, and running text takes `--container-prose` even inside a wider frame. A full-bleed paragraph is a bug.
 - **Spacing is a blessed subset, not every multiple of 4.** Only `--space-1` (4px), `--space-2` (8px), `--space-3` (12px), `--space-4` (16px), `--space-6` (24px), `--space-8` (32px), `--space-12` (48px), `--space-16` (64px), `--space-24` (96px) exist. A value between two of them is a bug, not a refinement.
 - **Type roles are named for their job**, never `h1`/`h2`/`text-2xl`: `--text-display`, `--text-heading-lg`, `--text-heading`, `--text-heading-sm`, `--text-body-lg`, `--text-body`, `--text-body-sm`, `--text-label`, `--text-code`. Heading level is semantics for the document outline; size comes from the role token.
 - **Labels on solid fills come from the neutral ramp**, not from the fill's own scale, and their polarity was chosen by measuring contrast. `--warning-foreground` may be dark while `--primary-foreground` is light. Do not "correct" this to a single colour.
@@ -123,6 +125,59 @@ re-points itself in dark mode. This is the whole API.
 
 Families: `--font-sans` is `"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif`, `--font-mono` is
 `"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace`.
+
+## Layout — breakpoints and containers
+
+The system is **mobile-first**. Base styles are the narrowest case, and every breakpoint is
+an upgrade written as `min-width`. There are no `max-width` breakpoints: a system with both
+directions has two sources of truth for the same layout, and they drift.
+
+| Token | Min width | What changes here |
+| --- | --- | --- |
+| `--breakpoint-sm` | 640px | Large phones in portrait. Rarely a layout change on its own. |
+| `--breakpoint-md` | 768px | Tablet. Side-by-side content becomes possible; nav can unfold. |
+| `--breakpoint-lg` | 1024px | Laptop. Multi-column layouts and persistent sidebars. |
+| `--breakpoint-xl` | 1280px | Desktop. Wider gutters, more columns — rarely bigger type. |
+
+CSS cannot read a custom property inside a media query, so **write the pixel value literally** and
+treat the table above as the source of truth for which values are legitimate:
+
+```css
+/* ✅ a breakpoint from the set */
+@media (min-width: 640px) { … }
+
+/* ❌ a number nobody agreed to */
+@media (min-width: 900px) { … }
+
+/* ❌ var() does not resolve here — the rule is silently ignored */
+@media (min-width: var(--breakpoint-sm)) { … }
+```
+
+If you use Tailwind, these are already its variants (`md:`, `lg:`) — the `@theme` block in
+`tokens.css` defines them, so no config file is needed.
+
+### Containers
+
+Nothing spans the viewport. Every region sits in one of these, centred with `margin-inline: auto`.
+
+| Token | Max width | Use it for |
+| --- | --- | --- |
+| `--container-prose` | 42rem (672px) | Running text. ~70 characters at body size — the readable measure. |
+| `--container-narrow` | 30rem (480px) | Forms, dialogs, sign-in — anything with one column of controls. |
+| `--container-page` | 72rem (1152px) | The default page frame. Most layouts live here. |
+| `--container-wide` | 90rem (1440px) | Dashboards and tables that genuinely need the room. |
+
+**`--container-prose` is the one that gets skipped.** Running text set to the full width of a
+laptop is unreadable regardless of how good the type is, so body copy takes `prose` even when it
+sits inside a wider `page` frame. Nesting the two is normal:
+
+```css
+.page { max-width: var(--container-page); margin-inline: auto; padding-inline: var(--space-6); }
+.page > p { max-width: var(--container-prose); }
+```
+
+Note that `--container-wide` (90rem) is wider than the
+`xl` breakpoint, so it only has an effect on genuinely large displays.
 
 ## Space, radius, elevation
 
@@ -291,8 +346,6 @@ The system stops here on purpose. These have **no tokens**, so if you need one,
 pick a value, keep it consistent within the file you're writing, and flag it — do not present it as
 part of the system:
 
-- **Breakpoints.** No responsive scale is defined. A multi-column layout needs one and will be your invention.
-- **Container widths / measure.** No max-width for a page or a paragraph.
 - **Icon box size.** The icon *stroke* is specified (see the craft rules); the box is not.
 - **Link colour in body copy.** `--primary` is documented as a fill. There is no `--link`.
 - **Font weights as standalone tokens.** Weight arrives with a type role and nothing else.

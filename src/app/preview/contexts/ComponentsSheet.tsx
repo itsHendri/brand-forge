@@ -65,7 +65,13 @@ const STATUSES = ["success", "warning", "danger", "info"] as const
 
 export function ComponentsSheet() {
     return (
-        <div style={{ padding: "var(--space-12)", maxWidth: "980px", margin: "0 auto" }}>
+        <div
+            style={{
+                padding: "var(--space-12) var(--space-6)",
+                maxWidth: "var(--container-page)",
+                marginInline: "auto",
+            }}
+        >
             <header style={{ marginBottom: "var(--space-12)" }}>
                 <h1
                     style={{
@@ -83,7 +89,11 @@ export function ComponentsSheet() {
                         fontSize: "var(--text-body-lg)",
                         lineHeight: "var(--text-body-lg--line-height)",
                         color: "var(--foreground-secondary)",
+                        // Running text stays at the readable measure even though
+                        // the page frame around it is wider.
+                        maxWidth: "var(--container-prose)",
                         margin: 0,
+                        textWrap: "pretty",
                     }}
                 >
                     Every surface, state and status the system defines — rendered from the same
@@ -188,7 +198,15 @@ export function ComponentsSheet() {
             </Section>
 
             <Section title="Surfaces">
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--space-4)" }}>
+                {/* auto-fit reflows without a query, so pinning the canvas width
+                    genuinely exercises the layout rather than just cropping it. */}
+                <div
+                    style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                        gap: "var(--space-4)",
+                    }}
+                >
                     {[
                         { name: "background", label: "Page", token: "var(--background)" },
                         { name: "surface", label: "Card", token: "var(--surface)" },

@@ -94,6 +94,25 @@ export interface ShadowLevel {
     layers: string[]
 }
 
+/**
+ * A min-width where the layout is allowed to change. Mobile-first: the base
+ * styles are the narrowest case and every breakpoint is an upgrade, which is why
+ * there is no `max` — a system with both directions has two sources of truth.
+ */
+export interface Breakpoint {
+    name: string
+    minPx: number
+    /** What actually changes here. A breakpoint without a reason is a guess. */
+    note: string
+}
+
+/** A max-width. Named for the job it does, like everything else in the system. */
+export interface Container {
+    name: string
+    maxRem: number
+    note: string
+}
+
 export interface BrandMeta {
     id: string
     name: string
@@ -121,6 +140,7 @@ export interface BrandConfig {
         fontLinks?: string[]
         roles: TypeRole[]
     }
+    layout: { breakpoints: Breakpoint[]; containers: Container[] }
     spacing: { basePx: number; blessed: number[] }
     radius: { basePx: number; concentric: boolean; steps?: Partial<Record<RadiusStep, number>> }
     shadows: { levels: ShadowLevel[] }

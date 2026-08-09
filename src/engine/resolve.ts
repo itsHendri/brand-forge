@@ -170,6 +170,17 @@ function buildDeclarations(
         light.push([`--space-${spaceName(px, config.spacing.basePx)}`, `${px / 16}rem`])
     }
 
+    // Breakpoints ship as tokens even though CSS can't use a var() inside a
+    // media query. They exist so the set is stated once, and so Tailwind's
+    // `--breakpoint-*` namespace picks them up and generates the variants.
+    for (const breakpoint of config.layout.breakpoints) {
+        light.push([`--breakpoint-${breakpoint.name}`, `${breakpoint.minPx}px`])
+    }
+
+    for (const container of config.layout.containers) {
+        light.push([`--container-${container.name}`, `${container.maxRem}rem`])
+    }
+
     for (const [step, px] of Object.entries(radius)) {
         light.push([`--radius-${step}`, step === "full" ? "9999px" : `${px}px`])
     }

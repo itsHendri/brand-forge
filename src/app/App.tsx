@@ -3,6 +3,7 @@ import { resolveTokens } from "../engine/resolve"
 import { ExportDialog } from "./ExportDialog"
 import { BrandPanel } from "./panels/BrandPanel"
 import { ColorPanel } from "./panels/ColorPanel"
+import { LayoutPanel } from "./panels/LayoutPanel"
 import { MotionPanel } from "./panels/MotionPanel"
 import { RulesPanel } from "./panels/RulesPanel"
 import { SemanticsPanel } from "./panels/SemanticsPanel"
@@ -18,13 +19,15 @@ const PANELS: Array<{ id: PanelId; label: string }> = [
     { id: "color", label: "Colour" },
     { id: "semantics", label: "Semantics" },
     { id: "type", label: "Type" },
+    { id: "layout", label: "Layout" },
     { id: "shape", label: "Space & shape" },
     { id: "motion", label: "Motion" },
     { id: "rules", label: "Rules" },
 ]
 
 export function App() {
-    const { config, mode, panel, setMode, setPanel, saving, hydrate } = useStore()
+    const { config, mode, panel, setMode, setPanel, saving, hydrate, previewWidth, setPreviewWidth } =
+        useStore()
     const resolved = useMemo(() => resolveTokens(config), [config])
     const [showWarnings, setShowWarnings] = useState(false)
     const [showExport, setShowExport] = useState(false)
@@ -41,6 +44,31 @@ export function App() {
                 <span className="text-sm text-[var(--app-ink-soft)]">{config.meta.name}</span>
 
                 <div className="ml-auto flex items-center gap-3">
+                    {/* Pinning the canvas to a breakpoint is how the responsive
+                        rules stop being numbers in a doc and start being visible. */}
+                    <div className="flex overflow-hidden rounded-md border border-[var(--app-border)] text-xs">
+                        <button
+                            type="button"
+                            onClick={() => setPreviewWidth(null)}
+                            className={`px-2 py-1.5 ${previewWidth === null ? "bg-[var(--app-ink)] text-white" : ""}`}
+                        >
+                            Fill
+                        </button>
+                        {config.layout.breakpoints.map((breakpoint) => (
+                            <button
+                                key={breakpoint.name}
+                                type="button"
+                                title={`${breakpoint.minPx}px — ${breakpoint.note}`}
+                                onClick={() => setPreviewWidth(breakpoint.minPx)}
+                                className={`px-2 py-1.5 ${
+                                    previewWidth === breakpoint.minPx ? "bg-[var(--app-ink)] text-white" : ""
+                                }`}
+                            >
+                                {breakpoint.name}
+                            </button>
+                        ))}
+                    </div>
+
                     <span className="text-xs text-[var(--app-ink-soft)]">
                         {saving ? "Saving…" : "Saved"}
                     </span>
@@ -102,6 +130,7 @@ export function App() {
                     {panel === "color" && <ColorPanel resolved={resolved} />}
                     {panel === "semantics" && <SemanticsPanel resolved={resolved} />}
                     {panel === "type" && <TypePanel />}
+                    {panel === "layout" && <LayoutPanel />}
                     {panel === "shape" && <ShapePanel resolved={resolved} />}
                     {panel === "motion" && <MotionPanel />}
                     {panel === "rules" && <RulesPanel />}
@@ -109,7 +138,7 @@ export function App() {
             </aside>
 
             <main className="min-h-0 overflow-auto">
-                <PreviewCanvas resolved={resolved} mode={mode}>
+                <PreviewCanvas resolved={resolved} mode={mode} width={previewWidth}>
                     <ComponentsSheet />
                 </PreviewCanvas>
             </main>

@@ -3,7 +3,33 @@
  * brand-specific values. Brand config overrides these; they are never silent.
  */
 
-import type { BrandConfig, RadiusStep, TypeRole } from "./types"
+import type { BrandConfig, Breakpoint, Container, RadiusStep, TypeRole } from "./types"
+
+/**
+ * Mobile-first min-widths. The values are the industry-standard set — the ones
+ * Tailwind ships and every developer and model already has in their head — so
+ * they cost nothing to learn and interoperate for free.
+ *
+ * There is no `xs`: the narrowest case is the base styles, not a breakpoint.
+ */
+export const DEFAULT_BREAKPOINTS: Breakpoint[] = [
+    { name: "sm", minPx: 640, note: "Large phones in portrait. Rarely a layout change on its own." },
+    { name: "md", minPx: 768, note: "Tablet. Side-by-side content becomes possible; nav can unfold." },
+    { name: "lg", minPx: 1024, note: "Laptop. Multi-column layouts and persistent sidebars." },
+    { name: "xl", minPx: 1280, note: "Desktop. Wider gutters, more columns — rarely bigger type." },
+]
+
+/**
+ * Max-widths, named for the job. `prose` is the one people skip and shouldn't:
+ * a paragraph running the full width of a laptop is unreadable no matter how
+ * good the type is.
+ */
+export const DEFAULT_CONTAINERS: Container[] = [
+    { name: "prose", maxRem: 42, note: "Running text. ~70 characters at body size — the readable measure." },
+    { name: "narrow", maxRem: 30, note: "Forms, dialogs, sign-in — anything with one column of controls." },
+    { name: "page", maxRem: 72, note: "The default page frame. Most layouts live here." },
+    { name: "wide", maxRem: 90, note: "Dashboards and tables that genuinely need the room." },
+]
 
 /**
  * Radius derives from ONE knob. Set base to 0 and the whole system goes sharp;

@@ -4,7 +4,15 @@ import type { BrandConfig, Mode, ScaleRole, SemanticRef, Step } from "../engine/
 import { hendriPreset } from "../presets/hendri"
 import { loadBrand, saveBrand } from "./persistence"
 
-export type PanelId = "brand" | "color" | "semantics" | "type" | "shape" | "motion" | "rules"
+export type PanelId =
+    | "brand"
+    | "color"
+    | "semantics"
+    | "type"
+    | "layout"
+    | "shape"
+    | "motion"
+    | "rules"
 export type PreviewContextId = "components" | "dashboard" | "marketing" | "mobile"
 
 interface BrandForgeState {
@@ -16,6 +24,8 @@ interface BrandForgeState {
     editingScale: ScaleRole
     /** A semantic token to scroll to and flash — set by warning "jump to" links. */
     highlighted: string | null
+    /** Width the preview is pinned to, in px. null = fill the canvas. */
+    previewWidth: number | null
     saving: boolean
 
     setMode: (mode: Mode) => void
@@ -23,6 +33,7 @@ interface BrandForgeState {
     setContext: (context: PreviewContextId) => void
     setEditingScale: (role: ScaleRole) => void
     highlight: (token: string | null) => void
+    setPreviewWidth: (width: number | null) => void
 
     setSeed: (role: ScaleRole, seed: string) => void
     setScaleName: (role: ScaleRole, name: string) => void
@@ -56,6 +67,7 @@ export const useStore = create<BrandForgeState>((set, get) => {
         context: "components",
         editingScale: "primary",
         highlighted: null,
+        previewWidth: null,
         saving: false,
 
         setMode: (mode) => set({ mode }),
@@ -63,6 +75,7 @@ export const useStore = create<BrandForgeState>((set, get) => {
         setContext: (context) => set({ context }),
         setEditingScale: (editingScale) => set({ editingScale }),
         highlight: (highlighted) => set({ highlighted }),
+        setPreviewWidth: (previewWidth) => set({ previewWidth }),
 
         setSeed: (role, seed) =>
             commit((draft) => {
@@ -95,7 +108,7 @@ export const useStore = create<BrandForgeState>((set, get) => {
         patch: (update) => commit(update),
 
         hydrate: async () => {
-            const saved = await loadBrand(hendriPreset.meta.slug)
+            const saved = await loadBrand(hendriPreset.meta.slug, hendriPreset)
             if (saved) set({ config: saved })
             else await saveBrand(hendriPreset) // first run: write the preset to disk
         },

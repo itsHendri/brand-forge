@@ -31,16 +31,24 @@ function themeBlock(resolved: ResolvedTokens): string {
     for (const token of resolved.semantics) {
         lines.push(`    --color-${token.name}: var(--${token.name});`)
     }
-    for (const [name] of resolved.declarations.light) {
+    for (const [name, value] of resolved.declarations.light) {
         if (
             name.startsWith("--radius-") ||
             name.startsWith("--space-") ||
+            name.startsWith("--container-") ||
             name.startsWith("--shadow-") ||
             name.startsWith("--ease-") ||
             name.startsWith("--font-") ||
             name.startsWith("--text-")
         ) {
             lines.push(`    ${name}: var(${name});`)
+        } else if (name.startsWith("--breakpoint-")) {
+            // Literal, never `var()`. Tailwind builds its variants into
+            // `@media` rules, and a custom property does not resolve there —
+            // `@media (width >= var(--breakpoint-lg))` is invalid, so every
+            // `lg:` utility silently stops applying. Verified against a real
+            // Tailwind v4 build; this is the same trap the docs warn about.
+            lines.push(`    ${name}: ${value};`)
         }
     }
     return `@theme inline {\n${lines.join("\n")}\n}`

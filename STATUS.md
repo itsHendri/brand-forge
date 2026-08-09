@@ -2,7 +2,7 @@
 
 **Phases 0–4 done. Every value in the system is editable and exports correctly.**
 
-Session 1. 55 tests pass, typecheck clean, preview-colour lint clean.
+Session 1. 67 tests pass, typecheck clean, preview-colour lint clean.
 
 ## What works end to end
 
@@ -12,12 +12,13 @@ follow. That whole loop runs today.
 - **Engine.** `generateScale` (OKLCH ramps, shared lightness targets, chroma bell, hue rotation,
   gamut clamp, seed warping), `defaultSemanticMapping` (49 tokens chosen by measuring contrast, not
   by step index), `resolveTokens` (the one pipeline), `validateContrast` (APCA judges, WCAG reports).
-- **App** at `localhost:5300`: all seven panels — Brand (identity, voice, deviations), Colour
-  (seeds + per-step override), Semantics (re-point any token), Type (families + role table), Space &
-  shape (radius knob, live concentric demo, blessed-spacing editor that refuses off-grid values),
-  Motion (playable durations/easings), Rules (craft toggles that really do change SKILL.md) —
-  plus the live preview canvas, light/dark, contrast badge + warnings drawer with one-click fixes,
-  and an export dialog with a token-budget meter. Autosave writes `brands/hendri.json`.
+- **App** at `localhost:5300`: all eight panels — Brand (identity, voice, deviations), Colour
+  (seeds + per-step override), Semantics (re-point any token), Type (families + role table), Layout
+  (breakpoints + containers), Space & shape (radius knob, live concentric demo, blessed-spacing
+  editor that refuses off-grid values), Motion (playable durations/easings), Rules (craft toggles
+  that really do change SKILL.md) — plus the live preview canvas, a breakpoint selector that pins it
+  to a real width, light/dark, contrast badge + warnings drawer with one-click fixes, and an export
+  dialog with a token-budget meter. Autosave writes `brands/hendri.json`.
 - **Export** writes `exports/hendri/`: `skill/SKILL.md`, `skill/references/DESIGN_SYSTEM.md`,
   `tokens.css` (+ Tailwind v4 `@theme`), `tokens.json` (DTCG), `brand.json`.
 
@@ -39,8 +40,8 @@ washed button labels, and the `foreground-secondary` collision). See CHANGELOG.
    (`#40525e`), it renders almost identically to the neutral ramp — same hue family, both low
    chroma. hendri.design has no declared secondary brand colour. Pick one, or drop the slot.
 2. **Type families are placeholders** (Geist / Geist Mono), unconfirmed against the live site.
-3. **The system defines no breakpoints, container widths, icon sizes or link colour.** The docs now
-   say so explicitly rather than letting people guess, but that's a stopgap — see FUTURE.
+3. **Breakpoints and containers now exist** (four min-widths, four named max-widths). Icon box size
+   and a link colour are still undefined, and the docs say so explicitly — see FUTURE.
 
 ## Next
 

@@ -85,6 +85,29 @@ export function toDtcgJson(resolved: ResolvedTokens): string {
                 config.spacing.blessed.map((px) => [String(px / config.spacing.basePx), dimension(px)]),
             ),
         },
+        breakpoint: {
+            $type: "dimension",
+            $description: "Mobile-first min-widths. A closed set — no max-width breakpoints exist.",
+            ...Object.fromEntries(
+                config.layout.breakpoints.map((breakpoint) => [
+                    breakpoint.name,
+                    { ...dimension(breakpoint.minPx), $description: breakpoint.note },
+                ]),
+            ),
+        },
+        container: {
+            $type: "dimension",
+            $description: "Max-widths. Nothing spans the viewport; every region sits in one of these.",
+            ...Object.fromEntries(
+                config.layout.containers.map((container) => [
+                    container.name,
+                    {
+                        $value: { value: container.maxRem, unit: "rem" },
+                        $description: container.note,
+                    },
+                ]),
+            ),
+        },
         radius: {
             $type: "dimension",
             ...Object.fromEntries(

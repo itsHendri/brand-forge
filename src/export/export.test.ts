@@ -46,6 +46,27 @@ describe("tokens.css", () => {
         expect(css).toContain("@theme inline {")
         expect(css).toContain("--color-background: var(--background);")
         expect(css).toContain("--radius-md:")
+        // Tailwind's own namespaces, so `md:` variants and `max-w-page` work
+        // without a config file.
+        expect(css).toContain("--container-prose: var(--container-prose);")
+    })
+
+    it("gives Tailwind literal breakpoints, because var() dies in a media query", () => {
+        // `@theme inline { --breakpoint-lg: var(--breakpoint-lg) }` compiles to
+        // `@media (width >= var(--breakpoint-lg))`, which is invalid CSS — every
+        // `lg:` utility silently stops applying. Verified against a real build.
+        const theme = css.slice(css.indexOf("@theme inline"))
+        expect(theme).toContain("--breakpoint-lg: 1024px;")
+        expect(theme).not.toMatch(/--breakpoint-\w+: var\(/)
+    })
+
+    it("emits layout tokens once, in the mode-invariant block", () => {
+        const light = resolved.declarations.light.map(([name]) => name)
+        const dark = resolved.declarations.dark.map(([name]) => name)
+        expect(light).toContain("--breakpoint-lg")
+        expect(light).toContain("--container-page")
+        expect(dark).not.toContain("--breakpoint-lg")
+        expect(dark).not.toContain("--container-page")
     })
 
     it("shares its serialization with the live preview — no second code path", () => {
@@ -85,6 +106,39 @@ describe("DESIGN_SYSTEM.md", () => {
     it("gives exact component recipes rather than principles", () => {
         expect(md).toContain("background: var(--primary)")
         expect(md).toContain(`\`--radius-lg\` (${resolved.radius.lg}px)`)
+    })
+
+    describe("layout", () => {
+        it("states the breakpoints as a closed, mobile-first set", () => {
+            for (const breakpoint of hendriPreset.layout.breakpoints) {
+                expect(md).toContain(`\`--breakpoint-${breakpoint.name}\``)
+                expect(md).toContain(`${breakpoint.minPx}px`)
+                expect(md).toContain(breakpoint.note)
+            }
+            expect(md).toContain("mobile-first")
+            expect(md).toContain("no `max-width` breakpoints")
+        })
+
+        it("warns that var() does not resolve inside a media query", () => {
+            // The trap: the rule is dropped silently, so nothing looks broken
+            // until someone checks the layout at that width.
+            expect(md).toContain("@media (min-width: var(--breakpoint-sm))")
+            expect(md).toMatch(/silently ignored|does not work inside a media query/)
+        })
+
+        it("documents every container with the job it does", () => {
+            for (const container of hendriPreset.layout.containers) {
+                expect(md).toContain(`\`--container-${container.name}\``)
+                expect(md).toContain(container.note)
+            }
+            expect(md).toContain("--container-prose")
+        })
+
+        it("no longer lists layout among the things the system doesn't define", () => {
+            const section = md.slice(md.indexOf("## What this system does not define"))
+            expect(section).not.toMatch(/\*\*Breakpoints\.\*\*/)
+            expect(section).not.toMatch(/\*\*Container widths/)
+        })
     })
 
     it("shows wrong alongside right", () => {
@@ -127,6 +181,19 @@ describe("SKILL.md", () => {
         expect(skill.startsWith("---\n")).toBe(true)
         expect(skill).toContain("name: hendri-brand")
         expect(skill).toContain("description:")
+    })
+
+    it("carries the layout rules, including the media-query trap", () => {
+        expect(skill).toContain("Breakpoints are mobile-first and closed")
+        expect(skill).toContain("640px (`sm`)")
+        expect(skill).toContain("Nothing spans the viewport")
+        expect(skill).toContain("--container-prose")
+    })
+
+    it("numbers its hard rules without repeating or skipping", () => {
+        const numbers = [...skill.matchAll(/^(\d+)\. \*\*/gm)].map((match) => Number(match[1]))
+        const hardRules = numbers.slice(0, numbers.indexOf(1, 1) === -1 ? numbers.length : numbers.indexOf(1, 1))
+        expect(hardRules).toEqual(hardRules.map((_, i) => i + 1))
     })
 
     it("points at its own reference file", () => {

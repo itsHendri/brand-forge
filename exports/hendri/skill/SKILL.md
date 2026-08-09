@@ -44,13 +44,22 @@ Full token tables, component recipes and wrong/right pairs live in
    `:focus-visible`.
 10. **Spacing comes from the blessed subset only:**
     4px, 8px, 12px, 16px, 24px, 32px, 48px, 64px, 96px. Nothing between them.
-11. **Radius:** `--radius-sm` 5px, `--radius-md` 10px,
+11. **Breakpoints are mobile-first and closed:**
+    640px (`sm`), 768px (`md`), 1024px (`lg`), 1280px (`xl`). Write base
+    styles for the narrowest case and add `min-width` queries on top. Never a `max-width`
+    breakpoint, never a number outside this set, and never `var(--breakpoint-*)` inside a media
+    query — custom properties do not resolve there and the rule is dropped in silence.
+12. **Nothing spans the viewport.** Every region sits in a container, centred with
+    `margin-inline: auto`: `--container-prose` (42rem), `--container-narrow` (30rem), `--container-page` (72rem), `--container-wide` (90rem).
+    Running text takes `--container-prose` even inside a wider frame — a full-bleed paragraph is a
+    bug, not a stylistic choice.
+13. **Radius:** `--radius-sm` 5px, `--radius-md` 10px,
     `--radius-lg` 15px, `--radius-xl` 20px. A rounded box
     inside another uses `inner = outer − padding`, floored at 0.
-12. **Type is role-named.** Use `--text-body`, `--text-heading`, `--text-label` and friends.
+14. **Type is role-named.** Use `--text-body`, `--text-heading`, `--text-label` and friends.
     Heading *level* is about document outline; heading *size* is about the role token. Never size
     text with an arbitrary rem value.
-13. **Motion:** `--duration-fast` 150ms,
+15. **Motion:** `--duration-fast` 150ms,
     `--duration-base` 200ms, easing `--ease-out` for entrances.
     Exits are faster than entrances. Never `transition: all` — name the properties.
 
