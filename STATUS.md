@@ -29,7 +29,7 @@ failures. `npm run lint:preview-colors` proves the preview contains no colour li
 render anything the export can't express.
 
 **The acceptance test has run four times**, each with a subagent that had no knowledge of this
-project, building a real page from the exported skill folder alone. All three succeeded, and every
+project, building a real page from the exported skill folder alone. All four succeeded, and every
 critique found genuine defects — see CHANGELOG for the full list.
 
 1. **Pricing page** — found the invalid `font:` shorthand in every recipe, the media-query/attribute
@@ -46,8 +46,10 @@ critique found genuine defects — see CHANGELOG for the full list.
    roles shipped no `letter-spacing` so the documented pattern failed silently, and that the
    contrast claim still over-reached.
 
-Runs 2 and 3 independently recomputed every token hex from the OKLCH sources in `tokens.css` and
-confirmed the doc tables and the shared-value list are exact, with no drift.
+Runs 2, 3 and 4 independently recomputed every token hex from the OKLCH sources in `tokens.css`
+and confirmed the doc tables and the shared-value list are exact, with no drift — run 4 checked all
+90 values. The failures have consistently been in what the docs *infer* from the numbers, never in
+the numbers.
 
 The pattern is now the quality gate: build something real from the docs, then critique the docs.
 
