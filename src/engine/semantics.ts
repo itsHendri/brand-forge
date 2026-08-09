@@ -456,7 +456,8 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             name: "state-hover",
             group: "state",
             ...n(200, 800),
-            description: "Hover wash on a neutral interactive surface — menu items, table rows, ghost buttons.",
+            description:
+                "Hover wash on a neutral interactive surface — menu items, table rows, ghost buttons. It lightens in dark mode against `background` and `surface`, but `surface-raised` is lighter still, so on a popover the same wash reads as a darkening. That is the wash working, not a bug — it moves away from the surface either way.",
         },
         {
             name: "state-active",

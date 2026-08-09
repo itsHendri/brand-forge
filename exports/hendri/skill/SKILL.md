@@ -50,7 +50,9 @@ Full token tables, component recipes and wrong/right pairs live in
    with `filter: brightness()` or an opacity overlay. The `--state-*` fills are washes over an
    existing surface, so they have no `-foreground` of their own — text keeps the colour it had.
 9. **Focus is never removed.** `outline: 2px solid var(--ring); outline-offset: 2px` on
-   `:focus-visible`.
+   `:focus-visible` — **except on a coloured fill**, where `--ring` is the brand colour itself
+   and therefore invisible. There, the ring takes that fill's `-foreground` like everything else
+   inside it.
 10. **Spacing comes from the blessed subset only:**
     4px, 8px, 12px, 16px, 24px, 32px, 48px, 64px, 96px. Nothing between them.
 11. **Breakpoints are mobile-first and closed:**
@@ -75,7 +77,7 @@ Full token tables, component recipes and wrong/right pairs live in
 
 ## Craft rules
 
-1. **Concentric radius.** A rounded box flush against its parent's inner edge uses `inner = outer − padding`, squared off at 0. Elements that float inside the padding with space on every side — badges, chips, inline code, buttons — are not concentric with anything and keep their own radius.
+1. **Concentric radius.** A rounded box flush against its parent's inner edge uses `inner = outer − padding`, squared off at 0. Flush means touching the padding on both sides: a full-width field, banner or button follows the formula even though it is a control. Elements that float inside the padding with space around them — badges, chips, inline code, an auto-width button — are not concentric with anything and keep their own radius. When in doubt, ask whether the element's edge and the parent's edge are parallel and one padding apart; if they are, it is flush.
 2. **Optical alignment.** On a button with a leading icon, the icon-side padding is 2px tighter than the text side (e.g. `pl-14 pr-16`). Fix lopsided glyphs in the SVG viewBox, not with margins.
 3. **Shadows elevate, borders structure.** Use `--shadow-*` for things that float above the page and `--border` for things that divide it. Never both for the same job. In dark mode elevation is a hairline ring plus a lighter surface, not a drop shadow.
 4. **Interruptible animation.** State changes use CSS transitions so they can be interrupted mid-flight. Keyframes are only for one-shot sequences.

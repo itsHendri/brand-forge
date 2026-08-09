@@ -163,7 +163,11 @@ function buildDeclarations(
         light.push([`--text-${role.role}`, `${role.sizeRem}rem`])
         light.push([`--text-${role.role}--line-height`, String(role.lineHeight)])
         light.push([`--text-${role.role}--font-weight`, String(role.weight)])
-        if (role.tracking) light.push([`--text-${role.role}--letter-spacing`, role.tracking])
+        // Always emitted, `normal` when unset. The docs tell people to set four
+        // properties per role; when a role skipped this one, copying that pattern
+        // produced `letter-spacing: var(--undefined)` — invalid, dropped in
+        // silence, which is the exact failure the instruction exists to prevent.
+        light.push([`--text-${role.role}--letter-spacing`, role.tracking ?? "normal"])
     }
 
     for (const px of config.spacing.blessed) {

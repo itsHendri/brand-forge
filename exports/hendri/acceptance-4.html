@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plans — Hendri</title>
+
+<!-- Required by the design system: the Geist faces are hosted, nothing ships locally.
+     Without this the --font-sans / --font-mono stacks fall back to system fonts silently. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+
+<link rel="stylesheet" href="tokens.css">
+
+<!-- Theme seeding runs before first paint. The system defines the attribute but leaves
+     persistence, OS seeding and flash-avoidance to the implementer. -->
+<script>
+(function () {
+    try {
+        var stored = localStorage.getItem("hendri-theme");
+        var theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+    } catch (e) {
+        document.documentElement.setAttribute("data-theme", "light");
+    }
+})();
+</script>
+
+<style>
+/* ---------------------------------------------------------------------------
+   Hendri — plans / upgrade page.
+   Every colour is a semantic token. No primitives, no literals, no dark-mode
+   overrides (tokens re-point themselves under [data-theme="dark"]).
+
+   Locally-decided values, flagged because the system does not define them:
+     --ctl-h       control height. 44px below the md breakpoint, 40px at md and up.
+                   Both numbers come from the craft rules; the *switch point* is
+                   mine, because the breakpoint set is width-based and CSS cannot
+                   detect touch.
+     --icon-box    16px. "Icon box size" is explicitly undefined by the system.
+     z-index: 1    on the sticky header. No z-index scale exists.
+     min-width on the comparison table's scroll area — reuses --container-narrow
+                   because no minimum table width is defined.
+--------------------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    --ctl-h: 44px;
+    --icon-box: 16px;
+
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    font-weight: var(--text-body--font-weight);
+    text-wrap: pretty;
+}
+
+@media (min-width: 768px) {
+    body { --ctl-h: 40px; }
+}
+
+/* --- type roles ----------------------------------------------------------- */
+
+.t-display {
+    font-size: var(--text-display);
+    line-height: var(--text-display--line-height);
+    font-weight: var(--text-display--font-weight);
+    letter-spacing: var(--text-display--letter-spacing);
+}
+.t-heading-lg {
+    font-size: var(--text-heading-lg);
+    line-height: var(--text-heading-lg--line-height);
+    font-weight: var(--text-heading-lg--font-weight);
+    letter-spacing: var(--text-heading-lg--letter-spacing);
+}
+.t-heading {
+    font-size: var(--text-heading);
+    line-height: var(--text-heading--line-height);
+    font-weight: var(--text-heading--font-weight);
+    letter-spacing: var(--text-heading--letter-spacing);
+}
+.t-heading-sm {
+    font-size: var(--text-heading-sm);
+    line-height: var(--text-heading-sm--line-height);
+    font-weight: var(--text-heading-sm--font-weight);
+}
+.t-body-lg {
+    font-size: var(--text-body-lg);
+    line-height: var(--text-body-lg--line-height);
+    font-weight: var(--text-body-lg--font-weight);
+}
+.t-body {
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    font-weight: var(--text-body--font-weight);
+}
+.t-body-sm {
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm--line-height);
+    font-weight: var(--text-body-sm--font-weight);
+}
+.t-label {
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    font-weight: var(--text-label--font-weight);
+    letter-spacing: var(--text-label--letter-spacing);
+}
+
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+
+/* --- layout --------------------------------------------------------------- */
+
+.container {
+    width: 100%;
+    max-width: var(--container-page);
+    margin-inline: auto;
+    padding-inline: var(--space-6);
+}
+
+@media (min-width: 1024px) {
+    .container { padding-inline: var(--space-8); }
+}
+
+/* Running text keeps the readable measure even inside the wider page frame. */
+.prose { max-width: var(--container-prose); }
+
+.section { padding-block: var(--space-16); }
+
+@media (min-width: 1024px) {
+    .section { padding-block: var(--space-24); }
+}
+
+/* --- buttons -------------------------------------------------------------- */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--ctl-h);
+    padding-inline: var(--space-4);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    font-weight: var(--text-label--font-weight);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-decoration: none;
+    cursor: pointer;
+    /* Exit timing lives on the base rule; the entrance is timed on :hover. */
+    transition:
+        background-color var(--duration-fast) var(--ease-out),
+        border-color var(--duration-fast) var(--ease-out),
+        color var(--duration-fast) var(--ease-out),
+        transform var(--duration-fast) var(--ease-out);
+}
+
+.btn:hover { transition-duration: var(--duration-base); }
+.btn:active { transform: scale(0.96); transition-duration: var(--duration-fast); }
+
+.btn:focus-visible,
+a:focus-visible,
+.table-scroll:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
+.btn--primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+.btn--primary:hover { background: var(--primary-hover); }
+.btn--primary:active { background: var(--primary-active); }
+
+.btn--outline {
+    background: transparent;
+    color: var(--foreground);
+    border-color: var(--input);
+}
+.btn--outline:hover { background: var(--state-hover); }
+.btn--outline:active { background: var(--state-active); }
+
+.btn--danger {
+    background: var(--danger);
+    color: var(--danger-foreground);
+}
+.btn--danger:hover { background: var(--danger-hover); }
+.btn--danger:active { background: var(--danger-active); }
+
+/* A control sitting on a brand fill takes that fill's own -foreground for its
+   text AND its border. The neutral outline recipe would put dark ink on indigo. */
+.band .btn--on-brand {
+    background: transparent;
+    color: var(--primary-foreground);
+    border-color: var(--primary-foreground);
+}
+.band .btn--on-brand:hover { background: var(--primary-hover); }
+.band .btn--on-brand:active { background: var(--primary-active); }
+
+/* --- header --------------------------------------------------------------- */
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    padding-block: var(--space-3);
+}
+
+/* No mark is defined by this system, so the brand is set in type. */
+.wordmark {
+    margin-inline-end: auto;
+    color: var(--foreground);
+    text-decoration: none;
+    font-size: var(--text-heading-sm);
+    line-height: var(--text-heading-sm--line-height);
+    font-weight: var(--text-heading-sm--font-weight);
+}
+
+.site-nav {
+    order: 3;
+    flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+}
+
+.site-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--ctl-h);
+    color: var(--muted-foreground);
+    text-decoration: none;
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm--line-height);
+    transition: color var(--duration-fast) var(--ease-out);
+}
+.site-nav a:hover { color: var(--foreground); transition-duration: var(--duration-base); }
+.site-nav a[aria-current="page"] { color: var(--foreground); }
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+@media (min-width: 768px) {
+    .site-nav {
+        order: 0;
+        flex-basis: auto;
+        margin-inline-end: var(--space-6);
+    }
+}
+
+/* --- hero ----------------------------------------------------------------- */
+
+.hero h1 {
+    /* Mobile-first: the display role only earns its size once there is room. */
+    font-size: var(--text-heading-lg);
+    line-height: var(--text-heading-lg--line-height);
+    font-weight: var(--text-heading-lg--font-weight);
+    letter-spacing: var(--text-heading-lg--letter-spacing);
+    max-width: var(--container-prose);
+}
+
+@media (min-width: 768px) {
+    .hero h1 {
+        font-size: var(--text-display);
+        line-height: var(--text-display--line-height);
+        letter-spacing: var(--text-display--letter-spacing);
+    }
+}
+
+.hero .lead {
+    margin-top: var(--space-6);
+    color: var(--foreground-secondary);
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-8);
+}
+
+/* --- plans ---------------------------------------------------------------- */
+
+.plan-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+    margin-top: var(--space-8);
+}
+
+@media (min-width: 1024px) {
+    .plan-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.plan {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+}
+
+/* The recommended plan is marked by the brand border plus the badge plus the
+   solid CTA. No shadow: the border is already doing the structural job. */
+.plan--recommended { border-color: var(--primary); }
+
+.plan-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.badge {
+    /* Floats inside the card's padding, so it is not concentric — keeps its own radius. */
+    background: var(--primary-subtle);
+    color: var(--primary-subtle-foreground);
+    border-radius: var(--radius-sm);
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    font-weight: var(--text-label--font-weight);
+    letter-spacing: var(--text-label--letter-spacing);
+    white-space: nowrap;
+}
+
+.plan-blurb {
+    margin-top: var(--space-2);
+    color: var(--muted-foreground);
+}
+
+.plan-price {
+    margin-top: var(--space-6);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    font-variant-numeric: tabular-nums;
+}
+
+.plan-price .amount {
+    font-size: var(--text-heading-lg);
+    line-height: var(--text-heading-lg--line-height);
+    font-weight: var(--text-heading-lg--font-weight);
+    letter-spacing: var(--text-heading-lg--letter-spacing);
+}
+
+.plan-price .period { color: var(--muted-foreground); }
+
+.plan-features {
+    margin-top: var(--space-6);
+    display: grid;
+    gap: var(--space-3);
+}
+
+.plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm--line-height);
+}
+
+.tick {
+    flex: none;
+    width: var(--icon-box);
+    height: var(--icon-box);
+    /* 1.5px stroke sits next to 400-weight text; recoloured with currentColor. */
+    margin-top: var(--space-1);
+}
+
+.plan .btn {
+    margin-top: var(--space-6);
+    width: 100%;
+    /* Full-width inside a padded card, so it is flush: inner = 15px − 24px, floored at 0. */
+    border-radius: 0;
+}
+
+/* --- comparison table ----------------------------------------------------- */
+
+.table-intro { margin-top: var(--space-4); color: var(--foreground-secondary); }
+
+.table-scroll {
+    margin-top: var(--space-8);
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    min-width: var(--container-narrow);
+    border-collapse: collapse;
+    text-align: left;
+}
+
+thead th {
+    background: var(--muted);
+    color: var(--muted-foreground);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    font-weight: var(--text-label--font-weight);
+    letter-spacing: var(--text-label--letter-spacing);
+}
+
+tbody th,
+tbody td {
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--border-subtle);
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm--line-height);
+    font-weight: var(--text-body--font-weight);
+}
+
+tbody th { color: var(--foreground); }
+
+/* The plan columns are compared down the column, so they take tabular figures. */
+tbody td,
+thead th:not(:first-child) { font-variant-numeric: tabular-nums; }
+
+tbody tr {
+    transition: background-color var(--duration-fast) var(--ease-out);
+}
+tbody tr:hover {
+    background: var(--state-hover);
+    transition-duration: var(--duration-base);
+}
+
+/* --- full-bleed brand band ------------------------------------------------ */
+
+.band {
+    /* Background spans the window; the content inside stays contained. */
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.band p {
+    margin-top: var(--space-4);
+    color: var(--primary-foreground);
+}
+
+/* --- cancel-plan dialog --------------------------------------------------- */
+
+.dialog {
+    max-width: var(--container-narrow);
+    margin-inline: auto;
+    margin-top: var(--space-8);
+    background: var(--surface-raised);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    /* Floats above the page, so it is elevated and takes no border.
+       In dark mode --shadow-lg is already a hairline ring, not a drop shadow. */
+    box-shadow: var(--shadow-lg);
+}
+
+.dialog-body {
+    margin-top: var(--space-3);
+    color: var(--foreground-secondary);
+}
+
+.dialog-alert {
+    margin-top: var(--space-4);
+    background: var(--danger-subtle);
+    color: var(--danger-subtle-foreground);
+    border: 1px solid var(--danger-border);
+    /* Full-width inside the dialog's padding, so concentric gives 0px. */
+    border-radius: 0;
+    padding: var(--space-4);
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm--line-height);
+}
+
+.dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+}
+
+/* --- footer --------------------------------------------------------------- */
+
+.site-footer {
+    border-top: 1px solid var(--border);
+    padding-block: var(--space-12);
+}
+
+.footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-4);
+}
+
+.footer-inner .wordmark { margin-inline-end: var(--space-6); }
+
+.footer-quiet { color: var(--muted-foreground); }
+
+/* --- reduced motion ------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .btn,
+    .btn:hover,
+    .site-nav a,
+    .site-nav a:hover,
+    tbody tr,
+    tbody tr:hover {
+        transition-duration: 1ms;
+    }
+    .btn:active { transform: none; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="wordmark" href="#top">Hendri</a>
+
+        <nav class="site-nav" aria-label="Primary">
+            <a href="#plans" aria-current="page">Plans</a>
+            <a href="#compare">Compare</a>
+            <a href="#support">Support</a>
+        </nav>
+
+        <div class="header-actions">
+            <button class="btn btn--outline" type="button" id="theme-toggle" aria-pressed="false">
+                Dark mode
+            </button>
+            <a class="btn btn--primary" href="#plans">Start free</a>
+        </div>
+    </div>
+</header>
+
+<main id="top">
+
+    <!-- Hero -->
+    <section class="section hero">
+        <div class="container">
+            <h1>Pick the plan that fits the work in front of you.</h1>
+            <p class="lead prose t-body-lg">
+                Every plan includes the full editor, unlimited drafts and the same export
+                pipeline. What changes is how many people can be in the room and how quickly
+                we answer when something breaks.
+            </p>
+            <div class="button-row">
+                <a class="btn btn--primary" href="#plans">Start free</a>
+                <a class="btn btn--outline" href="#compare">Compare plans</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Plans -->
+    <section class="section" id="plans">
+        <div class="container">
+            <h2 class="t-heading-lg">Plans</h2>
+            <p class="prose t-body-lg" style="margin-top: var(--space-4); color: var(--foreground-secondary);">
+                Monthly, cancel whenever. Annual billing takes two months off.
+            </p>
+
+            <ul class="plan-grid">
+
+                <li class="plan">
+                    <div class="plan-head">
+                        <h3 class="t-heading-sm">Solo</h3>
+                    </div>
+                    <p class="plan-blurb t-body-sm">For one person and the projects they can hold in their head.</p>
+                    <p class="plan-price">
+                        <span class="amount">$0</span>
+                        <span class="period t-body-sm">per month</span>
+                    </p>
+                    <ul class="plan-features">
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>3 team seats</span>
+                        </li>
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>5 active projects</span>
+                        </li>
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>10 GB of storage</span>
+                        </li>
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>Community support</span>
+                        </li>
+                    </ul>
+                    <a class="btn btn--outline" href="#support">Stay on Solo</a>
+                </li>
+
+                <li class="plan plan--recommended">
+                    <div class="plan-head">
+                        <h3 class="t-heading-sm">Studio</h3>
+                        <span class="badge">Recommended</span>
+                    </div>
+                    <p class="plan-blurb t-body-sm">For a small team that ships together and needs an answer the same day.</p>
+                    <p class="plan-price">
+                        <span class="amount">$24</span>
+                        <span class="period t-body-sm">per month</span>
+                    </p>
+                    <ul class="plan-features">
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>15 team seats</span>
+                        </li>
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>40 active projects</span>
+                        </li>
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>250 GB of storage</span>
+                        </li>
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>Same-day support, 24 h target</span>
+                        </li>
+                    </ul>
+                    <a class="btn btn--primary" href="#support">Upgrade to Studio</a>
+                </li>
+
+                <li class="plan">
+                    <div class="plan-head">
+                        <h3 class="t-heading-sm">Scale</h3>
+                    </div>
+                    <p class="plan-blurb t-body-sm">For an organisation with review gates, audit trails and a procurement team.</p>
+                    <p class="plan-price">
+                        <span class="amount">$96</span>
+                        <span class="period t-body-sm">per month</span>
+                    </p>
+                    <ul class="plan-features">
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>50 team seats</span>
+                        </li>
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>Unlimited projects</span>
+                        </li>
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>2 TB of storage</span>
+                        </li>
+                        <li>
+                            <svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+                            <span>Priority support, 4 h target</span>
+                        </li>
+                    </ul>
+                    <a class="btn btn--outline" href="#support">Talk to sales</a>
+                </li>
+
+            </ul>
+        </div>
+    </section>
+
+    <!-- Comparison -->
+    <section class="section" id="compare">
+        <div class="container">
+            <h2 class="t-heading-lg">What changes between plans</h2>
+            <p class="table-intro prose t-body-lg">
+                Limits are per workspace, not per person. Support targets are first response
+                during working hours.
+            </p>
+
+            <div class="table-scroll" tabindex="0" role="region" aria-label="Plan comparison, scrollable">
+                <table>
+                    <caption class="t-body-sm" style="text-align: left; padding-block-end: var(--space-3); color: var(--muted-foreground);">
+                        Limits and prices by plan
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Capability</th>
+                            <th scope="col">Solo</th>
+                            <th scope="col">Studio</th>
+                            <th scope="col">Scale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Team seats</th>
+                            <td>3</td>
+                            <td>15</td>
+                            <td>50</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Active projects</th>
+                            <td>5</td>
+                            <td>40</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Storage (GB)</th>
+                            <td>10</td>
+                            <td>250</td>
+                            <td>2,000</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Support response (hours)</th>
+                            <td>72</td>
+                            <td>24</td>
+                            <td>4</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Price per month (USD)</th>
+                            <td>0</td>
+                            <td>24</td>
+                            <td>96</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Full-bleed brand band: the background spans the window, the content stays contained. -->
+<section class="section band" id="support">
+    <div class="container">
+        <h2 class="t-heading-lg">More than fifty seats?</h2>
+        <p class="prose t-body-lg">
+            We will put together a plan around your review process, your retention rules and
+            your invoicing cycle. It usually takes one call and a week.
+        </p>
+        <div class="button-row">
+            <a class="btn btn--on-brand" href="#top">Talk to us</a>
+        </div>
+    </div>
+</section>
+
+<!-- Cancel-plan confirmation, rendered inline rather than hidden behind a trigger. -->
+<section class="section">
+    <div class="container">
+        <h2 class="t-heading-lg">Cancelling</h2>
+        <p class="prose t-body-lg" style="margin-top: var(--space-4); color: var(--foreground-secondary);">
+            You can stop a paid plan at any time. This is what you will be asked before it takes effect.
+        </p>
+
+        <div class="dialog" role="alertdialog" aria-modal="false" aria-labelledby="cancel-title" aria-describedby="cancel-desc">
+            <h3 class="t-heading" id="cancel-title">Cancel your Studio plan?</h3>
+
+            <p class="dialog-body t-body-lg" id="cancel-desc">
+                Studio stays active until the end of the current billing period on 31 August.
+                After that the workspace returns to Solo.
+            </p>
+
+            <p class="dialog-alert">
+                Solo allows 5 active projects. You currently have 22, so 17 of them become
+                read-only until you reduce the count or upgrade again.
+            </p>
+
+            <div class="dialog-actions">
+                <button class="btn btn--outline" type="button">Keep Studio</button>
+                <button class="btn btn--danger" type="button">Cancel plan</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="site-footer">
+    <div class="container footer-inner">
+        <!-- No logo mark is defined by this system, so the brand is set in type. -->
+        <span class="wordmark">Hendri</span>
+        <p class="footer-quiet t-body-sm">
+            hendri.design — prices in USD, excluding tax. Plan changes take effect at the
+            end of the billing period.
+        </p>
+    </div>
+</footer>
+
+<script>
+(function () {
+    var toggle = document.getElementById("theme-toggle");
+    var root = document.documentElement;
+
+    function paint() {
+        var dark = root.getAttribute("data-theme") === "dark";
+        toggle.textContent = dark ? "Light mode" : "Dark mode";
+        toggle.setAttribute("aria-pressed", String(dark));
+    }
+
+    toggle.addEventListener("click", function () {
+        var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        try { localStorage.setItem("hendri-theme", next); } catch (e) {}
+        paint();
+    });
+
+    paint();
+})();
+</script>
+
+</body>
+</html>

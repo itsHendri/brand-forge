@@ -212,6 +212,25 @@ The same holds for \`--danger\`, \`--success\` and the rest. And do not fade the
 \`opacity\` to soften it: that pair was contrast-checked at full strength, and dimming it is how a
 validated colour quietly stops being valid.
 
+**The focus ring is part of this.** \`--ring\` is the brand colour, so on a \`--primary\` field it is
+invisible — the outline and the background are literally the same value. Focus there takes the
+fill's foreground too:
+
+\`\`\`css
+/* ✅ on a brand field */
+.brand-band .button:focus-visible {
+    outline: 2px solid var(--primary-foreground);
+    outline-offset: 2px;
+}
+
+/* ❌ the default ring, on the one background it cannot be seen against */
+.brand-band .button:focus-visible { outline: 2px solid var(--ring); }
+\`\`\`
+
+**Set copy on a brand field at \`body-lg\` or larger.** \`--primary-foreground\` is validated as a
+label colour (Lc 60), not as body text (Lc 75) — it clears the label bar on its fill and no more.
+Small print on a brand band has no compliant colour in this system, so don't put any there.
+
 **Card** — \`background: var(--surface)\`, \`border: 1px solid var(--border)\`,
 \`border-radius: var(--radius-lg)\` (${r.lg}px), \`padding: var(--space-6)\`. **No shadow**: the
 border is already doing the structural job, and \`--shadow-sm\` carries its own hairline layer, so
@@ -353,6 +372,13 @@ part of the system:
   brand ink that survives both modes; it is off-label but it measures.
 - **App-shell dimensions.** No sidebar or column widths, no header height, no z-index scale, no
   minimum table width. \`--container-*\` bound the page frame, not its interior.
+- **Emphasis on a card.** No token or recipe for marking one of several cards as recommended or
+  selected. \`--primary\` as a border is the obvious move and it measures poorly against
+  \`--surface\` — if you need it, verify it rather than assuming.
+- **A scrim.** Opacity is not modelled, so a modal backdrop cannot be built from these tokens.
+  A real dialog needs a value you bring yourself.
+- **A wordmark treatment.** Even with a mark defined, nothing says which type role, weight or
+  colour the brand name takes when it is set in type.
 - **Font weights as standalone tokens.** Weight arrives with a type role and nothing else.
 - **Opacity and blur.** Not modelled at all.
 - **Theme persistence.** The attribute is defined; storing the choice, seeding it from the OS
@@ -518,7 +544,7 @@ export function toDesignSystemMd(resolved: ResolvedTokens): string {
         `${role.sizeRem}rem`,
         `\`--text-${role.role}--line-height\` · ${role.lineHeight}`,
         `\`--text-${role.role}--font-weight\` · ${role.weight}`,
-        role.tracking ? `\`--text-${role.role}--letter-spacing\` · ${role.tracking}` : "—",
+        `\`--text-${role.role}--letter-spacing\` · ${role.tracking ?? "normal"}`,
     ])
 
     const motionRows = [
@@ -592,9 +618,11 @@ ${Object.entries(resolved.radius)
 **Concentric radius.** \`inner = outer − padding\`, floored at 0.
 A card at \`--radius-lg\` (${resolved.radius.lg}px) with \`--space-4\` (16px) padding holds children at ${Math.max(0, resolved.radius.lg - 16)}px.
 
-**It governs boxes flush against the parent's inner edge — nothing else.** An element that floats
-inside the padding with space on every side — a badge, an inline \`<code>\`, a chip, a button — is
-not concentric with anything and keeps its own radius.
+**It governs boxes flush against the parent's inner edge — nothing else.** Flush means touching the
+padding on both sides. An element that floats inside the padding with space around it — a badge, an
+inline \`<code>\`, a chip, an auto-width button — is not concentric with anything and keeps its own
+radius. **A full-width control is flush and does follow the formula**, even though it is a control:
+a stretched button at the bottom of a card squares off, the same button sized to its label does not.
 
 Everything full-width inside a padded card *is* flush, and that is most of a form: inputs, banners,
 nested panels, tables. Inside this card (\`--radius-lg\` ${resolved.radius.lg}px, \`--space-6\` 24px
@@ -646,7 +674,22 @@ ${(() => {
         if (contrast.length > 0) {
             return `**${contrast.length} pairs currently miss their threshold** — see the brand's warnings. Do not treat the values in this file as validated until they are cleared.`
         }
-        return `Every pair clears **its own** threshold — text and non-text alike, in both modes. That is not the same as every pair clearing 75: labels on solid fills and \`--foreground-secondary\` are held to the Lc 60 bar and sit well below the body target, which is correct for their job and wrong for small body copy. Set supporting text below \`body-lg\` in \`--muted-foreground\`.`
+        return `Every **validated** pair clears its own threshold, in both modes. Three things that
+sentence does not mean:
+
+- It is not "every pair clears 75". Labels on solid fills and \`--foreground-secondary\` are held to
+  the Lc 60 bar and sit well below the body target — correct for their job, wrong for small body
+  copy. Set supporting text below \`body-lg\` in \`--muted-foreground\`.
+- \`--border-subtle\` and \`--foreground-tertiary\` are **deliberately exempt**. Both are defined as
+  below the visible threshold, so they are not validated and never will be. Neither may be the only
+  thing carrying meaning — \`--border-subtle\` separates rows inside an already-bounded table, it
+  does not divide two regions.
+- Pairs nobody declared are not checked. If you compose a combination the token descriptions don't
+  sanction — \`--primary\` as body text, \`--muted-foreground\` on \`--surface-raised\` — you are
+  outside the validated set and should measure it yourself.
+
+**"Large text" means \`body-lg\` (1.125rem) and up at weight 400, or \`body\` and up at weight 600.**
+Below that, the Lc 75 body bar applies.`
     })()}
 
 \`--foreground-tertiary\` is deliberately below the reading threshold. It is for placeholders and

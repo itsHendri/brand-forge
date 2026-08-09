@@ -143,7 +143,7 @@ export const POLISH_RULES: Array<{ id: string; title: string; rule: string; defa
     {
         id: "concentric-radius",
         title: "Concentric radius",
-        rule: "A rounded box flush against its parent's inner edge uses `inner = outer − padding`, squared off at 0. Elements that float inside the padding with space on every side — badges, chips, inline code, buttons — are not concentric with anything and keep their own radius.",
+        rule: "A rounded box flush against its parent's inner edge uses `inner = outer − padding`, squared off at 0. Flush means touching the padding on both sides: a full-width field, banner or button follows the formula even though it is a control. Elements that float inside the padding with space around them — badges, chips, inline code, an auto-width button — are not concentric with anything and keep their own radius. When in doubt, ask whether the element's edge and the parent's edge are parallel and one padding apart; if they are, it is flush.",
         default: true,
     },
     {

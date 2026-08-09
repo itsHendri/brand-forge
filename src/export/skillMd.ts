@@ -79,7 +79,9 @@ Full token tables, component recipes and wrong/right pairs live in
    with \`filter: brightness()\` or an opacity overlay. The \`--state-*\` fills are washes over an
    existing surface, so they have no \`-foreground\` of their own — text keeps the colour it had.
 9. **Focus is never removed.** \`outline: 2px solid var(--ring); outline-offset: 2px\` on
-   \`:focus-visible\`.
+   \`:focus-visible\` — **except on a coloured fill**, where \`--ring\` is the brand colour itself
+   and therefore invisible. There, the ring takes that fill's \`-foreground\` like everything else
+   inside it.
 10. **Spacing comes from the blessed subset only:**
     ${config.spacing.blessed.map((px) => `${px}px`).join(", ")}. Nothing between them.
 11. **Breakpoints are mobile-first and closed:**

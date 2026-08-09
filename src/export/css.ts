@@ -116,6 +116,10 @@ export function toTokensCss(resolved: ResolvedTokens, options: { darkMedia?: boo
         ` *`,
         ` * Semantic tokens alias primitives, so a colour value appears exactly once per mode.`,
         ` * Use the semantic names. Reach for a primitive only when no semantic fits.`,
+        ` *`,
+        ` * The --color-* names in the @theme block at the bottom are Tailwind's, and exist only`,
+        ` * inside it. In hand-written CSS use var(--primary), not var(--color-primary) — the`,
+        ` * latter resolves to nothing and the declaration is dropped without an error.`,
         ` */`,
     ].join("\n")
 

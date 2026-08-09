@@ -186,6 +186,48 @@ describe("assets in the docs", () => {
     })
 })
 
+describe("findings from acceptance run 4", () => {
+    const md = fileAt("DESIGN_SYSTEM.md")
+    const skill = fileAt("SKILL.md")
+    const css = fileAt("tokens.css")
+
+    it("emits letter-spacing for every role, so the four-property pattern is safe to copy", () => {
+        // Four of nine roles used to skip it, so copying the documented pattern
+        // gave `letter-spacing: var(--undefined)` — invalid, dropped in silence,
+        // the exact failure the instruction exists to prevent.
+        for (const role of hendriPreset.typography.roles) {
+            expect(css, role.role).toContain(`--text-${role.role}--letter-spacing:`)
+        }
+    })
+
+    it("says the focus ring is invisible on a brand fill and what to use instead", () => {
+        // --ring IS --primary, so the mandated focus treatment was Lc 0 on
+        // exactly the section the docs single out as dangerous.
+        expect(md).toContain("outline: 2px solid var(--primary-foreground)")
+        expect(md).toContain("The focus ring is part of this")
+        expect(skill).toContain("except on a coloured fill")
+    })
+
+    it("does not claim tokens defined as invisible are validated", () => {
+        const contrast = md.slice(md.indexOf("## Contrast"))
+        expect(contrast).toContain("deliberately exempt")
+        expect(contrast).toContain("--border-subtle")
+    })
+
+    it("defines what large text means, since two thresholds depend on it", () => {
+        expect(md).toMatch(/\*\*"Large text" means/)
+    })
+
+    it("adjudicates the full-width button against the concentric rule", () => {
+        expect(md).toContain("A full-width control is flush and does follow the formula")
+        expect(skill).toContain("full-width field, banner or button follows the formula")
+    })
+
+    it("warns that --color-* only exists inside the theme block", () => {
+        expect(css).toContain("resolves to nothing")
+    })
+})
+
 describe("the on-brand rule", () => {
     const md = fileAt("DESIGN_SYSTEM.md")
     const skill = fileAt("SKILL.md")
