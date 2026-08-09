@@ -98,7 +98,7 @@ export function Card({
                 borderRadius: "var(--radius-lg)",
                 padding: "var(--space-6)",
                 ...(raised
-                    ? { boxShadow: "var(--shadow-lg)" }
+                    ? { boxShadow: "var(--shadow-raised)" }
                     : { border: "1px solid var(--border)" }),
                 ...style,
             }}

@@ -105,7 +105,7 @@ describe("resolveTokens", () => {
         })
 
         it("overrides elevation in dark mode — a ring, not a drop shadow", () => {
-            const darkShadow = resolved.declarations.dark.find(([name]) => name === "--shadow-md")
+            const darkShadow = resolved.declarations.dark.find(([name]) => name === "--shadow-raised")
             expect(darkShadow?.[1]).toContain("oklch(1 0 0")
         })
 
@@ -121,12 +121,84 @@ describe("resolveTokens", () => {
         const value = (name: string, mode: "light" | "dark") =>
             semanticByName(resolved, name)!.values[mode]!.hex
 
-        // Dark mode shows elevation by climbing the ramp, so these must differ.
-        expect(value("background", "dark")).not.toBe(value("surface", "dark"))
-        expect(value("surface", "dark")).not.toBe(value("surface-raised", "dark"))
-        expect(value("surface-raised", "dark")).not.toBe(value("muted", "dark"))
+        // Dark shows elevation by climbing the ramp, so all four must differ.
+        expect(
+            new Set(
+                ["background", "surface", "surface-raised", "surface-overlay"].map((n) => value(n, "dark")),
+            ).size,
+        ).toBe(4)
         expect(value("background", "light")).not.toBe(value("surface", "light"))
-        expect(value("muted", "light")).not.toBe(value("surface", "light"))
+        expect(value("surface-sunken", "light")).not.toBe(value("background", "light"))
+    })
+
+    describe("the elevation ladder", () => {
+        const value = (name: string, mode: "light" | "dark") => semanticByName(resolved, name)!.values[mode]!
+
+        it("climbs in the right direction in each mode", () => {
+            const ladder = ["surface-sunken", "background", "surface", "surface-raised", "surface-overlay"]
+            const light = ladder.map((n) => value(n, "light").oklch.l)
+            const dark = ladder.map((n) => value(n, "dark").oklch.l)
+            // Never goes backwards: light climbs toward white, dark toward light.
+            for (let i = 1; i < ladder.length; i++) {
+                expect(light[i]!, `light ${ladder[i]} vs ${ladder[i - 1]}`).toBeGreaterThanOrEqual(light[i - 1]!)
+                expect(dark[i]!, `dark ${ladder[i]} vs ${ladder[i - 1]}`).toBeGreaterThanOrEqual(dark[i - 1]!)
+            }
+        })
+
+        it("collapses at opposite ends in the two modes, which is the palette's doing", () => {
+            // Light runs out of room at the top — there is nothing whiter than
+            // white — so raised and overlay share `surface`'s fill and the
+            // shadows carry the elevation. Dark runs out at the bottom, so
+            // sunken shares `background`. Both are documented, not accidents.
+            expect(value("surface-raised", "light").hex).toBe(value("surface", "light").hex)
+            expect(value("surface-overlay", "light").hex).toBe(value("surface", "light").hex)
+            expect(value("surface-sunken", "dark").hex).toBe(value("background", "dark").hex)
+            // …and each collapse happens in one mode only.
+            expect(value("surface-raised", "dark").hex).not.toBe(value("surface", "dark").hex)
+            expect(value("surface-sunken", "light").hex).not.toBe(value("background", "light").hex)
+        })
+
+        it("keeps body text readable on every level, including the top of dark", () => {
+            // Dark `surface-overlay` is `neutral-700` at Lc 79 — four points off
+            // the bar, and the reason there is no fifth level: `neutral-600`
+            // measures 68 and fails outright.
+            for (const mode of ["light", "dark"] as const) {
+                for (const n of ["surface-sunken", "background", "surface", "surface-raised", "surface-overlay"]) {
+                    const lc = Math.abs(apca(value("foreground", mode).hex, value(n, mode).hex))
+                    expect(lc, `foreground on ${n} (${mode})`).toBeGreaterThanOrEqual(LC_THRESHOLD.body)
+                }
+            }
+        })
+
+        it("pairs every elevation shadow with a surface of the same name", () => {
+            const shadows = resolved.declarations.light
+                .filter(([name]) => name.startsWith("--shadow-"))
+                .map(([name]) => name.replace("--shadow-", ""))
+            expect(shadows).toContain("raised")
+            expect(shadows).toContain("overlay")
+            for (const level of shadows) {
+                if (level === "sm") continue // deliberately not an elevation level
+                expect(semanticByName(resolved, `surface-${level}`), `--surface-${level}`).toBeDefined()
+            }
+        })
+
+        it("overrides every shadow in dark mode, leaving none as a light drop shadow", () => {
+            const darkNames = resolved.declarations.dark
+                .filter(([name]) => name.startsWith("--shadow-"))
+                .map(([name]) => name)
+            const lightNames = resolved.declarations.light
+                .filter(([name]) => name.startsWith("--shadow-"))
+                .map(([name]) => name)
+            // A renamed level once silently lost its dark override, because
+            // DARK_SHADOWS is keyed by name and no longer had an entry.
+            expect(darkNames.sort()).toEqual(lightNames.sort())
+        })
+
+        it("makes --muted a wash, since the dark ladder uses every step it has", () => {
+            for (const mode of ["light", "dark"] as const) {
+                expect(semanticByName(resolved, "muted")![mode].alpha, mode).toBeGreaterThan(0)
+            }
+        })
     })
 
     it("keeps the three text levels genuinely distinct", () => {
@@ -219,7 +291,7 @@ describe("the inverse, link, focus, scrim and skeleton tokens", () => {
         // The trap this token exists to remove: `--primary` as a link measures
         // Lc -28.7 in dark. Anything claiming to be body text clears Lc 75.
         for (const mode of ["light", "dark"] as const) {
-            for (const ground of ["background", "surface", "muted"]) {
+            for (const ground of ["surface-sunken", "background", "surface"]) {
                 const lc = Math.abs(apca(value("link", mode).hex, value(ground, mode).hex))
                 expect(lc, `link on ${ground} (${mode})`).toBeGreaterThanOrEqual(LC_THRESHOLD.body)
             }
@@ -316,7 +388,8 @@ describe("the inverse, link, focus, scrim and skeleton tokens", () => {
  */
 describe("the state washes", () => {
     const WASHES = ["state-hover", "state-active", "state-selected", "state-disabled"] as const
-    const GROUNDS = ["background", "surface", "surface-raised", "muted"] as const
+    // The opaque ladder. `muted` is a wash itself now and cannot be a ground.
+    const GROUNDS = ["surface-sunken", "background", "surface", "surface-raised", "surface-overlay"] as const
     const value = (name: string, mode: "light" | "dark") => semanticByName(resolved, name)!.values[mode]!
 
     it("is translucent, every one of them", () => {

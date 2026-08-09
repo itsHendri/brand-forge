@@ -381,3 +381,51 @@ being absent. That the disabled fill stays *visible* is covered by a test instea
 cannot distinguish "subtle" from "invisible" — and a hover wash lives entirely in that range. So
 `channelShift()` exists purely for the question APCA cannot answer: did anything happen? It is a
 crude mean-channel delta and is used for nothing else.
+
+### 27. The elevation ladder, and what the palette would not give — 2026-08-09
+
+#21 chose Atlassian's naming. Building it turned up a hard limit that no amount of naming fixes, and
+the shape of the result is dictated by measurement rather than by preference.
+
+**Both modes run out of ramp, at opposite ends.** Light tops out at `neutral-50` — nothing is whiter
+than white — so `surface`, `surface-raised` and `surface-overlay` share one fill there and the
+shadows carry the elevation. That is not a compromise; Atlassian's light theme does the same. Dark
+bottoms out at `neutral-950`, so `surface-sunken` shares `background`. Each collapse happens in one
+mode only, and the named token is still the right thing to write, because it is distinct in the other.
+
+**Dark has a ceiling as well, and it is close.** `neutral-700` puts body text at Lc 79 — four points
+above the bar — and `neutral-600` fails outright at 68. So the dark ladder is exactly
+950/900/800/700 and there is no fifth level available at any price. That measurement is why
+`surface-raised` moved from 700 to 800: 700 had to be freed for `overlay`, which is the level that
+most needs the lift.
+
+**Five roles, four steps, so `--muted` became a wash.** With the ladder using every usable dark step,
+no opaque value was left for a quiet fill that did not collide with a surface. Atlassian documents
+this exact trade — an opaque token darkens in both modes, a transparent one adapts to whatever
+elevation it lands on — and in dark mode, where the surfaces move, adapting is the behaviour you
+want. Hendri chose this over keeping three levels.
+
+Two things had to be walked back while fitting it, both worth recording because both were tempting:
+
+- **Solving `--muted` for the strongest readable wash made it the most extreme ground in the
+  system**, which then dragged `--muted-foreground` and `--link` toward the ends of the ramp to stay
+  readable on it. A quiet fill that forces every caption darker is not quiet. It is solved as the
+  gentlest wash that still reads as a *region* instead.
+- **Requiring text to survive a muted region inside an overlay** — the lightest ground the system can
+  produce — collapsed the text hierarchy outright: `foreground-secondary` and `muted-foreground` both
+  landed on `neutral-100`, one step off the body ink. Supporting text is verified on bare raised and
+  overlay surfaces, and on muted over the flat ones, but not on the combination of both. A caption
+  inside a table header inside a modal is not worth the whole hierarchy.
+
+`pickAgainst` now takes an `exclude` list so a text level cannot silently resolve to the same step as
+the one above it. The hierarchy the docs promise is enforced rather than hoped for.
+
+**Shadows are named for the surface they pair with**, not for size: `sm`, `raised`, `overlay`. `md`
+and `lg` are gone. A size scale invites mixing a surface with the wrong level's shadow, and an
+`overlay` shadow with no `overlay` surface was the orphan that started this.
+
+That rename exposed a migration hole worth keeping in mind: `migrateConfig` filled *missing* blocks
+but never reconciled one whose shape had changed, so a saved brand kept `md`/`lg` **and silently lost
+its dark-mode elevation entirely** — `DARK_SHADOWS` is keyed by name and no longer had an entry.
+Unknown levels are now dropped and missing ones restored, and a test asserts light and dark emit the
+same shadow names.

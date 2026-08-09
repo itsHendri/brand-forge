@@ -98,6 +98,9 @@ export function wcag(aHex: string, bHex: string): number {
  * The pairs that must hold for the system to be usable. Everything a person
  * actually reads, plus the boundaries they need to see.
  */
+/** The opaque elevation ladder, darkest-first. Every wash is checked over each. */
+const LADDER = ["surface-sunken", "background", "surface", "surface-raised", "surface-overlay"] as const
+
 export const CONTRAST_PAIRS: Array<{
     fg: string
     bg: string
@@ -125,7 +128,6 @@ export const CONTRAST_PAIRS: Array<{
     // Supporting text on a raised surface is `foreground-secondary`.
     { fg: "muted-foreground", bg: "background", usage: "body" },
     { fg: "muted-foreground", bg: "surface", usage: "body" },
-    { fg: "muted-foreground", bg: "muted", usage: "body" },
     // foreground-tertiary is deliberately faint (placeholders, watermarks) and is
     // held to the incidental floor, not the body target.
     { fg: "foreground-tertiary", bg: "background", usage: "non-text" },
@@ -141,10 +143,27 @@ export const CONTRAST_PAIRS: Array<{
     // allowed on — one pair per ground, because it is a different colour on
     // each. Checking a wash against nothing is how the old opaque `state-hover`
     // passed while being invisible on `muted`.
-    ...(["background", "surface", "surface-raised", "muted"] as const).flatMap((ground) => [
+    ...LADDER.flatMap((ground) => [
         { fg: "foreground", bg: "state-hover", over: ground, usage: "body" as Usage },
         { fg: "foreground", bg: "state-active", over: ground, usage: "body" as Usage },
         { fg: "foreground", bg: "state-selected", over: ground, usage: "body" as Usage },
+        // `muted` is a wash too now, so it is measured the same way — over every
+        // surface it can land on rather than as the primitive underneath it.
+        { fg: "foreground", bg: "muted", over: ground, usage: "body" as Usage },
+    ]),
+    // Supporting text and links on a muted region are checked over the FLAT
+    // surfaces only, for the same reason `muted-foreground` skips
+    // `surface-raised` above: holding a caption colour to a table header inside
+    // a popover drags it to near-white in dark mode, where it stops being
+    // distinguishable from `foreground`. Body text on muted is checked
+    // everywhere, because that is the combination people actually build.
+    // `surface-sunken` is not in this list on purpose: requiring a caption to
+    // survive a muted region inside a well drove `muted-foreground` to the exact
+    // same value as `--foreground`, collapsing the text hierarchy to keep a
+    // combination nobody builds. See the note in `semantics.ts`.
+    ...(["background", "surface"] as const).flatMap((ground) => [
+        { fg: "muted-foreground", bg: "muted", over: ground, usage: "body" as Usage },
+        { fg: "link", bg: "muted", over: ground, usage: "body" as Usage },
     ]),
     // `state-disabled` is deliberately absent. Its label is
     // `--foreground-tertiary`, which this system documents as exempt and "never
@@ -160,7 +179,6 @@ export const CONTRAST_PAIRS: Array<{
     // check that would have caught `--primary`-as-a-link at Lc −28.7.
     { fg: "link", bg: "background", usage: "body" },
     { fg: "link", bg: "surface", usage: "body" },
-    { fg: "link", bg: "muted", usage: "body" },
     { fg: "link-hover", bg: "background", usage: "body" },
     { fg: "link-inverse", bg: "inverse", usage: "body" },
     // The two rings exist because `ring` alone is invisible on a brand fill.

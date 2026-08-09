@@ -9,7 +9,7 @@
 
 import { Badge, Button, Card, Grid, Page, Row, Section, typeRole } from "../kit"
 
-const SHADOWS = ["sm", "md", "lg", "overlay"] as const
+const SHADOWS = ["sm", "raised", "overlay"] as const
 
 const label: React.CSSProperties = {
     fontFamily: "var(--font-mono)",
@@ -76,24 +76,39 @@ export function SurfacesSheet() {
 
             <Section
                 title="Side by side"
-                lead="The same four, flat. In light mode surface and surface-raised are deliberately identical — light has nowhere brighter to go, so elevation there is shadow, not fill."
+                lead="The whole ladder, flat. Each mode runs out of ramp at one end and it is the opposite end: light has nowhere brighter than surface, so raised and overlay share its fill and the shadow does the lifting; dark has nothing below background, so sunken shares that. --muted is not a level — it is a translucent wash, shown here over surface."
             >
                 <Grid min="180px">
                     {[
+                        ["surface-sunken", "Wells, kanban columns"],
                         ["background", "The page"],
                         ["surface", "Cards, panels"],
-                        ["surface-raised", "Popovers, dialogs"],
+                        ["surface-raised", "Cards that lift"],
+                        ["surface-overlay", "Modals, dropdowns"],
                         ["muted", "Quiet fills, table headers"],
                     ].map(([token, use]) => (
                         <div key={token}>
+                            {/*
+                              `muted` is translucent, so it is shown over
+                              `surface` — on its own it would render as whatever
+                              the page is and look like a bug.
+                            */}
                             <div
                                 style={{
                                     height: "88px",
-                                    background: `var(--${token})`,
+                                    ...(token === "muted" ? { background: "var(--surface)" } : {}),
                                     border: "1px solid var(--border)",
                                     borderRadius: "var(--radius-md)",
                                 }}
-                            />
+                            >
+                                <div
+                                    style={{
+                                        height: "100%",
+                                        background: `var(--${token})`,
+                                        borderRadius: "calc(var(--radius-md) - 1px)",
+                                    }}
+                                />
+                            </div>
                             <code style={{ ...label, display: "block", marginTop: "var(--space-2)" }}>
                                 --{token}
                             </code>
@@ -124,10 +139,9 @@ export function SurfacesSheet() {
                             <p style={{ ...typeRole("body-sm"), color: "var(--foreground-secondary)", margin: "var(--space-2) 0 0" }}>
                                 {
                                     {
-                                        sm: "Resting cards, if they float at all.",
-                                        md: "Dropdowns and menus.",
-                                        lg: "Popovers and sheets.",
-                                        overlay: "Modals over a dimmed page.",
+                                        sm: "A control lifting off its surface. Not an elevation level.",
+                                        raised: "Pairs with --surface-raised. Never with another level.",
+                                        overlay: "Pairs with --surface-overlay. Modals, dropdowns, popovers.",
                                     }[level]
                                 }
                             </p>
@@ -151,7 +165,7 @@ export function SurfacesSheet() {
                 >
                     <div
                         style={{
-                            background: "var(--surface-raised)",
+                            background: "var(--surface-overlay)",
                             borderRadius: "var(--radius-lg)",
                             boxShadow: "var(--shadow-overlay)",
                             padding: "var(--space-6)",

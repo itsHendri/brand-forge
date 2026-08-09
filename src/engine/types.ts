@@ -130,7 +130,13 @@ export interface TypeRole {
 }
 
 export interface ShadowLevel {
-    name: "sm" | "md" | "lg" | "overlay"
+    /**
+     * Named for the surface it pairs with, not for its size. `raised` goes with
+     * `--surface-raised` and `overlay` with `--surface-overlay`, so the pairing
+     * cannot be got wrong; `sm` is the odd one out and is deliberately not an
+     * elevation level — it is a hairline lift for a control.
+     */
+    name: "sm" | "raised" | "overlay"
     /** Layered box-shadow parts, joined with ", ". Colours may be `oklch(...)`. */
     layers: string[]
 }

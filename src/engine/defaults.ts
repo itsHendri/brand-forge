@@ -122,15 +122,7 @@ export const DEFAULT_SHADOWS: BrandConfig["shadows"] = {
             layers: ["0 1px 2px -1px oklch(0 0 0 / 0.08)", "0 0 0 1px oklch(0 0 0 / 0.04)"],
         },
         {
-            name: "md",
-            layers: [
-                "0 0 0 1px oklch(0 0 0 / 0.05)",
-                "0 1px 2px -1px oklch(0 0 0 / 0.06)",
-                "0 2px 4px 0 oklch(0 0 0 / 0.04)",
-            ],
-        },
-        {
-            name: "lg",
+            name: "raised",
             layers: [
                 "0 0 0 1px oklch(0 0 0 / 0.05)",
                 "0 4px 8px -2px oklch(0 0 0 / 0.08)",
@@ -151,8 +143,7 @@ export const DEFAULT_SHADOWS: BrandConfig["shadows"] = {
 /** Dark-mode elevation: a ring, not a shadow. */
 export const DARK_SHADOWS: Record<string, string> = {
     sm: "0 0 0 1px oklch(1 0 0 / 0.06)",
-    md: "0 0 0 1px oklch(1 0 0 / 0.08)",
-    lg: "0 0 0 1px oklch(1 0 0 / 0.10), 0 8px 24px -8px oklch(0 0 0 / 0.6)",
+    raised: "0 0 0 1px oklch(1 0 0 / 0.10), 0 8px 24px -8px oklch(0 0 0 / 0.6)",
     overlay: "0 0 0 1px oklch(1 0 0 / 0.12), 0 24px 64px -12px oklch(0 0 0 / 0.7)",
 }
 

@@ -73,16 +73,28 @@ function pickAgainst(
     candidates: readonly Step[],
     required: number,
     prefer: "quietest" | "strongest" = "quietest",
+    /**
+     * Steps another text level has already claimed. A hierarchy the docs promise
+     * and the values don't make is worse than no hierarchy, so a level that
+     * would duplicate one above it takes the next passing step instead of
+     * silently becoming its twin. Ignored if nothing else passes.
+     */
+    exclude: readonly Step[] = [],
 ): Step {
     let best: { step: Step; lc: number } | undefined
+    let fallback: { step: Step; lc: number } | undefined
     let strongest: { step: Step; lc: number } | undefined
 
     for (const step of candidates) {
         const lc = Math.abs(apca(ramp[step]!, backgroundHex))
         if (!strongest || lc > strongest.lc) strongest = { step, lc }
-        if (lc >= required && (!best || lc < best.lc)) best = { step, lc }
+        if (lc < required) continue
+        if (!fallback || lc < fallback.lc) fallback = { step, lc }
+        if (exclude.includes(step)) continue
+        if (!best || lc < best.lc) best = { step, lc }
     }
-    return prefer === "strongest" ? strongest!.step : (best ?? strongest!).step
+    if (prefer === "strongest") return strongest!.step
+    return (best ?? fallback ?? strongest!).step
 }
 
 const INK_CANDIDATES = [950, 900, 800, 700, 600] as const
@@ -187,11 +199,13 @@ function maxWashAlpha(
  * which sits closest to the wash on the ramp.
  */
 export const MIN_WASH_SHIFT = 6
+/** A quiet *region* has to read as a region, not as a passing highlight. */
+export const MIN_REGION_SHIFT = 11
 
-function minVisibleAlpha(washHex: string, groundHexes: string[]): number {
+function minVisibleAlpha(washHex: string, groundHexes: string[], minShift = MIN_WASH_SHIFT): number {
     for (const alpha of [...WASH_ALPHAS].reverse()) {
         const visible = groundHexes.every(
-            (ground) => channelShift(composite(washHex, alpha, ground), ground) >= MIN_WASH_SHIFT,
+            (ground) => channelShift(composite(washHex, alpha, ground), ground) >= minShift,
         )
         if (visible) return alpha
     }
@@ -416,11 +430,74 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
     })
 
     // Surfaces come first because every text colour is chosen against them.
+    /**
+     * The elevation ladder, named for purpose rather than numbered (DECISIONS #21).
+     *
+     * Both modes run out of ramp, at opposite ends, and the measurements say
+     * exactly where. Light tops out at `neutral-50` — there is nothing whiter
+     * than white — so `surface`, `raised` and `overlay` share a fill there and
+     * the shadows carry the separation. That is not a compromise; it is what
+     * Atlassian's light theme does too.
+     *
+     * Dark bottoms out at `neutral-950`, so `sunken` shares with `background`.
+     * It also has a hard ceiling: `neutral-700` puts body text at Lc 79, four
+     * points off the bar, and `neutral-600` fails outright at 68. So the dark
+     * ladder is 950/900/800/700 and there is no fifth level to be had.
+     */
     const surfaces = {
+        sunken: n(200, 950),
         background: n(100, 950),
         surface: n(50, 900),
-        raised: n(50, 700),
-        muted: n(200, 800),
+        raised: n(50, 800),
+        overlay: n(50, 700),
+    }
+    /** Every opaque surface a wash or a text colour can land on, darkest-first. */
+    const ladder = [surfaces.sunken, surfaces.background, surfaces.surface, surfaces.raised, surfaces.overlay]
+    const ladderHex: Record<Mode, string[]> = {
+        light: ladder.map((surface) => neutral.light[surface.light.step]!),
+        dark: ladder.map((surface) => neutral.dark[surface.dark.step]!),
+    }
+
+
+    const bodyInk: Record<Mode, string> = { light: neutral.light[950]!, dark: neutral.dark[50]! }
+
+    /**
+     * `--muted` is a wash too, and it has to be: the dark ladder consumes every
+     * usable step (950/900/800/700), so there is no opaque value left for a
+     * quiet fill that does not collide with a surface. Atlassian documents
+     * exactly this trade — an opaque token darkens in both modes, a transparent
+     * one adapts to whatever elevation it lands on — and in dark mode, where the
+     * surfaces move, adapting is the behaviour you want anyway.
+     *
+     * The same mid grey as the state washes, at its own strength. A step further
+     * out was tried first, to keep a quiet region and a pressed row from ever
+     * resolving alike; in dark mode it lightened the surfaces so much that only
+     * the two lightest neutrals still cleared body contrast on them, which left
+     * no distinct step for `--muted-foreground`. A mid grey is gentler per unit
+     * of alpha, and the strengths differ anyway.
+     *
+     * Solved as the *gentlest* wash that still reads as a region, not the
+     * strongest the palette allows. Solving it for maximum made it the most
+     * extreme ground in the system, which then dragged `--muted-foreground` and
+     * `--link` toward the ends of the ramp to stay readable on it. A quiet fill
+     * that forces every caption darker is not quiet.
+     */
+    const mutedHex: Record<Mode, string> = { light: neutral.light[500]!, dark: neutral.dark[500]! }
+    const mutedAlpha: Record<Mode, number> = {
+        light: Math.min(
+            minVisibleAlpha(mutedHex.light, ladderHex.light, MIN_REGION_SHIFT),
+            maxWashAlpha(mutedHex.light, ladderHex.light, bodyInk.light, LC_THRESHOLD.body),
+        ),
+        dark: Math.min(
+            minVisibleAlpha(mutedHex.dark, ladderHex.dark, MIN_REGION_SHIFT),
+            maxWashAlpha(mutedHex.dark, ladderHex.dark, bodyInk.dark, LC_THRESHOLD.body),
+        ),
+    }
+
+    /** A muted region on each surface — a real ground that text has to survive. */
+    const mutedOver: Record<Mode, string[]> = {
+        light: ladderHex.light.map((ground) => composite(mutedHex.light, mutedAlpha.light, ground)),
+        dark: ladderHex.dark.map((ground) => composite(mutedHex.dark, mutedAlpha.dark, ground)),
     }
 
     const borderOnPage = {
@@ -451,20 +528,42 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
      * in dark mode `surface-raised` is four steps lighter than the page.
      */
     const hardestGround: Record<Mode, string> = {
-        light: neutral.light[surfaces.muted.light.step]!,
-        dark: neutral.dark[surfaces.raised.dark.step]!,
+        // Ink struggles on the darkest ground, paper on the lightest.
+        // The bare ladder only. A muted region *inside* an overlay is the
+        // lightest ground the system can produce, and holding supporting text to
+        // it pushed every level to the end of the ramp — `foreground-secondary`
+        // and `muted-foreground` both landed on `neutral-100`, one step from the
+        // body ink, and the three-level hierarchy stopped existing. Bare raised
+        // and overlay are in, because a subtitle in a dialog is ordinary.
+        light: ladderHex.light.reduce((a, b) => (apca(bodyInk.light, a) < apca(bodyInk.light, b) ? a : b)),
+        dark: ladderHex.dark.reduce((a, b) =>
+            Math.abs(apca(bodyInk.dark, a)) < Math.abs(apca(bodyInk.dark, b)) ? a : b,
+        ),
     }
 
     /**
-     * The flat surfaces — page, card, quiet fill. `surface-raised` is excluded
-     * on purpose: in dark mode it is four steps lighter than the page, and
-     * holding a caption colour to it drags `muted-foreground` all the way to
-     * near-white, where it becomes indistinguishable from `foreground`. A
+     * The flat surfaces — sunken, page, card. `raised` and `overlay` are excluded
+     * on purpose: in dark mode they are the lightest grounds in the system, and
+     * holding a caption colour to them drags `muted-foreground` all the way to
+     * near-white, where it stops being distinguishable from `foreground`. A
      * caption inside a popover is rare; a caption on a card is everywhere.
      */
     const flatGround: Record<Mode, string> = {
-        light: neutral.light[surfaces.muted.light.step]!,
-        dark: neutral.dark[surfaces.muted.dark.step]!,
+        // Sunken, page and card, plus a muted region on the page and on a card —
+        // a caption in a table header is as common as one on a card, and the
+        // wash makes that ground harder than the bare surface.
+        //
+        // Muted-over-*sunken* is deliberately excluded, and so are raised and
+        // overlay. Including it drove `muted-foreground` in light mode all the
+        // way to `neutral-950`, where it was byte-identical to `--foreground`
+        // and the text hierarchy the docs promise stopped existing. A caption
+        // inside a muted region inside a well is not worth that.
+        light: [ladderHex.light[0]!, ladderHex.light[1]!, ladderHex.light[2]!, mutedOver.light[1]!, mutedOver.light[2]!].reduce(
+            (a, b) => (apca(bodyInk.light, a) < apca(bodyInk.light, b) ? a : b),
+        ),
+        dark: [ladderHex.dark[0]!, ladderHex.dark[1]!, ladderHex.dark[2]!, mutedOver.dark[1]!, mutedOver.dark[2]!].reduce(
+            (a, b) => (Math.abs(apca(bodyInk.dark, a)) < Math.abs(apca(bodyInk.dark, b)) ? a : b),
+        ),
     }
 
     /**
@@ -536,16 +635,7 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
      * common place a hover state appears, so excluding the hard case would be
      * excluding the real one.
      */
-    const washGrounds: Record<Mode, string[]> = {
-        light: [surfaces.background, surfaces.surface, surfaces.raised, surfaces.muted].map(
-            (surface) => neutral.light[surface.light.step]!,
-        ),
-        dark: [surfaces.background, surfaces.surface, surfaces.raised, surfaces.muted].map(
-            (surface) => neutral.dark[surface.dark.step]!,
-        ),
-    }
-    const bodyInk: Record<Mode, string> = { light: neutral.light[950]!, dark: neutral.dark[50]! }
-
+    const washGrounds: Record<Mode, string[]> = ladderHex
     // Two ends, both solved: `active` takes the strongest wash the palette can
     // carry with body text still on it, `hover` the gentlest one that is still
     // visible everywhere. On a tight ramp those converge, which is the palette
@@ -579,16 +669,38 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
         dark: Math.round((hoverAlpha.dark + activeAlpha.dark) * 50) / 100,
     }
 
-    const textAgainst = (ground: Record<Mode, string>, required: number) => ({
+
+    /**
+     * `foreground-secondary` and `muted-foreground` are meant to be different
+     * weights of quiet: the first is for large supporting copy and is verified
+     * on every surface, the second is for small text and therefore carries MORE
+     * contrast. Their thresholds and grounds differ, so usually they land apart
+     * on their own — but they are free to collide, and in dark mode with the
+     * four-level ladder they did, both resolving to `neutral-200`. A hierarchy
+     * the docs promise and the values do not make is worse than no hierarchy,
+     * so the tie is broken explicitly rather than left to arithmetic.
+     */
+    const inkStep: Record<Mode, Step> = { light: 950, dark: 50 }
+    const secondaryRef = {
         light: {
             scale: "neutral" as const,
-            step: pickAgainst(neutral.light, ground.light, INK_CANDIDATES, required),
+            step: pickAgainst(neutral.light, hardestGround.light, INK_CANDIDATES, LC_THRESHOLD.large, "quietest", [inkStep.light]),
         },
         dark: {
             scale: "neutral" as const,
-            step: pickAgainst(neutral.dark, ground.dark, PAPER_CANDIDATES, required),
+            step: pickAgainst(neutral.dark, hardestGround.dark, PAPER_CANDIDATES, LC_THRESHOLD.large, "quietest", [inkStep.dark]),
         },
-    })
+    }
+    const mutedForegroundRef = {
+        light: {
+            scale: "neutral" as const,
+            step: pickAgainst(neutral.light, flatGround.light, INK_CANDIDATES, LC_THRESHOLD.body, "quietest", [inkStep.light, secondaryRef.light.step]),
+        },
+        dark: {
+            scale: "neutral" as const,
+            step: pickAgainst(neutral.dark, flatGround.dark, PAPER_CANDIDATES, LC_THRESHOLD.body, "quietest", [inkStep.dark, secondaryRef.dark.step]),
+        },
+    }
 
     return [
         // ── Surfaces ────────────────────────────────────────────────────────
@@ -607,18 +719,32 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
         {
             name: "surface-raised",
             group: "surface",
-            // Dark mode climbs the ramp to show elevation. Light mode has nowhere
-            // lighter to go than `surface`, so the two match there on purpose and
-            // the separation comes from `--shadow-lg`.
             ...surfaces.raised,
             description:
-                "Popovers, dropdowns, dialogs — one level above `surface`. In light mode this equals `surface`: elevation there is `--shadow-lg`, not a lighter fill.",
+                "A card that lifts off the page — draggable cards, or one card singled out for emphasis. **Always pair it with `--shadow-raised`.** In light mode this is the same fill as `surface`, because there is nothing whiter than white; the shadow is what carries the elevation there. In dark mode the surface itself lightens, because a shadow on a dark ground is nearly invisible.",
         },
+        {
+            name: "surface-overlay",
+            group: "surface",
+            ...surfaces.overlay,
+            description:
+                "UI floating over other UI — modals, dropdowns, popovers, tooltips-with-content. The top of the ladder. **Always pair it with `--shadow-overlay`.** Like `surface-raised` this equals `surface` in light mode and lightens in dark.",
+        },
+        {
+            name: "surface-sunken",
+            group: "surface",
+            ...surfaces.sunken,
+            description:
+                "A well the content sits down into — a kanban column, a code block's gutter, an inset panel. Only ever on `surface` or `background`; never inside a raised or overlay surface, which reads as a hole in a floating card. In dark mode this is the same fill as `background`, because there is nothing darker on the ramp.",
+        },
+
         {
             name: "muted",
             group: "surface",
-            ...surfaces.muted,
-            description: "Quiet neutral fill — table headers, inactive tabs, code blocks.",
+            light: { scale: "neutral", step: 500, alpha: mutedAlpha.light },
+            dark: { scale: "neutral", step: 500, alpha: mutedAlpha.dark },
+            description:
+                "Quiet neutral fill — table headers, inactive tabs, code blocks. Translucent, so it reads correctly on whichever surface it lands on rather than being tuned for one of them. It is not an elevation level: for a recessed well use `surface-sunken`.",
         },
 
         // ── Text ────────────────────────────────────────────────────────────
@@ -638,14 +764,14 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             // copy, and smaller text needs MORE contrast, not less.
             // Measured against every surface including `surface-raised`, so it
             // is the supporting-text colour that works inside a dialog too.
-            ...textAgainst(hardestGround, LC_THRESHOLD.large),
+            ...secondaryRef,
             description:
                 "Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is the only supporting text colour verified against `surface-raised`, so use it inside dialogs and popovers. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it.",
         },
         {
             name: "muted-foreground",
             group: "text",
-            ...textAgainst(flatGround, LC_THRESHOLD.body),
+            ...mutedForegroundRef,
             description:
                 "Small supporting text — captions, helper text, metadata — on `background`, `surface` or `muted`. Verified against those three only; on `surface-raised` use `foreground-secondary`.",
         },
@@ -860,13 +986,12 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
         {
             name: "scrim",
             group: "surface",
-            // The one translucent token in the system. It cannot alias a
-            // primitive — `var(--neutral-950)` carries no opacity — so it emits
-            // a literal. See DECISIONS #24.
+            // Cannot alias a primitive — `var(--neutral-950)` carries no
+            // opacity — so it emits a literal. See DECISIONS #24.
             light: { scale: "neutral", step: 950, alpha: 0.6 },
             dark: { scale: "neutral", step: 950, alpha: 0.7 },
             description:
-                "The backdrop behind a modal or drawer. Translucent on purpose, so the page stays legible underneath — it is the one token in this system that is not a solid colour. Dark mode carries more of it, because a dim scrim over an already-dark page does not read as a layer.",
+                "The backdrop behind a modal or drawer. Translucent on purpose, so the page stays legible underneath. Dark mode carries more of it, because a dim scrim over an already-dark page does not read as a layer.",
         },
         {
             name: "skeleton-surface",

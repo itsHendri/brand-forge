@@ -29,7 +29,7 @@ Two layers, and only one of them is yours to use.
 (`primary`, `secondary`, `neutral`, `success`, `warning`, `danger`, `info`), 11 steps each, generated in OKLCH. They exist so a human can tune colour.
 **Do not reference them in code.**
 
-**Semantics** — the 68 tokens below. Every one aliases a primitive, and
+**Semantics** — the 70 tokens below. Every one aliases a primitive, and
 re-points itself in dark mode. This is the whole API.
 
 ### Surfaces
@@ -38,9 +38,11 @@ re-points itself in dark mode. This is the whole API.
 | --- | --- | --- | --- |
 | `--background` | `#edf0f4` | `#1b2127` | The page. Every screen starts here. |
 | `--surface` | `#f7f9fb` | `#2c353f` | Cards, panels and anything sitting one level above the page. |
-| `--surface-raised` | `#f7f9fb` | `#556575` | Popovers, dropdowns, dialogs — one level above `surface`. In light mode this equals `surface`: elevation there is `--shadow-lg`, not a lighter fill. |
-| `--muted` | `#dce3eb` | `#3e4b58` | Quiet neutral fill — table headers, inactive tabs, code blocks. |
-| `--scrim` | `#1f262d` at 60% | `#1b2127` at 70% | The backdrop behind a modal or drawer. Translucent on purpose, so the page stays legible underneath — it is the one token in this system that is not a solid colour. Dark mode carries more of it, because a dim scrim over an already-dark page does not read as a layer. |
+| `--surface-raised` | `#f7f9fb` | `#3e4b58` | A card that lifts off the page — draggable cards, or one card singled out for emphasis. **Always pair it with `--shadow-raised`.** In light mode this is the same fill as `surface`, because there is nothing whiter than white; the shadow is what carries the elevation there. In dark mode the surface itself lightens, because a shadow on a dark ground is nearly invisible. |
+| `--surface-overlay` | `#f7f9fb` | `#556575` | UI floating over other UI — modals, dropdowns, popovers, tooltips-with-content. The top of the ladder. **Always pair it with `--shadow-overlay`.** Like `surface-raised` this equals `surface` in light mode and lightens in dark. |
+| `--surface-sunken` | `#dce3eb` | `#1b2127` | A well the content sits down into — a kanban column, a code block's gutter, an inset panel. Only ever on `surface` or `background`; never inside a raised or overlay surface, which reads as a hole in a floating card. In dark mode this is the same fill as `background`, because there is nothing darker on the ramp. |
+| `--muted` | `#92a2b3` at 18% | `#8697a8` at 18% | Quiet neutral fill — table headers, inactive tabs, code blocks. Translucent, so it reads correctly on whichever surface it lands on rather than being tuned for one of them. It is not an elevation level: for a recessed well use `surface-sunken`. |
+| `--scrim` | `#1f262d` at 60% | `#1b2127` at 70% | The backdrop behind a modal or drawer. Translucent on purpose, so the page stays legible underneath. Dark mode carries more of it, because a dim scrim over an already-dark page does not read as a layer. |
 | `--skeleton-surface` | `#dce3eb` | `#3e4b58` | The container of a loading placeholder — the card shape that holds the blocks. |
 | `--skeleton` | `#92a2b3` | `#8697a8` | The blocks standing in for text and UI while content loads. Put them on `skeleton-surface`. Never animate them with `opacity` — use a background-position sweep, so the contrast the audit measured is the contrast that ships. |
 
@@ -300,7 +302,7 @@ fix is a smaller card radius or a padding change, not an exception. Note the for
 produce values off the radius scale (a 15px panel with 8px padding gives 7px); that is expected —
 use the computed number, don't snap it.
 
-Elevation is `--shadow-sm` | `--shadow-md` | `--shadow-lg` | `--shadow-overlay`. In dark mode
+Elevation is `--shadow-sm` | `--shadow-raised` | `--shadow-overlay`, and the last two are named for the surface they pair with — `--surface-raised` and `--surface-overlay`. Never mix a surface with another level's shadow. In dark mode
 these become a hairline ring rather than a drop shadow — depth there comes from surface lightness,
 which `--surface` and `--surface-raised` already provide. Use shadow for things that float and
 `--border` for things that divide; never both for the same job.
@@ -408,7 +410,7 @@ Small print on a brand band has no compliant colour in this system, so don't put
 `border-radius: var(--radius-lg)` (15px), `padding: var(--space-6)`. **No shadow**: the
 border is already doing the structural job, and `--shadow-sm` carries its own hairline layer, so
 using both doubles the edge — visibly so in dark mode, where the shadow *is* a ring. Save
-`--shadow-lg` for things that genuinely float (popovers, dialogs) and give those no border.
+`--shadow-overlay` for things that genuinely float (popovers, dialogs) and give those no border.
 Anything rounded inside a card takes 0px — that's the concentric rule applied to this
 card's 15px radius and 24px padding, not a token.
 
@@ -508,8 +510,8 @@ use the one that describes your intent, because the values diverge the moment th
 
 | Mode | Value | Tokens |
 | --- | --- | --- |
-| light | `#f7f9fb` | `--surface`, `--surface-raised`, `--ring-inverse`, `--ring-inset`, `--primary-foreground`, `--secondary-foreground`, `--success-foreground`, `--warning-foreground`, `--danger-foreground`, `--info-foreground` |
-| light | `#dce3eb` | `--muted`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
+| light | `#f7f9fb` | `--surface`, `--surface-raised`, `--surface-overlay`, `--ring-inverse`, `--ring-inset`, `--primary-foreground`, `--secondary-foreground`, `--success-foreground`, `--warning-foreground`, `--danger-foreground`, `--info-foreground` |
+| light | `#dce3eb` | `--surface-sunken`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
 | light | `#36414d` | `--muted-foreground`, `--inverse` |
 | light | `#92a2b3` | `--foreground-tertiary`, `--border-strong`, `--skeleton` |
 | light | `#acbccd` | `--border`, `--input` |
@@ -520,8 +522,9 @@ use the one that describes your intent, because the values diverge the moment th
 | light | `#7e4000` | `--warning-active`, `--warning-subtle-foreground` |
 | light | `#970d16` | `--danger-active`, `--danger-subtle-foreground` |
 | light | `#005783` | `--info-active`, `--info-subtle-foreground` |
-| dark | `#1b2127` | `--background`, `--ring-inverse`, `--secondary-foreground`, `--warning-foreground` |
-| dark | `#3e4b58` | `--muted`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
+| dark | `#1b2127` | `--background`, `--surface-sunken`, `--ring-inverse`, `--secondary-foreground`, `--warning-foreground` |
+| dark | `#3e4b58` | `--surface-raised`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
+| dark | `#8697a8@0.18` | `--muted`, `--state-active` |
 | dark | `#f4f6f8` | `--foreground`, `--ring-inset`, `--primary-foreground`, `--success-foreground`, `--danger-foreground`, `--info-foreground` |
 | dark | `#e7ebef` | `--muted-foreground`, `--inverse` |
 | dark | `#8697a8` | `--foreground-tertiary`, `--border-strong`, `--skeleton` |

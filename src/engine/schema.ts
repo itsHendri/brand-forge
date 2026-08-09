@@ -11,6 +11,7 @@
  * file that has one keeps every word of it.
  */
 
+import { DEFAULT_SHADOWS } from "./defaults"
 import { defaultSemanticMapping } from "./semantics"
 import type { BrandConfig, ScaleConfig, SemanticOverride, SemanticRef, SemanticTokenDef } from "./types"
 
@@ -102,6 +103,27 @@ export function migrateConfig(raw: unknown, defaults: BrandConfig): MigrationRes
         const overrides = inferOverrides(color?.semantics, scales)
         inferredOverrides = overrides.map((override) => override.name)
         config.color = { scales, semanticOverrides: overrides }
+    }
+
+    /**
+     * Shadow levels are keyed by name, and the names changed when elevation
+     * stopped being a size scale (`sm`/`md`/`lg`) and became a pairing with the
+     * surfaces (`sm`/`raised`/`overlay`). A file carrying the old names kept
+     * them silently — and worse, lost its dark-mode override, because
+     * `DARK_SHADOWS` is looked up by name and no longer had an entry. So unknown
+     * levels are dropped and missing ones are restored from defaults.
+     */
+    const shadows = config.shadows as BrandConfig["shadows"] | undefined
+    const known = new Set(DEFAULT_SHADOWS.levels.map((level) => level.name))
+    const kept = (shadows?.levels ?? []).filter((level) => known.has(level.name))
+    const dropped = (shadows?.levels ?? []).filter((level) => !known.has(level.name))
+    if (dropped.length > 0 || kept.length !== DEFAULT_SHADOWS.levels.length) {
+        config.shadows = {
+            levels: DEFAULT_SHADOWS.levels.map(
+                (fallback) => kept.find((level) => level.name === fallback.name) ?? fallback,
+            ),
+        }
+        if (dropped.length > 0) filled.push(`shadows (dropped ${dropped.map((l) => l.name).join(", ")})`)
     }
 
     // Version is informational today; when a real migration is needed this is

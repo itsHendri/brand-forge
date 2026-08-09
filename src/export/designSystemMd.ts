@@ -256,7 +256,7 @@ Small print on a brand band has no compliant colour in this system, so don't put
 \`border-radius: var(--radius-lg)\` (${r.lg}px), \`padding: var(--space-6)\`. **No shadow**: the
 border is already doing the structural job, and \`--shadow-sm\` carries its own hairline layer, so
 using both doubles the edge — visibly so in dark mode, where the shadow *is* a ring. Save
-\`--shadow-lg\` for things that genuinely float (popovers, dialogs) and give those no border.
+\`--shadow-overlay\` for things that genuinely float (popovers, dialogs) and give those no border.
 Anything rounded inside a card takes ${cardInner}px — that's the concentric rule applied to this
 card's ${r.lg}px radius and 24px padding, not a token.
 
@@ -714,7 +714,7 @@ fix is a smaller card radius or a padding change, not an exception. Note the for
 produce values off the radius scale (a 15px panel with 8px padding gives 7px); that is expected —
 use the computed number, don't snap it.
 
-Elevation is \`--shadow-sm\` | \`--shadow-md\` | \`--shadow-lg\` | \`--shadow-overlay\`. In dark mode
+Elevation is \`--shadow-sm\` | \`--shadow-raised\` | \`--shadow-overlay\`, and the last two are named for the surface they pair with — \`--surface-raised\` and \`--surface-overlay\`. Never mix a surface with another level's shadow. In dark mode
 these become a hairline ring rather than a drop shadow — depth there comes from surface lightness,
 which \`--surface\` and \`--surface-raised\` already provide. Use shadow for things that float and
 \`--border\` for things that divide; never both for the same job.

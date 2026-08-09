@@ -28,8 +28,18 @@ Full token tables, component recipes and wrong/right pairs live in
    the ramp, not for building. Semantics only.
 3. **Never write a dark-mode colour override.** Tokens re-point themselves under
    `[data-theme="dark"]`. A `dark:` colour variant means you used the wrong token.
-4. **Surfaces:** `--background` is the page, `--surface` is a card, `--surface-raised` is a
-   popover or dialog, `--muted` is a quiet fill. There is no `--card` or `--popover`.
+4. **Surfaces are a ladder, and each level owns its shadow.** From the bottom:
+   `--surface-sunken` (a well — a kanban column, an inset panel), `--background` (the page),
+   `--surface` (a card), `--surface-raised` (a card that lifts — pair with `--shadow-raised`),
+   `--surface-overlay` (modals, dropdowns, popovers — pair with `--shadow-overlay`). Never mix a
+   surface with another level's shadow. There is no `--card` or `--popover`.
+   Two levels coincide, in one mode each, and both are deliberate: in **light** mode raised and
+   overlay are the same fill as `--surface`, because nothing is whiter than white and the shadow
+   carries the elevation; in **dark** mode `--surface-sunken` is the same fill as `--background`,
+   because nothing on the ramp is darker. Use the named token anyway — it is correct in the other
+   mode, and hard-coding the one it collapses to breaks when the theme flips.
+   `--muted` is a translucent quiet fill (table headers, inactive tabs, code blocks), not a level:
+   layer it over whichever surface it sits on.
 5. **Text:** `--foreground` for body and headings, `--foreground-secondary` for supporting copy,
    `--muted-foreground` for captions and metadata. `--foreground-tertiary` is below the reading
    threshold — placeholders and watermarks only.
@@ -52,7 +62,7 @@ Full token tables, component recipes and wrong/right pairs live in
    **The four `--state-*` tokens are translucent washes, not fills.** Layer one over the surface
    the element already has — `background: var(--surface)` then `background: var(--state-hover)`
    on `:hover` works because the wash composites over whatever is behind it. That is why one token
-   covers `--background`, `--surface`, `--surface-raised` and `--muted` instead of needing four:
+   covers every level of the surface ladder instead of needing one per level:
    it is a mid grey, so it darkens every light surface and lightens every dark one. Do not put one
    on a coloured fill — they are calibrated against the neutral surfaces only, and a brand fill has
    its own `-hover` and `-active`. They have no `-foreground` of their own either: text keeps
@@ -72,8 +82,9 @@ Full token tables, component recipes and wrong/right pairs live in
     dark chip, a footer band — dark on a light page and *light* on a dark one. Everything inside it
     takes `--inverse-foreground`, `--inverse-border`, `--link-inverse`, `--ring-inverse`.
     The page-measured tokens are unreadable in there.
-12. **Overlays and loading.** A modal backdrop is `--scrim` — the one translucent token in the
-    system, so do not substitute a hex for it. A loading placeholder is `--skeleton` blocks on a
+12. **Overlays and loading.** A modal backdrop is `--scrim`. Do not substitute a hex for it: like
+    the state washes and `--muted` it is translucent, and the hex in the token table is the colour
+    *before* its alpha is applied. A loading placeholder is `--skeleton` blocks on a
     `--skeleton-surface` container; animate it with a background-position sweep, never with
     `opacity`. The only blessed opacities are `--opacity-disabled` and `--opacity-loading`,
     and neither is for live text — fading text defeats the contrast audit, because the result

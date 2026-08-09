@@ -92,7 +92,9 @@
     --background: var(--neutral-100);
     --surface: var(--neutral-50);
     --surface-raised: var(--neutral-50);
-    --muted: var(--neutral-200);
+    --surface-overlay: var(--neutral-50);
+    --surface-sunken: var(--neutral-200);
+    --muted: oklch(70.6% 0.03 249.45 / 0.18);
     --foreground: var(--neutral-950);
     --foreground-secondary: var(--neutral-800);
     --muted-foreground: var(--neutral-900);
@@ -221,8 +223,7 @@
     --radius-xl: 20px;
     --radius-full: 9999px;
     --shadow-sm: 0 1px 2px -1px oklch(0 0 0 / 0.08), 0 0 0 1px oklch(0 0 0 / 0.04);
-    --shadow-md: 0 0 0 1px oklch(0 0 0 / 0.05), 0 1px 2px -1px oklch(0 0 0 / 0.06), 0 2px 4px 0 oklch(0 0 0 / 0.04);
-    --shadow-lg: 0 0 0 1px oklch(0 0 0 / 0.05), 0 4px 8px -2px oklch(0 0 0 / 0.08), 0 12px 24px -4px oklch(0 0 0 / 0.06);
+    --shadow-raised: 0 0 0 1px oklch(0 0 0 / 0.05), 0 4px 8px -2px oklch(0 0 0 / 0.08), 0 12px 24px -4px oklch(0 0 0 / 0.06);
     --shadow-overlay: 0 0 0 1px oklch(0 0 0 / 0.06), 0 12px 32px -8px oklch(0 0 0 / 0.16), 0 24px 64px -12px oklch(0 0 0 / 0.12);
     --duration-instant: 100ms;
     --duration-fast: 150ms;
@@ -314,8 +315,10 @@
     --info-950: oklch(24.5% 0.05 239.57);
     --background: var(--neutral-950);
     --surface: var(--neutral-900);
-    --surface-raised: var(--neutral-700);
-    --muted: var(--neutral-800);
+    --surface-raised: var(--neutral-800);
+    --surface-overlay: var(--neutral-700);
+    --surface-sunken: var(--neutral-950);
+    --muted: oklch(66.8% 0.032 249.45 / 0.18);
     --foreground: var(--neutral-50);
     --foreground-secondary: var(--neutral-200);
     --muted-foreground: var(--neutral-100);
@@ -381,8 +384,7 @@
     --info-subtle-foreground: var(--info-200);
     --info-border: var(--info-600);
     --shadow-sm: 0 0 0 1px oklch(1 0 0 / 0.06);
-    --shadow-md: 0 0 0 1px oklch(1 0 0 / 0.08);
-    --shadow-lg: 0 0 0 1px oklch(1 0 0 / 0.10), 0 8px 24px -8px oklch(0 0 0 / 0.6);
+    --shadow-raised: 0 0 0 1px oklch(1 0 0 / 0.10), 0 8px 24px -8px oklch(0 0 0 / 0.6);
     --shadow-overlay: 0 0 0 1px oklch(1 0 0 / 0.12), 0 24px 64px -12px oklch(0 0 0 / 0.7);
 }
 
@@ -390,6 +392,8 @@
     --color-background: var(--background);
     --color-surface: var(--surface);
     --color-surface-raised: var(--surface-raised);
+    --color-surface-overlay: var(--surface-overlay);
+    --color-surface-sunken: var(--surface-sunken);
     --color-muted: var(--muted);
     --color-foreground: var(--foreground);
     --color-foreground-secondary: var(--foreground-secondary);
@@ -517,8 +521,7 @@
     --radius-xl: var(--radius-xl);
     --radius-full: var(--radius-full);
     --shadow-sm: var(--shadow-sm);
-    --shadow-md: var(--shadow-md);
-    --shadow-lg: var(--shadow-lg);
+    --shadow-raised: var(--shadow-raised);
     --shadow-overlay: var(--shadow-overlay);
     --ease-out: var(--ease-out);
     --ease-in: var(--ease-in);

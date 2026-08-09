@@ -616,7 +616,7 @@ export function ComponentsSheet({ secondaryAnchor }: { secondaryAnchor: number }
                                     ...typeRole("label"),
                                     background: "var(--surface-raised)",
                                     color: "var(--foreground)",
-                                    boxShadow: "var(--shadow-lg)",
+                                    boxShadow: "var(--shadow-overlay)",
                                     borderRadius: "var(--radius-md)",
                                     padding: "var(--space-3) var(--space-4)",
                                 }}

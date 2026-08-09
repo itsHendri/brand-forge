@@ -4,6 +4,25 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- **The elevation ladder is five named levels** — `--surface-sunken`, `--background`, `--surface`,
+  `--surface-raised`, `--surface-overlay` — and shadows are renamed to pair with them (`--shadow-sm`,
+  `--shadow-raised`, `--shadow-overlay`; `md` and `lg` are gone). An overlay shadow with no overlay
+  surface was the orphan that started this. Both modes run out of ramp at opposite ends, so light
+  collapses raised and overlay onto `surface` and dark collapses sunken onto `background`; each is
+  distinct in the other mode, and both are measured rather than chosen. `DECISIONS.md` #27.
+- **`--muted` is a translucent wash.** The dark ladder uses every step the ramp can carry
+  (950/900/800/700 — `neutral-600` fails body contrast at Lc 68), leaving no opaque value for a quiet
+  fill that does not collide with a surface. It adapts to whatever elevation it lands on, which is
+  Atlassian's own answer to this problem.
+- **Text levels can no longer silently merge.** `pickAgainst` takes an `exclude` list, so a level
+  that would resolve to the same step as the one above it takes the next passing step instead. Both
+  supporting-text tokens landed on `neutral-100` while the ladder was being fitted, one step off the
+  body ink, with nothing to catch it.
+- **Fixed: a renamed shadow level silently lost its dark mode.** `migrateConfig` filled missing
+  blocks but never reconciled one whose shape had changed, so a saved brand kept `md`/`lg` and got no
+  dark override at all — `DARK_SHADOWS` is keyed by name. Unknown levels are dropped, missing ones
+  restored, and a test now pins that light and dark emit the same shadow names.
+
 - **The interactive states are translucent washes**, and their alphas are solved rather than chosen.
   The four `--state-*` tokens were opaque aliases calibrated for one surface each — `--state-hover`
   and `--muted` were *the same colour*, so a hovered row on a muted surface was identical to a

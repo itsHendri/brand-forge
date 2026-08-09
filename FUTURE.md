@@ -66,12 +66,19 @@ surface ladder will move both numbers; the solver will follow, but look at the r
 The audit grew to match: `CONTRAST_PAIRS` gained an `over`, and a wash is composited onto each
 ground before being measured. Sixteen pairs where there were two.
 
-### 3. Rename the elevation model on Atlassian's scheme
+### 3. ~~Rename the elevation model on Atlassian's scheme~~ — done 2026-08-09
 
-Decided 2026-08-09 — see `DECISIONS.md` #21. `--surface-sunken / --surface / --surface-raised /
---surface-overlay`, each with a paired shadow. Also fixes two existing faults: `--shadow-overlay` has
-no matching surface, and `--surface` and `--surface-raised` are **the same value in light mode**, so
-"raised" is currently shadow-only.
+Five levels now: `--surface-sunken / --background / --surface / --surface-raised / --surface-overlay`,
+with shadows renamed to pair by name (`sm`, `raised`, `overlay` — `md` and `lg` are gone). See
+`DECISIONS.md` #27 for what the palette refused to give.
+
+The short version: both modes run out of ramp at opposite ends, so light collapses raised and overlay
+onto `surface` (shadows carry it) and dark collapses sunken onto `background`. Dark also has a hard
+ceiling — `neutral-700` is Lc 79 and `neutral-600` fails at 68 — so 950/900/800/700 is the whole
+ladder and there is no fifth level to be had.
+
+That left no opaque step for `--muted`, so **`--muted` is now a translucent wash** (Hendri's call).
+Anything nesting a quiet fill inside a surface should layer it rather than replace the surface.
 
 ### 4. Z-index and app-shell interiors
 
