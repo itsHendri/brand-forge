@@ -60,7 +60,7 @@ export const hendriPreset: BrandConfig = {
         voice: ["considered", "warm", "precise", "unfussy"],
         deviations: [
             "`--text-display` and `--text-heading-lg` are fluid — they scale with the viewport between 390px and 1280px rather than holding one size. Never override them with a fixed rem value.",
-            "`--font-display` currently points at the same face as `--font-sans`. The real display face is Alpha Lyrae, which is licensed and not bundled — treat display and sans as visually identical until it is.",
+            "`--font-display` is Syne, a different typeface from the body sans — it belongs on the `display` role only, never on headings, buttons or UI. Hendri's own site uses Alpha Lyrae here; that face is licensed and deliberately not bundled, so Syne stands in as the open equivalent.",
             "hendri.design also uses Inter for its machine-view panel. This system has no slot for a fourth family, so it is not represented here.",
             "No mono face is declared on the live site; `--font-mono` is a neutral system stack until one is chosen.",
         ],
@@ -74,17 +74,15 @@ export const hendriPreset: BrandConfig = {
             // Space Grotesk does nearly all the work on hendri.design — headings
             // and body both — so it is the sans, not a display face.
             sans: '"Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif',
-            // Hendri's display face is Alpha Lyrae, but it is a licensed
-            // Framer-served font with no hosted stylesheet — the only way to make
-            // it render is to bundle the file, which means redistributing it.
-            // Not worth doing for a preview, so the slot points at the sans until
-            // he uploads a face he's happy to ship.
-            display: '"Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif',
+            // Syne — the one display face Typewolf records actually being used
+            // alongside Space Grotesk on real sites. Hosted on Google Fonts, so
+            // it links rather than ships: no font file is redistributed.
+            display: '"Syne", "Space Grotesk", ui-sans-serif, system-ui, sans-serif',
             // Undeclared on the live site; a neutral stack until Hendri picks one.
             mono: "ui-monospace, SFMono-Regular, Menlo, monospace",
         },
         fontLinks: [
-            "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap",
+            "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@600;700;800&display=swap",
         ],
         // No font files are bundled. The upload path exists and works; nothing
         // ships until Hendri chooses a face he is happy to redistribute.
@@ -92,8 +90,10 @@ export const hendriPreset: BrandConfig = {
         // Tracking and weights measured off the live site rather than guessed:
         // Space Grotesk runs negative at every size, and its headings sit at 500.
         roles: DEFAULT_TYPE_ROLES.map((role) => {
-            // Display follows the sans treatment while it borrows the sans face.
-            if (role.role === "display") return { ...role, weight: 500, tracking: "-0.04em" }
+            // Syne is a wide, geometric display face — 700 is where it reads as
+            // display rather than as a heavy UI weight, and it wants tighter
+            // tracking than Space Grotesk to stop the counters opening up.
+            if (role.role === "display") return { ...role, weight: 700, tracking: "-0.03em" }
             if (role.family !== "sans") return role
             if (role.role.startsWith("heading")) {
                 return { ...role, weight: 500, tracking: role.role === "heading-sm" ? "-0.02em" : "-0.04em" }

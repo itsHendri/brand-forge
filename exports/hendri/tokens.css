@@ -148,11 +148,11 @@
     --info-border: var(--info-400);
     --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-    --font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-display: "Syne", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
     --text-display: clamp(2.25rem, 1.7022rem + 2.2472vw, 3.5rem);
     --text-display--line-height: 1.05;
-    --text-display--font-weight: 500;
-    --text-display--letter-spacing: -0.04em;
+    --text-display--font-weight: 700;
+    --text-display--letter-spacing: -0.03em;
     --text-heading-lg: clamp(1.75rem, 1.5309rem + 0.8989vw, 2.25rem);
     --text-heading-lg--line-height: 1.15;
     --text-heading-lg--font-weight: 500;

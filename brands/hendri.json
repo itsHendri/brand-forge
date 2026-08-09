@@ -14,7 +14,7 @@
         ],
         "deviations": [
             "`--text-display` and `--text-heading-lg` are fluid — they scale with the viewport between 390px and 1280px rather than holding one size. Never override them with a fixed rem value.",
-            "`--font-display` currently points at the same face as `--font-sans`. The real display face is Alpha Lyrae, which is licensed and not bundled — treat display and sans as visually identical until it is.",
+            "`--font-display` is Syne, a different typeface from the body sans — it belongs on the `display` role only, never on headings, buttons or UI. Hendri's own site uses Alpha Lyrae here; that face is licensed and deliberately not bundled, so Syne stands in as the open equivalent.",
             "hendri.design also uses Inter for its machine-view panel. This system has no slot for a fourth family, so it is not represented here.",
             "No mono face is declared on the live site; `--font-mono` is a neutral system stack until one is chosen."
         ]
@@ -814,11 +814,11 @@
     "typography": {
         "families": {
             "sans": "\"Space Grotesk\", ui-sans-serif, system-ui, -apple-system, sans-serif",
-            "display": "\"Space Grotesk\", ui-sans-serif, system-ui, -apple-system, sans-serif",
+            "display": "\"Syne\", \"Space Grotesk\", ui-sans-serif, system-ui, sans-serif",
             "mono": "ui-monospace, SFMono-Regular, Menlo, monospace"
         },
         "fontLinks": [
-            "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+            "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@600;700;800&display=swap"
         ],
         "fontFiles": [],
         "roles": [
@@ -828,8 +828,8 @@
                 "sizeRem": 3.5,
                 "minSizeRem": 2.25,
                 "lineHeight": 1.05,
-                "weight": 500,
-                "tracking": "-0.04em"
+                "weight": 700,
+                "tracking": "-0.03em"
             },
             {
                 "role": "heading-lg",
