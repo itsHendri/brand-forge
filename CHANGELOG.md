@@ -14,6 +14,16 @@ Keep-a-Changelog style. Newest first.
 - The preview width selector gained a **base (390px)** option. Mobile-first means everything below
   the smallest breakpoint is where the design starts, and it was the one width that could not be
   selected, because it isn't a breakpoint.
+- **Fluid type.** `--text-display` and `--text-heading-lg` scale across 390–1280px via `clamp()`,
+  keeping a `rem` term so zoom still works. Everything else holds still.
+- **`display` is a family slot**, not a role borrowing the sans — Alpha Lyrae is a different
+  typeface. A type role is now documented as five properties; the family column was missing, which
+  meant the display face silently rendered in the body font.
+- **The preview canvas is an iframe.** A constrained `div` is not a viewport: `vw` and media queries
+  resolved against the browser window, so pinned widths had been showing the right columns and the
+  wrong type size since the selector shipped.
+- Hendri's real brand: Ember `#f1760f` (read off the live site's token layer), Space Grotesk, and
+  the wordmark lifted from hendri.design as a themeable two-colour mark.
 - Asset upload — logo and font files stored in `brands/assets/<slug>/`. Uploaded fonts become
   `@font-face` rules in the preview and the exported stylesheet, and ship with the export as real
   bytes. An SVG logo is stored inline so its ink follows the foreground token and inverts in dark

@@ -1,7 +1,7 @@
 # Status — 2026-08-09
 
 **Phases 0–5 done, plus assets. The tool does the whole loop it was built for.**
-Two sessions. 96 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
+Two sessions. 101 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
 
 Type a seed colour → get a complete system → see it on realistic UI → export it as something an AI
 agent can actually build from. That runs end to end today.
@@ -75,8 +75,8 @@ has tried to build from it.
    (Human/Machine toggle) alongside Space Grotesk, and the sans/serif/mono model has no slot for
    either. Recorded as a deviation. Widening the model is a real option.
 4. **No mono face is declared** on the live site; `--font-mono` is a neutral system stack.
-5. **`--text-display` is fixed at 3.5rem** and runs to four lines / 235px at 390px. Fluid type is a
-   token-model change — see FUTURE.
+5. **Alpha Lyrae ships one weight (500)** and has no hosted source, so it travels as a 114KB file in
+   the export. Worth confirming you're happy redistributing it that way.
 6. **Assets are committed, not ignored.** Fine for your own brand; a licensing decision the moment a
    client's licensed font is involved. See DECISIONS #14.
 
