@@ -9,9 +9,10 @@ artifact a client actually wants. A second Vite entry SSG-rendering the preview 
 token tables into `exports/<slug>/guidelines/index.html`, so a brand can be handed over as a page
 rather than a folder of Markdown.
 
-Two things make it more valuable than when it was first planned: assets exist, so it can show the
-real mark in the real typeface; and the preview kit already renders every documented recipe, so the
-page is mostly a second consumer of `preview/kit.tsx` rather than new design work.
+Two things make it more valuable than when it was first planned: the wordmark exists, so it can show
+the real mark; and the preview kit already renders every documented recipe, so the page is mostly a
+second consumer of `preview/kit.tsx` rather than new design work. (The real *typeface* is a separate
+matter — see custom font upload below.)
 
 One known obstacle, already logged below: **preview contexts are inline `style={{}}` objects, not
 CSS.** SSG output needs real stylesheets, so either the kit grows a class-based mode or the
@@ -34,26 +35,17 @@ See `DECISIONS.md` #17.
 
 ### Cheap wins if you want a short session instead
 
-- **Fluid type** (decision 1 below) — bounded, self-contained, and visibly improves the phone case.
-- **`--on-brand` tokens** (decision 2 below) — small, and turns a rule that has been got wrong twice
-  into something that cannot be.
+- **`--on-brand` tokens** (see below) — small, and turns a rule that has been got wrong twice into
+  something that cannot be.
 - **The stale-export trap** under *Known rough edges* — it has cost time in three separate sessions
   and is the reason exports drift from the code.
 
-## Two decisions the marketing context surfaced
+## One decision still open from the marketing context
 
-Both are real gaps in the *system*, not the canvas, and both need Hendri's call.
+(~~Fluid type~~ — done 2026-08-09. `display` and `heading-lg` scale across 390–1280px; see
+`DECISIONS.md` #18, and #19 for the iframe canvas it forced.)
 
-**1. `--text-display` is fixed at 3.5rem, and it shows.** At the base width (390px) the hero heading
-runs to **four lines and 235px** — a quarter of a phone viewport before the page has said anything.
-It fits without overflow and nothing breaks mid-word, so this is a taste failure rather than a bug.
-The fix is fluid type: a role would gain a min size and grow with the viewport
-(`clamp(2.25rem, 1.5rem + 4vw, 3.5rem)`), which means `TypeRole` gains an optional `minSizeRem` and
-the CSS emits a `clamp()` instead of a fixed length. Worth doing for `display` and probably
-`heading-lg`; the rest are fine fixed. Deliberately not done unilaterally — it changes the token
-model, and "no responsive type" is currently an honest, documented position.
-
-**2. A control on a brand field has a rule but not a token.** The composition rule is now documented
+**A control on a brand field has a rule but not a token.** The composition rule is now documented
 (*a control on a coloured fill takes that fill's own `-foreground` for text and border*) and the kit
 has an `inverse` tone, so this is no longer a silent trap. The open question is whether it should be
 **real tokens** — `--on-brand`, `--on-brand-border` — instead of a rule people have to apply. Rules
@@ -117,7 +109,7 @@ A subagent built a page from the exported docs and listed what it had to invent.
 ## Deliberately refused
 
 Component tokens, Figma sync, per-brand preview content, hosting/auth. See `DECISIONS.md` #2 and
-#16 before reopening any of these.
+#20 before reopening any of these.
 
 (Font-file management was on this list and is no longer refused — it shipped, see `DECISIONS.md`
 #14 and #15.)
