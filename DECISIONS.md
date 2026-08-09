@@ -111,7 +111,28 @@ Adding `layout` to `BrandConfig` hard-crashed every brand file written before it
 over a complete default block by block, and logs which blocks it filled rather than doing it
 silently. Migrate on read, persist on write: the file on disk stays as it was until the next edit.
 
-### 13. Scope deliberately refused — 2026-08-08
+### 14. Assets live in `brands/assets/<slug>/`, not in a per-brand folder — 2026-08-09
+
+Restructuring `brands/<slug>.json` into `brands/<slug>/brand.json` would have meant migrating every
+existing file for no user-facing gain. A brand is made portable by the **export** bundling its
+assets — which it does, as real bytes — not by the shape of the working directory.
+
+Assets are committed rather than ignored, so a clone is self-consistent: a config referencing
+`mark.svg` finds it. **This is worth a second look before adding a client's licensed font**, since
+committing the binary is a licensing decision, not just a storage one. Nothing in the tool stops
+you; it just shouldn't happen by accident.
+
+### 15. An SVG logo is stored inline; a raster logo is stored as a file — 2026-08-09
+
+Not an arbitrary split. An inline SVG can have its explicit fills rewritten to `currentColor`, so
+one mark follows the foreground token and inverts in dark mode — verified rendering at L 0.26 in
+light and L 0.97 in dark. A raster logo cannot be recoloured, so it ships as-is and it is the
+brand's problem if it disappears against a dark ground.
+
+The consequence: an SVG logo lives in `brand.json` and needs no file copied into the export, while
+a raster one does. `referencedAssets()` encodes exactly that.
+
+### 16. Scope deliberately refused — 2026-08-08
 
 Not in v1, and not by accident: component tokens (see #2), Figma sync, font-file management (type
 families are CSS stacks plus an optional `<link>`), per-brand preview content, and hosting/auth.

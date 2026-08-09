@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest"
 import { resolveTokens } from "../engine/resolve"
 import { hendriPreset } from "../presets/hendri"
-import { buildExport, exportBudget } from "./bundle"
+import { buildExport, exportAsMap, exportBudget, referencedAssets } from "./bundle"
 import { previewCss } from "./css"
 import { toSkillMd } from "./skillMd"
 
 const resolved = resolveTokens(hendriPreset)
 const files = buildExport(resolved)
 const fileAt = (suffix: string) => files.find((f) => f.path.endsWith(suffix))!.content
+const fileAt2 = (tokens: typeof resolved, suffix: string) =>
+    buildExport(tokens).find((f) => f.path.endsWith(suffix))!.content
 
 describe("the export bundle", () => {
     it("writes the skill folder, the stylesheet, the tokens and the source", () => {
@@ -87,6 +89,67 @@ describe("tokens.css", () => {
     it("scopes the preview so brand colour cannot leak into the app chrome", () => {
         expect(previewCss(resolved)).toContain("#preview-root {")
         expect(previewCss(resolved)).not.toContain(":root {")
+    })
+})
+
+describe("assets", () => {
+    const withFonts = structuredClone(hendriPreset)
+    withFonts.typography.fontFiles = [
+        { fileName: "Geist-Regular.woff2", family: "sans", weight: 400, style: "normal" },
+        { fileName: "Geist-Italic.woff2", family: "sans", weight: 400, style: "italic" },
+        { fileName: "GeistMono.woff2", family: "mono", weight: 400, style: "normal" },
+    ]
+    withFonts.meta.logoFile = "mark.png"
+    const resolvedWithFonts = resolveTokens(withFonts)
+    const css = fileAt2(resolvedWithFonts, "tokens.css")
+
+    it("names the @font-face after the first family in the stack, not the stack", () => {
+        // `font-family: "Geist", ui-sans-serif, …` only picks up a face called
+        // exactly `Geist`; naming the rule after the whole stack loads nothing.
+        expect(css).toContain('font-family: "Geist";')
+        expect(css).toContain('font-family: "Geist Mono";')
+        // The full stack still belongs in the --font-sans token; it just must
+        // not leak into the @font-face rule.
+        const faces = css.slice(0, css.indexOf(":root"))
+        expect(faces).not.toContain("ui-sans-serif")
+    })
+
+    it("emits one rule per weight and style", () => {
+        expect(css.match(/@font-face/g)).toHaveLength(3)
+        expect(css).toContain("font-style: italic;")
+        expect(css).toContain('format("woff2")')
+        expect(css).toContain("font-display: swap;")
+    })
+
+    it("points at assets sitting beside the stylesheet", () => {
+        expect(css).toContain('url("./assets/Geist-Regular.woff2")')
+    })
+
+    it("lists every referenced asset so the export can carry them", () => {
+        expect(referencedAssets(resolvedWithFonts).sort()).toEqual([
+            "Geist-Italic.woff2",
+            "Geist-Regular.woff2",
+            "GeistMono.woff2",
+            "mark.png",
+        ])
+    })
+
+    it("does not count an inline SVG logo as a file to copy", () => {
+        const withSvg = structuredClone(hendriPreset)
+        withSvg.meta.logoSvg = "<svg/>"
+        expect(referencedAssets(resolveTokens(withSvg))).toEqual([])
+    })
+
+    it("emits no @font-face block when a brand has no font files", () => {
+        expect(fileAt("tokens.css")).not.toContain("@font-face")
+    })
+
+    it("marks binary entries so the writer knows they are bytes", () => {
+        const map = exportAsMap([
+            { path: "assets/x.woff2", content: "AAAA", note: "", encoding: "base64" },
+            { path: "tokens.css", content: ":root{}", note: "" },
+        ])
+        expect(Object.keys(map)).toEqual(["base64:assets/x.woff2", "tokens.css"])
     })
 })
 

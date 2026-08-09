@@ -37,7 +37,11 @@ export function PreviewCanvas({
                 minWidth: width ? "fit-content" : undefined,
             }}
         >
-            <style>{previewCss(resolved)}</style>
+            {/* Assets are served from the API route, so the preview renders in
+                the brand's real typeface rather than a fallback stack. */}
+            <style>
+                {previewCss(resolved, "#preview-root", `/api/assets/${resolved.config.meta.slug}`)}
+            </style>
             <div
                 id="preview-root"
                 data-theme={mode}

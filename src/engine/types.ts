@@ -113,13 +113,30 @@ export interface Container {
     note: string
 }
 
+/**
+ * A font file living in `brands/assets/<slug>/`. One entry per weight and style,
+ * because that is how `@font-face` works — a family is a set of files, not one.
+ */
+export interface FontFile {
+    fileName: string
+    family: "sans" | "serif" | "mono"
+    weight: number
+    style: "normal" | "italic"
+}
+
 export interface BrandMeta {
     id: string
     name: string
     /** Keys files and the exported skill name. kebab-case. */
     slug: string
     domain?: string
+    /**
+     * Stored inline rather than as a file, on purpose: an inline SVG can take
+     * `fill="currentColor"` and follow the foreground token, so one logo works
+     * in both modes. A raster logo goes in `logoFile` and cannot do that.
+     */
     logoSvg?: string
+    logoFile?: string
     /** Adjectives → the voice section of the generated docs. */
     voice: string[]
     /** Hand-authored 🚨 bullets, merged with computed deviations at export time. */
@@ -136,8 +153,10 @@ export interface BrandConfig {
     }
     typography: {
         families: { sans: string; serif?: string; mono: string }
-        /** Optional <link> hrefs for webfonts (v1 does not manage font files). */
+        /** Optional <link> hrefs for hosted webfonts. */
         fontLinks?: string[]
+        /** Uploaded font files, turned into `@font-face` rules. */
+        fontFiles?: FontFile[]
         roles: TypeRole[]
     }
     layout: { breakpoints: Breakpoint[]; containers: Container[] }

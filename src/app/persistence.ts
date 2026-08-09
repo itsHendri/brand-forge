@@ -45,6 +45,48 @@ export async function saveBrand(config: BrandConfig): Promise<boolean> {
     return response.ok
 }
 
+/** Where the preview and the app fetch an asset from. */
+export const assetUrl = (slug: string, fileName: string): string =>
+    `/api/assets/${slug}/${encodeURIComponent(fileName)}`
+
+export async function listAssets(slug: string): Promise<string[]> {
+    const response = await fetch(`/api/assets/${slug}`)
+    if (!response.ok) return []
+    return response.json()
+}
+
+export async function uploadAsset(slug: string, file: File): Promise<string | null> {
+    const base64 = await new Promise<string>((resolveBase64, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolveBase64(String(reader.result).split(",")[1] ?? "")
+        reader.onerror = () => reject(new Error("could not read file"))
+        reader.readAsDataURL(file)
+    })
+    const response = await fetch(`/api/assets/${slug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName: file.name, base64 }),
+    })
+    if (!response.ok) return null
+    return file.name
+}
+
+export async function removeAsset(slug: string, fileName: string): Promise<boolean> {
+    const response = await fetch(assetUrl(slug, fileName), { method: "DELETE" })
+    return response.ok
+}
+
+/** Assets have to travel with the export, so read them back as base64. */
+export async function readAssetBase64(slug: string, fileName: string): Promise<string | null> {
+    const response = await fetch(assetUrl(slug, fileName))
+    if (!response.ok) return null
+    const buffer = await response.arrayBuffer()
+    let binary = ""
+    const bytes = new Uint8Array(buffer)
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]!)
+    return btoa(binary)
+}
+
 export async function writeExport(
     slug: string,
     files: Record<string, string>,

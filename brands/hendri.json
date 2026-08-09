@@ -884,7 +884,8 @@
                 "lineHeight": 1.5,
                 "weight": 400
             }
-        ]
+        ],
+        "fontFiles": []
     },
     "layout": {
         "breakpoints": [

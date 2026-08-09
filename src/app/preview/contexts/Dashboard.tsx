@@ -6,7 +6,9 @@
  * ladder still reads when there are twenty edges on screen instead of two.
  */
 
+import { useStore } from "../../store"
 import { Badge, Button, Card, Grid, Row, STATUSES, typeRole } from "../kit"
+import { Logo } from "../Logo"
 
 const NAV = ["Overview", "Deployments", "Analytics", "Domains", "Settings"]
 
@@ -24,6 +26,7 @@ const STAT_LABEL: React.CSSProperties = {
 }
 
 export function Dashboard() {
+    const config = useStore((state) => state.config)
     return (
         <div style={{ minHeight: "100%" }}>
             {/* Full-bleed background, contained content — the chrome exception. */}
@@ -47,10 +50,12 @@ export function Dashboard() {
                         flexWrap: "wrap",
                     }}
                 >
-                    <strong style={{ ...typeRole("heading-sm") }}>Hendri</strong>
-                    <span style={{ ...typeRole("body-sm"), color: "var(--muted-foreground)" }}>
-                        hendri.design
-                    </span>
+                    <Logo config={config} />
+                    {config.meta.domain && (
+                        <span style={{ ...typeRole("body-sm"), color: "var(--muted-foreground)" }}>
+                            {config.meta.domain}
+                        </span>
+                    )}
                     <div style={{ marginLeft: "auto" }}>
                         <Row>
                             <Button tone="outline">Docs</Button>

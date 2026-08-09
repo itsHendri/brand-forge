@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react"
-import { buildExport, exportAsMap, exportBudget } from "../export/bundle"
+import { useEffect, useMemo, useState } from "react"
+import { buildExport, exportAsMap, exportBudget, referencedAssets, type ExportFile } from "../export/bundle"
 import type { ResolvedTokens } from "../engine/types"
-import { writeExport } from "./persistence"
+import { readAssetBase64, writeExport } from "./persistence"
 
 export function ExportDialog({
     resolved,
@@ -10,7 +10,38 @@ export function ExportDialog({
     resolved: ResolvedTokens
     onClose: () => void
 }) {
-    const files = useMemo(() => buildExport(resolved), [resolved])
+    const baseFiles = useMemo(() => buildExport(resolved), [resolved])
+    const [assets, setAssets] = useState<ExportFile[]>([])
+    const files = useMemo(() => [...baseFiles, ...assets], [baseFiles, assets])
+
+    // Asset bytes are read back from disk, so the export is a complete handover
+    // rather than a stylesheet pointing at files only this machine has.
+    useEffect(() => {
+        let cancelled = false
+        const names = referencedAssets(resolved)
+        if (names.length === 0) {
+            setAssets([])
+            return
+        }
+        void Promise.all(
+            names.map(async (fileName): Promise<ExportFile | null> => {
+                const base64 = await readAssetBase64(resolved.config.meta.slug, fileName)
+                return base64
+                    ? {
+                          path: `assets/${fileName}`,
+                          content: base64,
+                          note: "Referenced by tokens.css — ships with the export.",
+                          encoding: "base64",
+                      }
+                    : null
+            }),
+        ).then((loaded) => {
+            if (!cancelled) setAssets(loaded.filter((entry) => entry !== null))
+        })
+        return () => {
+            cancelled = true
+        }
+    }, [resolved])
     const budget = exportBudget(files)
     const [result, setResult] = useState<string | null>(null)
     const [preview, setPreview] = useState(files[0]!.path)

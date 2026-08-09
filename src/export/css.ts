@@ -11,14 +11,67 @@ export function declarationBlock(declarations: Declaration[], selector: string):
 }
 
 /**
+ * The first family in a CSS stack — the one an `@font-face` rule has to be
+ * named after for the stack to pick it up. `"Geist", ui-sans-serif, …` → `Geist`.
+ */
+export function primaryFamily(stack: string): string {
+    const first = stack.split(",")[0]?.trim() ?? ""
+    return first.replace(/^["']|["']$/g, "")
+}
+
+const FORMATS: Record<string, string> = {
+    woff2: "woff2",
+    woff: "woff",
+    ttf: "truetype",
+    otf: "opentype",
+}
+
+/**
+ * `@font-face` rules for uploaded files. `assetBase` differs by consumer — the
+ * app serves assets from an API route, the export sits next to a folder — so the
+ * rules are generated per destination rather than baked with one path.
+ */
+export function fontFaceCss(resolved: ResolvedTokens, assetBase: string): string {
+    const files = resolved.config.typography.fontFiles ?? []
+    if (files.length === 0) return ""
+
+    return files
+        .map((file) => {
+            const family = primaryFamily(resolved.config.typography.families[file.family] ?? "")
+            const extension = file.fileName.split(".").pop()?.toLowerCase() ?? "woff2"
+            const format = FORMATS[extension] ?? "woff2"
+            return [
+                `@font-face {`,
+                `    font-family: "${family}";`,
+                `    src: url("${assetBase}/${encodeURIComponent(file.fileName)}") format("${format}");`,
+                `    font-weight: ${file.weight};`,
+                `    font-style: ${file.style};`,
+                // swap, so text is readable while the file loads rather than invisible.
+                `    font-display: swap;`,
+                `}`,
+            ].join("\n")
+        })
+        .join("\n\n")
+}
+
+/**
  * The preview scopes tokens to its own root instead of `:root`, so the brand
  * never leaks into the app's own chrome. Same declarations, different selector.
  */
-export function previewCss(resolved: ResolvedTokens, rootSelector = "#preview-root"): string {
+export function previewCss(
+    resolved: ResolvedTokens,
+    rootSelector = "#preview-root",
+    assetBase?: string,
+): string {
     return [
+        // @font-face cannot be scoped to a selector, so it is emitted globally —
+        // harmless, since the family name only takes effect where the token points.
+        assetBase ? fontFaceCss(resolved, assetBase) : "",
         declarationBlock(resolved.declarations.light, rootSelector),
         declarationBlock(resolved.declarations.dark, `${rootSelector}[data-theme="dark"]`),
-    ].join("\n\n")
+    ]
+        .filter(Boolean)
+        .join("\n\n")
 }
 
 /**
@@ -68,6 +121,8 @@ export function toTokensCss(resolved: ResolvedTokens, options: { darkMedia?: boo
 
     const parts = [
         header,
+        // Assets ship beside the stylesheet in the export tree.
+        fontFaceCss(resolved, "./assets"),
         // `[data-theme="light"]` is spelled out rather than left to fall through
         // to `:root`. A toggle that writes "light" to get back from dark worked
         // only by accident before, and an accident is a thing that stops working.
@@ -88,7 +143,8 @@ export function toTokensCss(resolved: ResolvedTokens, options: { darkMedia?: boo
     }
 
     parts.push(themeBlock(resolved))
-    return parts.join("\n\n") + "\n"
+    // filter: no @font-face means no empty gap where it would have been.
+    return parts.filter(Boolean).join("\n\n") + "\n"
 }
 
 const indent = (block: string): string =>
