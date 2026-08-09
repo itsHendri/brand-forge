@@ -4,6 +4,13 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- Preview canvas rebuilt around a shared component kit (`preview/kit.tsx`), with three contexts:
+  **Components**, **Surfaces & elevation**, and **Dashboard**. Surfaces are shown nested so the
+  ladder is judgeable rather than inferred, and elevation is its own section demonstrating the
+  dark-mode swap from shadow to ring.
+- Undo/redo with ⌘Z / ⇧⌘Z, a brand switcher with duplicate / new-from-template / delete, and an
+  on-disk backup of the version each save replaces.
+
 ### Added — 2026-08-08 (session 1)
 
 - OKLCH scale generator: shared lightness targets across hues, chroma bell, hue rotation centred on

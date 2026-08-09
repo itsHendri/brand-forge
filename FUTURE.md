@@ -4,27 +4,24 @@ Start here next session. Read `STATUS.md` first for where things actually stand.
 
 ## Immediate next step
 
-**Phase 6 — the preview canvas.** This is the half of the tool that hasn't had a real pass, and
-it's what Hendri keeps gesturing at when he mentions uicolors. Concretely, from his feedback:
+**Asset upload.** A brand names `"Geist"` and ships a Google Fonts `<link>`; it cannot yet carry a
+logo or a font file. Storing assets next to the brand (`brands/<slug>/` instead of
+`brands/<slug>.json`) is the change that makes a brand genuinely self-contained and portable to a
+client. This is the last thing standing between the current tool and "forge a whole identity".
 
-- **More surfaces, shown as surfaces.** A dedicated section laying out `background` / `surface` /
-  `surface-raised` / `muted` against each other, so the ladder is visible rather than inferred.
-- **Elevation as its own section** — the shadow scale, and the fact that dark mode swaps shadows
-  for a lighter surface plus a ring. Currently that rule is documented and never demonstrated.
-- **More contexts.** Dashboard and MarketingHero were planned and never built; a settings/form
-  context would exercise inputs properly. The acceptance-test pages are decent references for what
-  a real page needs.
-- **More components per context** — the ComponentsSheet is thin next to what the docs describe.
+Then a **marketing context** (the one build shape the canvas still lacks — display type at scale,
+a hero, long-form copy), and the **static guideline page**.
 
-Then asset upload (logo, font files stored next to the brand), and the static guideline page.
+The canvas now has three contexts (Components, Surfaces, Dashboard) sharing `preview/kit.tsx`.
+Add new ones there; every kit component is the exported recipe rendered literally, which is what
+keeps the canvas honest about the docs. Panels are all built — `ColorPanel.tsx` and
+`ShapePanel.tsx` are the patterns to copy. Everything mutates through `useStore().patch()`, which
+keeps undo and autosave automatic.
 
-Panels are all built; `ColorPanel.tsx` and `ShapePanel.tsx` are the patterns to copy. Every panel
-mutates through `useStore().patch()`, which keeps undo and autosave automatic.
-
-**Open question for Hendri:** he asked about referencing Figma design-system files. Figma files
-won't transfer directly (this tool isn't in Figma), but published *token documentation* with strong
-surface and elevation taxonomies would — the useful thing to collect is examples of how other
-systems name and demonstrate their surface ladder, not component libraries.
+**Open question for Hendri:** he offered to find Figma design-system references. Figma files won't
+transfer directly (this tool isn't in Figma). What would help is published *token documentation*
+with strong surface and elevation taxonomies — examples of how other systems name and demonstrate
+their surface ladder, not component libraries.
 
 ## Gaps the acceptance test exposed
 
