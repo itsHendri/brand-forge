@@ -150,6 +150,43 @@ describe("resolveTokens", () => {
         }
     })
 
+    describe("fluid type", () => {
+        const declared = new Map(resolved.declarations.light)
+
+        it("emits a clamp for fluid roles and a plain size for the rest", () => {
+            expect(declared.get("--text-display")).toMatch(/^clamp\(/)
+            expect(declared.get("--text-heading-lg")).toMatch(/^clamp\(/)
+            // Body text must not move — reading size is the reader's business.
+            expect(declared.get("--text-body")).toBe("1rem")
+            expect(declared.get("--text-heading")).toBe("1.5rem")
+        })
+
+        it("lands exactly on its endpoints at the ends of the range", () => {
+            const range = hendriPreset.typography.fluidRange ?? { minPx: 390, maxPx: 1280 }
+            const role = hendriPreset.typography.roles.find((r) => r.role === "display")!
+            const match = /clamp\(([\d.]+)rem, ([\d.]+)rem \+ ([\d.]+)vw, ([\d.]+)rem\)/.exec(
+                declared.get("--text-display")!,
+            )!
+            const [min, intercept, slope, max] = match.slice(1).map(Number) as number[]
+            const at = (vw: number) => intercept! + (slope! * vw) / 100 / 16
+            expect(min).toBe(role.minSizeRem)
+            expect(max).toBe(role.sizeRem)
+            expect(at(range.minPx)).toBeCloseTo(role.minSizeRem!, 2)
+            expect(at(range.maxPx)).toBeCloseTo(role.sizeRem, 2)
+        })
+
+        it("keeps a rem term, so the size still responds to zoom", () => {
+            // A pure-vw clamp ignores the reader's font-size preference.
+            expect(declared.get("--text-display")).toMatch(/[\d.]+rem \+ [\d.]+vw/)
+        })
+    })
+
+    it("gives the display role its own family, not a weight of the sans", () => {
+        const display = hendriPreset.typography.roles.find((r) => r.role === "display")!
+        expect(display.family).toBe("display")
+        expect(new Map(resolved.declarations.light).get("--font-display")).toContain("Alpha Lyrae")
+    })
+
     it("derives radius from one knob", () => {
         expect(resolved.radius.md).toBe(hendriPreset.radius.basePx)
         expect(resolved.radius.sm).toBeLessThan(resolved.radius.md)

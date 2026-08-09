@@ -111,6 +111,12 @@ Adding `layout` to `BrandConfig` hard-crashed every brand file written before it
 over a complete default block by block, and logs which blocks it filled rather than doing it
 silently. Migrate on read, persist on write: the file on disk stays as it was until the next edit.
 
+### 13. — number retired
+
+Nothing was deleted. "Scope deliberately refused" briefly held this number and was renumbered when
+entries were inserted around it; it is now #20. Left as a gap rather than reused, so a reference to
+"#13" from an old commit message doesn't silently point at something else.
+
 ### 14. Assets live in `brands/assets/<slug>/`, not in a per-brand folder — 2026-08-09
 
 Restructuring `brands/<slug>.json` into `brands/<slug>/brand.json` would have meant migrating every
@@ -132,7 +138,53 @@ brand's problem if it disappears against a dark ground.
 The consequence: an SVG logo lives in `brand.json` and needs no file copied into the export, while
 a raster one does. `referencedAssets()` encodes exactly that.
 
-### 16. Scope deliberately refused — 2026-08-08, revised 2026-08-09
+### 17. `display` is a family slot, not a role that borrows the sans — 2026-08-09
+
+Hendri's display face is Alpha Lyrae; his body face is Space Grotesk. They are different typefaces,
+not two weights of one, so a model with only `sans`/`serif`/`mono` could not express the system it
+was supposed to describe. `FontFamilyName` now includes `display`, and the `display` role points at
+it.
+
+The consequence that matters: **a type role is five properties, not four.** The family is part of
+applying a role. The docs had a four-property recipe and a type table with no family column, so
+anything following them rendered the display face in the body font — silently, and the preview kit
+was doing exactly that until this change. The table now carries a Family column.
+
+Alpha Lyrae ships one weight (500) and has no hosted stylesheet — it is Framer-served — so it
+travels as a font file or it does not render. That is recorded as a brand deviation, because asking
+for a weight a face doesn't have gets a browser-synthesised fake bold.
+
+### 18. `display` and `heading-lg` are fluid; nothing else is — 2026-08-09
+
+A fixed 3.5rem display heading ran to four lines and 235px at 390px — a quarter of a phone screen
+before the page said anything. Both roles now carry a `minSizeRem` and emit
+`clamp(min, intercept·rem + slope·vw, max)` across 390–1280px.
+
+Only the two largest roles. Body text should not move: reading size is the reader's business, and a
+paragraph that changes size as you resize is a distraction, not a feature.
+
+**The middle term keeps a `rem` component rather than being pure `vw`.** Viewport units ignore the
+reader's font-size preference, so a `vw`-only heading refuses to grow when someone zooms — a
+failure that is invisible on every device you own and obvious to somebody who needs it. Mixing rem
+with vw preserves zoom.
+
+### 19. The preview canvas is an iframe — 2026-08-09
+
+Forced by #18, but it was fixing a pre-existing lie. A `div` constrained to 390px is not a 390px
+viewport: `vw` units and media queries both resolve against the browser window, so pinning the
+canvas showed the right column count and the wrong type size. Fluid type made it obvious — the
+heading measured identically at every breakpoint — but **media queries had been wrong the whole
+time in the same way**, and the tool was claiming the width selector "genuinely exercises the
+layout".
+
+An iframe *is* a viewport, so everything viewport-relative now means what it says. Verified: the
+display role measures 36px at 390 and 56px at 1280, hitting both endpoints exactly.
+
+Implementation note worth keeping: do **not** `document.write()` into the frame. That fires a second
+load which replaces the body React has portalled into, and the canvas comes up empty. The
+about:blank document already exists — use it.
+
+### 20. Scope deliberately refused — 2026-08-08, revised 2026-08-09
 
 Not in v1, and not by accident: component tokens (see #2), Figma sync, per-brand preview content,
 and hosting/auth.

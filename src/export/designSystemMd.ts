@@ -163,11 +163,12 @@ exact, not indicative.
 
 **Applying a type role.** \`--text-body\` is a bare length, so the \`font\` shorthand will not take
 it — \`font: var(--text-body)\` is invalid CSS and is dropped silently, leaving an unstyled element
-and no console error. Every role ships four properties; set them individually:
+and no console error. A role is **five** properties — the family is part of it, not a
+separate decision — so set them individually:
 
 \`\`\`css
 .button {
-    font-family: var(--font-sans);
+    font-family: var(--font-sans); /* the role's family, from the table below */
     font-size: var(--text-label);
     line-height: var(--text-label--line-height);
     font-weight: var(--text-label--font-weight);
@@ -541,7 +542,12 @@ export function toDesignSystemMd(resolved: ResolvedTokens): string {
     // see the token name will invent a number for line-height.
     const typeRows = config.typography.roles.map((role) => [
         `\`--text-${role.role}\``,
-        `${role.sizeRem}rem`,
+        // The family is part of applying a role, not a separate lookup. Omitting
+        // this column is how a display face ends up rendered in the body font.
+        `\`--font-${role.family}\``,
+        role.minSizeRem === undefined
+            ? `${role.sizeRem}rem`
+            : `**fluid** ${role.minSizeRem}–${role.sizeRem}rem`,
         `\`--text-${role.role}--line-height\` · ${role.lineHeight}`,
         `\`--text-${role.role}--font-weight\` · ${role.weight}`,
         `\`--text-${role.role}--letter-spacing\` · ${role.tracking ?? "normal"}`,
@@ -586,10 +592,63 @@ ${GROUP_ORDER.map((group) => `### ${GROUP_TITLES[group]}\n\n${tokenTable(resolve
 
 ## Type
 
-${table(["Token", "Size", "Line height", "Weight", "Tracking"], typeRows)}
+${table(["Token", "Family", "Size", "Line height", "Weight", "Tracking"], typeRows)}
 
 Families: \`--font-sans\` is \`${config.typography.families.sans}\`, \`--font-mono\` is
-\`${config.typography.families.mono}\`.
+\`${config.typography.families.mono}\`${
+        config.typography.families.display
+            ? `, and \`--font-display\` is \`${config.typography.families.display}\``
+            : ""
+    }.
+
+${
+        config.typography.families.display
+            ? `**\`--font-display\` is a different typeface, not a bigger weight of the body font.** It is
+drawn for size and belongs on the \`display\` role only. Do not set it on headings, buttons or body
+copy${
+                  (config.typography.fontFiles ?? []).some((file) => file.family === "display")
+                      ? `, and note it ships in only ${[
+                            ...new Set(
+                                (config.typography.fontFiles ?? [])
+                                    .filter((file) => file.family === "display")
+                                    .map((file) => file.weight),
+                            ),
+                        ].join(", ")} — asking for a weight it doesn't have gets you a browser-synthesised fake bold, which looks wrong in a way people notice without being able to name`
+                      : ""
+              }.\n`
+            : ""
+    }${
+        config.typography.roles.some((role) => role.minSizeRem !== undefined)
+            ? `### Fluid roles
+
+${config.typography.roles
+                  .filter((role) => role.minSizeRem !== undefined)
+                  .map(
+                      (role) =>
+                          `\`--text-${role.role}\` scales from **${role.minSizeRem}rem** to **${role.sizeRem}rem**`,
+                  )
+                  .join(", and ")} across the viewport range
+${config.typography.fluidRange?.minPx ?? 390}px – ${config.typography.fluidRange?.maxPx ?? 1280}px.
+Below and above that span they hold at the ends.
+
+They emit a \`clamp()\`, so **there is nothing to do** — no media queries, no overrides. What you
+must not do is replace one with a fixed size:
+
+\`\`\`css
+/* ✅ */
+h1 { font-size: var(--text-display); }
+
+/* ❌ pins the fluid role to its desktop size — a 56px heading on a phone */
+h1 { font-size: 3.5rem; }
+@media (min-width: 768px) { h1 { font-size: var(--text-display); } }
+\`\`\`
+
+The middle term of each \`clamp()\` deliberately mixes \`rem\` with \`vw\` rather than being pure
+\`vw\`. Viewport units ignore the reader's font-size preference, so a \`vw\`-only heading refuses to
+grow when someone zooms — a failure that is invisible on every device you own and obvious to
+somebody who needs it.\n`
+            : ""
+    }
 
 ${
         config.typography.fontLinks && config.typography.fontLinks.length > 0

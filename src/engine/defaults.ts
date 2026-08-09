@@ -59,6 +59,30 @@ export function concentricInner(outerPx: number, paddingPx: number): number {
     return Math.max(0, outerPx - paddingPx)
 }
 
+/** Base phone to widest desktop. A fluid role scales across exactly this span. */
+export const DEFAULT_FLUID_RANGE = { minPx: 390, maxPx: 1280 }
+
+/**
+ * A fluid size as `clamp(min, intercept + slope·vw, max)`.
+ *
+ * The middle term deliberately keeps a `rem` component rather than being pure
+ * `vw`. Pure viewport units ignore the user's font-size preference, so a
+ * `vw`-only heading refuses to grow when someone zooms — an accessibility
+ * failure that looks fine on every device you own.
+ */
+export function fluidSize(
+    minRem: number,
+    maxRem: number,
+    range = DEFAULT_FLUID_RANGE,
+): string {
+    const minVwRem = range.minPx / 16
+    const maxVwRem = range.maxPx / 16
+    const slope = (maxRem - minRem) / (maxVwRem - minVwRem)
+    const intercept = minRem - slope * minVwRem
+    const round = (n: number) => Math.round(n * 10000) / 10000
+    return `clamp(${round(minRem)}rem, ${round(intercept)}rem + ${round(slope * 100)}vw, ${round(maxRem)}rem)`
+}
+
 /** 4px grid. The blessed subset — not every multiple, just the ones we actually use. */
 export const DEFAULT_SPACING = { basePx: 4, blessed: [4, 8, 12, 16, 24, 32, 48, 64, 96] }
 
@@ -123,8 +147,10 @@ export const DARK_SHADOWS: Record<string, string> = {
 
 /** A 1.2 minor third off a 1rem body, rounded onto the 4px grid by eye. */
 export const DEFAULT_TYPE_ROLES: TypeRole[] = [
-    { role: "display", family: "sans", sizeRem: 3.5, lineHeight: 1.05, weight: 600, tracking: "-0.03em" },
-    { role: "heading-lg", family: "sans", sizeRem: 2.25, lineHeight: 1.15, weight: 600, tracking: "-0.02em" },
+    // The two roles that hurt on a phone at a desktop size, and the only two
+    // worth making fluid — everything below heading level should hold still.
+    { role: "display", family: "display", sizeRem: 3.5, minSizeRem: 2.25, lineHeight: 1.05, weight: 600, tracking: "-0.03em" },
+    { role: "heading-lg", family: "sans", sizeRem: 2.25, minSizeRem: 1.75, lineHeight: 1.15, weight: 600, tracking: "-0.02em" },
     { role: "heading", family: "sans", sizeRem: 1.5, lineHeight: 1.25, weight: 600, tracking: "-0.01em" },
     { role: "heading-sm", family: "sans", sizeRem: 1.125, lineHeight: 1.4, weight: 600 },
     { role: "body-lg", family: "sans", sizeRem: 1.125, lineHeight: 1.6, weight: 400 },

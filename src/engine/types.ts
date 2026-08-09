@@ -80,8 +80,15 @@ export type TypeRoleName =
 
 export interface TypeRole {
     role: TypeRoleName
-    family: "sans" | "serif" | "mono"
+    family: FontFamilyName
+    /** The size at the top of the fluid range, and the fixed size without one. */
     sizeRem: number
+    /**
+     * Set this and the role becomes fluid: it emits a `clamp()` that grows from
+     * `minSizeRem` at the base viewport to `sizeRem` at the top of the range.
+     * Only worth it for large roles — body text should not move.
+     */
+    minSizeRem?: number
     lineHeight: number
     weight: number
     tracking?: string
@@ -117,9 +124,17 @@ export interface Container {
  * A font file living in `brands/assets/<slug>/`. One entry per weight and style,
  * because that is how `@font-face` works — a family is a set of files, not one.
  */
+/**
+ * `display` is a real slot, not a role that borrows the sans. A display face is
+ * usually a different typeface entirely — drawn for size, often unusable below
+ * a headline — so pretending it is a weight of the body font loses the thing
+ * that makes it a display face.
+ */
+export type FontFamilyName = "sans" | "serif" | "mono" | "display"
+
 export interface FontFile {
     fileName: string
-    family: "sans" | "serif" | "mono"
+    family: FontFamilyName
     weight: number
     style: "normal" | "italic"
 }
@@ -152,7 +167,12 @@ export interface BrandConfig {
         semantics: SemanticTokenDef[]
     }
     typography: {
-        families: { sans: string; serif?: string; mono: string }
+        families: { sans: string; serif?: string; mono: string; display?: string }
+        /**
+         * The viewport range a fluid role scales across. Below `minPx` it sits at
+         * its minimum, above `maxPx` at its maximum.
+         */
+        fluidRange?: { minPx: number; maxPx: number }
         /** Optional <link> hrefs for hosted webfonts. */
         fontLinks?: string[]
         /** Uploaded font files, turned into `@font-face` rules. */

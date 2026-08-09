@@ -13,8 +13,15 @@ import type { CSSProperties, ReactNode } from "react"
 export const STATUSES = ["success", "warning", "danger", "info"] as const
 export type Status = (typeof STATUSES)[number]
 
-/** Applying a type role — four properties, never the `font` shorthand. */
+/**
+ * Applying a type role. Never the `font` shorthand — and the family is part of
+ * it: `display` is a different typeface, so a role that omitted the family
+ * quietly rendered the display face in the body font.
+ */
+const ROLE_FAMILY: Record<string, string> = { display: "display", code: "mono" }
+
 export const typeRole = (role: string): CSSProperties => ({
+    fontFamily: `var(--font-${ROLE_FAMILY[role] ?? "sans"})`,
     fontSize: `var(--text-${role})`,
     lineHeight: `var(--text-${role}--line-height)`,
     fontWeight: `var(--text-${role}--font-weight)` as unknown as number,

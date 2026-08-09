@@ -99,7 +99,20 @@ Full token tables, component recipes and wrong/right pairs live in
     inside another uses \`inner = outer − padding\`, floored at 0.
 14. **Type is role-named.** Use \`--text-body\`, \`--text-heading\`, \`--text-label\` and friends.
     Heading *level* is about document outline; heading *size* is about the role token. Never size
-    text with an arbitrary rem value.
+    text with an arbitrary rem value.${
+        config.typography.roles.some((role) => role.minSizeRem !== undefined)
+            ? `\n    ${config.typography.roles
+                  .filter((role) => role.minSizeRem !== undefined)
+                  .map((role) => `\`--text-${role.role}\``)
+                  .join(" and ")} are **fluid** — they already scale with the viewport. Never pin
+    them to a fixed size or wrap them in a media query; both throw the scaling away.`
+            : ""
+    }${
+        config.typography.families.display
+            ? `\n    \`--font-display\` is a separate typeface for the \`display\` role only — not a
+    heavier weight of the body font, and not for headings or UI.`
+            : ""
+    }
 15. **Motion:** \`--duration-fast\` ${config.motion.durations.fast}ms,
     \`--duration-base\` ${config.motion.durations.base}ms, easing \`--ease-out\` for entrances.
     Exits are faster than entrances. Never \`transition: all\` — name the properties.

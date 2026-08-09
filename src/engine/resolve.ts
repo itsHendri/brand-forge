@@ -7,7 +7,7 @@
  */
 
 import { validateContrast } from "./contrast"
-import { DARK_SHADOWS, deriveRadius, spaceName } from "./defaults"
+import { DARK_SHADOWS, deriveRadius, fluidSize, spaceName } from "./defaults"
 import { generateScale, oklchToCss, oklchToHex, parseSeed } from "./scale"
 import {
     SCALE_ROLES,
@@ -158,9 +158,17 @@ function buildDeclarations(
     if (config.typography.families.serif) {
         light.push(["--font-serif", config.typography.families.serif])
     }
+    if (config.typography.families.display) {
+        light.push(["--font-display", config.typography.families.display])
+    }
 
     for (const role of config.typography.roles) {
-        light.push([`--text-${role.role}`, `${role.sizeRem}rem`])
+        light.push([
+            `--text-${role.role}`,
+            role.minSizeRem === undefined
+                ? `${role.sizeRem}rem`
+                : fluidSize(role.minSizeRem, role.sizeRem, config.typography.fluidRange),
+        ])
         light.push([`--text-${role.role}--line-height`, String(role.lineHeight)])
         light.push([`--text-${role.role}--font-weight`, String(role.weight)])
         // Always emitted, `normal` when unset. The docs tell people to set four

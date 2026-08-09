@@ -13,8 +13,9 @@ Full token tables, component recipes and wrong/right pairs live in
 
 ## Before you write a line
 
-1. Check that `tokens.css` is imported. Dark mode is `data-theme="dark"` on `<html>`; light is either `data-theme="light"` or no
+1. Check that `tokens.css` is imported and that `assets/` sits beside it — the `@font-face` `src` URLs are relative, and moving one without the other silently drops the page to a fallback stack. Dark mode is `data-theme="dark"` on `<html>`; light is either `data-theme="light"` or no
    attribute at all — both are defined, so a toggle can write either value or remove it.
+   The brand mark is inline SVG in `brand.json`; set its fills to `currentColor` when you place it, so it follows the surrounding ink and inverts in dark mode.
 2. Work out which semantic tokens the thing you're building needs. If you cannot name them, you do
    not understand the component yet.
 3. If no semantic token fits, **say so and stop**. Do not reach for a primitive or invent a hex.
@@ -71,6 +72,10 @@ Full token tables, component recipes and wrong/right pairs live in
 14. **Type is role-named.** Use `--text-body`, `--text-heading`, `--text-label` and friends.
     Heading *level* is about document outline; heading *size* is about the role token. Never size
     text with an arbitrary rem value.
+    `--text-display` and `--text-heading-lg` are **fluid** — they already scale with the viewport. Never pin
+    them to a fixed size or wrap them in a media query; both throw the scaling away.
+    `--font-display` is a separate typeface for the `display` role only — not a
+    heavier weight of the body font, and not for headings or UI.
 15. **Motion:** `--duration-fast` 150ms,
     `--duration-base` 200ms, easing `--ease-out` for entrances.
     Exits are faster than entrances. Never `transition: all` — name the properties.

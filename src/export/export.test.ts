@@ -136,11 +136,22 @@ describe("assets", () => {
     it("does not count an inline SVG logo as a file to copy", () => {
         const withSvg = structuredClone(hendriPreset)
         withSvg.meta.logoSvg = "<svg/>"
+        withSvg.meta.logoFile = undefined
+        withSvg.typography.fontFiles = []
         expect(referencedAssets(resolveTokens(withSvg))).toEqual([])
     })
 
     it("emits no @font-face block when a brand has no font files", () => {
-        expect(fileAt("tokens.css")).not.toContain("@font-face")
+        const bare = structuredClone(hendriPreset)
+        bare.typography.fontFiles = []
+        expect(fileAt2(resolveTokens(bare), "tokens.css")).not.toContain("@font-face")
+    })
+
+    it("ships the display face as a file, because it has no hosted source", () => {
+        // Alpha Lyrae is Framer-served — there is no stylesheet to link, so it
+        // travels as bytes or it doesn't render.
+        expect(referencedAssets(resolved)).toContain("AlphaLyrae-Medium.woff2")
+        expect(fileAt("tokens.css")).toContain('font-family: "Alpha Lyrae Medium";')
     })
 
     it("marks binary entries so the writer knows they are bytes", () => {
@@ -180,6 +191,7 @@ describe("assets in the docs", () => {
         bare.meta.logoSvg = undefined
         bare.meta.logoFile = undefined
         bare.typography.fontLinks = []
+        bare.typography.fontFiles = []
         const md = fileAt2(resolveTokens(bare), "DESIGN_SYSTEM.md")
         expect(md).toContain("**No mark is defined.**")
         expect(md).toContain("**No font files and no hosted links.**")

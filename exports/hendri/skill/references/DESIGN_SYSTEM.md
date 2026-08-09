@@ -17,8 +17,10 @@ The voice is considered, warm, precise, unfussy. Let that show in copy and restr
 - **Spacing is a blessed subset, not every multiple of 4.** Only `--space-1` (4px), `--space-2` (8px), `--space-3` (12px), `--space-4` (16px), `--space-6` (24px), `--space-8` (32px), `--space-12` (48px), `--space-16` (64px), `--space-24` (96px) exist. A value between two of them is a bug, not a refinement.
 - **Type roles are named for their job**, never `h1`/`h2`/`text-2xl`: `--text-display`, `--text-heading-lg`, `--text-heading`, `--text-heading-sm`, `--text-body-lg`, `--text-body`, `--text-body-sm`, `--text-label`, `--text-code`. Heading level is semantics for the document outline; size comes from the role token.
 - **Labels on solid fills come from the neutral ramp**, not from the fill's own scale, and their polarity is chosen by measuring contrast against each fill. That means they do not all match — in both modes. `--warning-foreground` can be dark while `--primary-foreground` is light. Do not "correct" this to a single colour.
-- The secondary scale is provisional — hendri.design has no declared secondary brand colour yet.
-- Type families are placeholders pending confirmation against the live site.
+- `--text-display` and `--text-heading-lg` are fluid — they scale with the viewport between 390px and 1280px rather than holding one size. Never override them with a fixed rem value.
+- Alpha Lyrae ships one weight (500). Do not ask for bold display type: there isn't any, and the browser will synthesise a fake bold that looks wrong.
+- hendri.design also uses Inter for its machine-view panel. This system has no slot for a fourth family, so it is not represented here.
+- No mono face is declared on the live site; `--font-mono` is a neutral system stack until one is chosen.
 
 ## How the layers work
 
@@ -59,8 +61,8 @@ re-points itself in dark mode. This is the whole API.
 | `--state-disabled` | `#dce3eb` | `#3e4b58` | Fill of a disabled control. Pair with `foreground-tertiary`. |
 | `--primary-hover` | `#423dc9` | `#4c48d7` | Hover state of a solid `primary` fill. |
 | `--primary-active` | `#323397` | `#3734a6` | Pressed/active state of a solid `primary` fill. |
-| `--secondary-hover` | `#324048` | `#536673` | Hover state of a solid `secondary` fill. |
-| `--secondary-active` | `#1e262c` | `#3d4c56` | Pressed/active state of a solid `secondary` fill. |
+| `--secondary-hover` | `#a84d00` | `#f9cfb7` | Hover state of a solid `secondary` fill. |
+| `--secondary-active` | `#883c00` | `#fce6d8` | Pressed/active state of a solid `secondary` fill. |
 | `--success-hover` | `#008536` | `#127733` | Hover state of a solid `success` fill — a success button. |
 | `--success-active` | `#006a27` | `#095a22` | Pressed state of a solid `success` fill. |
 | `--warning-hover` | `#9a5100` | `#f3d2b8` | Hover state of a solid `warning` fill — a warning button. |
@@ -88,10 +90,10 @@ re-points itself in dark mode. This is the whole API.
 | `--primary-foreground` | `#f7f9fb` | `#f4f6f8` | Text and icons on a solid `primary` fill. Never use it on a page background. |
 | `--primary-subtle` | `#edefff` | `#252579` | Tinted primary wash — quiet badges, selected rows, callouts. Not a text colour. |
 | `--primary-subtle-foreground` | `#423dc9` | `#d1d6ff` | Text on `primary-subtle`. |
-| `--secondary` | `#40525e` | `#6b7f8d` | Solid secondary fill — secondary buttons and supporting accents. |
-| `--secondary-foreground` | `#f7f9fb` | `#f4f6f8` | Text and icons on a solid `secondary` fill. Never use it on a page background. |
-| `--secondary-subtle` | `#edf1f4` | `#2b363d` | Tinted secondary wash — quiet badges, selected rows, callouts. Not a text colour. |
-| `--secondary-subtle-foreground` | `#40525e` | `#d3dae0` | Text on `secondary-subtle`. |
+| `--secondary` | `#cc6000` | `#f3b590` | Solid secondary fill — secondary buttons and supporting accents. |
+| `--secondary-foreground` | `#f7f9fb` | `#1b2127` | Text and icons on a solid `secondary` fill. Never use it on a page background. |
+| `--secondary-subtle` | `#ffece0` | `#562300` | Tinted secondary wash — quiet badges, selected rows, callouts. Not a text colour. |
+| `--secondary-subtle-foreground` | `#883c00` | `#f9cfb7` | Text on `secondary-subtle`. |
 
 ### Status
 
@@ -120,44 +122,88 @@ re-points itself in dark mode. This is the whole API.
 
 ## Type
 
-| Token | Size | Line height | Weight | Tracking |
-| --- | --- | --- | --- | --- |
-| `--text-display` | 3.5rem | `--text-display--line-height` · 1.05 | `--text-display--font-weight` · 600 | `--text-display--letter-spacing` · -0.03em |
-| `--text-heading-lg` | 2.25rem | `--text-heading-lg--line-height` · 1.15 | `--text-heading-lg--font-weight` · 600 | `--text-heading-lg--letter-spacing` · -0.02em |
-| `--text-heading` | 1.5rem | `--text-heading--line-height` · 1.25 | `--text-heading--font-weight` · 600 | `--text-heading--letter-spacing` · -0.01em |
-| `--text-heading-sm` | 1.125rem | `--text-heading-sm--line-height` · 1.4 | `--text-heading-sm--font-weight` · 600 | `--text-heading-sm--letter-spacing` · normal |
-| `--text-body-lg` | 1.125rem | `--text-body-lg--line-height` · 1.6 | `--text-body-lg--font-weight` · 400 | `--text-body-lg--letter-spacing` · normal |
-| `--text-body` | 1rem | `--text-body--line-height` · 1.6 | `--text-body--font-weight` · 400 | `--text-body--letter-spacing` · normal |
-| `--text-body-sm` | 0.875rem | `--text-body-sm--line-height` · 1.55 | `--text-body-sm--font-weight` · 400 | `--text-body-sm--letter-spacing` · normal |
-| `--text-label` | 0.8125rem | `--text-label--line-height` · 1.3 | `--text-label--font-weight` · 500 | `--text-label--letter-spacing` · 0.01em |
-| `--text-code` | 0.875rem | `--text-code--line-height` · 1.5 | `--text-code--font-weight` · 400 | `--text-code--letter-spacing` · normal |
+| Token | Family | Size | Line height | Weight | Tracking |
+| --- | --- | --- | --- | --- | --- |
+| `--text-display` | `--font-display` | **fluid** 2.25–3.5rem | `--text-display--line-height` · 1.05 | `--text-display--font-weight` · 500 | `--text-display--letter-spacing` · -0.02em |
+| `--text-heading-lg` | `--font-sans` | **fluid** 1.75–2.25rem | `--text-heading-lg--line-height` · 1.15 | `--text-heading-lg--font-weight` · 500 | `--text-heading-lg--letter-spacing` · -0.04em |
+| `--text-heading` | `--font-sans` | 1.5rem | `--text-heading--line-height` · 1.25 | `--text-heading--font-weight` · 500 | `--text-heading--letter-spacing` · -0.04em |
+| `--text-heading-sm` | `--font-sans` | 1.125rem | `--text-heading-sm--line-height` · 1.4 | `--text-heading-sm--font-weight` · 500 | `--text-heading-sm--letter-spacing` · -0.02em |
+| `--text-body-lg` | `--font-sans` | 1.125rem | `--text-body-lg--line-height` · 1.6 | `--text-body-lg--font-weight` · 400 | `--text-body-lg--letter-spacing` · -0.02em |
+| `--text-body` | `--font-sans` | 1rem | `--text-body--line-height` · 1.6 | `--text-body--font-weight` · 400 | `--text-body--letter-spacing` · -0.02em |
+| `--text-body-sm` | `--font-sans` | 0.875rem | `--text-body-sm--line-height` · 1.55 | `--text-body-sm--font-weight` · 400 | `--text-body-sm--letter-spacing` · -0.02em |
+| `--text-label` | `--font-sans` | 0.8125rem | `--text-label--line-height` · 1.3 | `--text-label--font-weight` · 500 | `--text-label--letter-spacing` · 0.01em |
+| `--text-code` | `--font-mono` | 0.875rem | `--text-code--line-height` · 1.5 | `--text-code--font-weight` · 400 | `--text-code--letter-spacing` · normal |
 
-Families: `--font-sans` is `"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif`, `--font-mono` is
-`"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace`.
+Families: `--font-sans` is `"Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif`, `--font-mono` is
+`ui-monospace, SFMono-Regular, Menlo, monospace`, and `--font-display` is `"Alpha Lyrae Medium", "Space Grotesk", ui-sans-serif, system-ui, sans-serif`.
+
+**`--font-display` is a different typeface, not a bigger weight of the body font.** It is
+drawn for size and belongs on the `display` role only. Do not set it on headings, buttons or body
+copy, and note it ships in only 500 — asking for a weight it doesn't have gets you a browser-synthesised fake bold, which looks wrong in a way people notice without being able to name.
+### Fluid roles
+
+`--text-display` scales from **2.25rem** to **3.5rem**, and `--text-heading-lg` scales from **1.75rem** to **2.25rem** across the viewport range
+390px – 1280px.
+Below and above that span they hold at the ends.
+
+They emit a `clamp()`, so **there is nothing to do** — no media queries, no overrides. What you
+must not do is replace one with a fixed size:
+
+```css
+/* ✅ */
+h1 { font-size: var(--text-display); }
+
+/* ❌ pins the fluid role to its desktop size — a 56px heading on a phone */
+h1 { font-size: 3.5rem; }
+@media (min-width: 768px) { h1 { font-size: var(--text-display); } }
+```
+
+The middle term of each `clamp()` deliberately mixes `rem` with `vw` rather than being pure
+`vw`. Viewport units ignore the reader's font-size preference, so a `vw`-only heading refuses to
+grow when someone zooms — a failure that is invisible on every device you own and obvious to
+somebody who needs it.
+
 
 **The faces have to be loaded or the stack silently falls back to system fonts.** Put this in `<head>`:
 
 ```html
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap">
 ```
 
 ## Brand assets
 
 ### Logo
 
-**No mark is defined.** Set the brand name in type rather than inventing a logo, and say that you
-did.
+The mark ships as **inline SVG inside `brand.json`** rather than as a file, and that is a
+functional choice, not a packaging one: inline means its fills can be set to `currentColor`, so one
+mark follows whatever text colour surrounds it and inverts in dark mode without a second asset.
+
+```html
+<!-- ✅ inherits the surrounding ink; correct in both modes -->
+<span style="color: var(--foreground)">
+    <svg viewBox="…"><path fill="currentColor" d="…"/></svg>
+</span>
+```
+
+Replace every explicit `fill` with `currentColor` when you place it. Do not hardcode the brand
+colour into the mark — on a `--primary` field it would disappear into its own background.
 
 ### Typefaces
 
-No font files ship with this system. The faces are hosted, and `<head>` needs:
+The font files ship in `assets/` and `tokens.css` already declares them — importing the
+stylesheet is all that is required, there is no separate `<link>` to add.
 
-```html
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
-```
+| File | Family | Weight | Style |
+| --- | --- | --- | --- |
+| `assets/AlphaLyrae-Medium.woff2` | `--font-display` | 500 | normal |
 
-Without them the named families only render where they happen to be installed already, and
-everything else falls back to the system stack.
+The `@font-face` rules are named after the **first family in each stack** — `Alpha Lyrae Medium` — not after the stack itself. If you regenerate those rules by hand, keep
+that: a face declared as `"Space Grotesk", ui-sans-serif, …` matches
+nothing and loads nothing, silently.
+
+Keep `assets/` next to `tokens.css`. The `src` URLs are relative, so moving one without the
+other leaves the page rendering in a fallback stack — which looks like a design decision rather
+than a missing file.
 
 ## Layout — breakpoints and containers
 
@@ -268,11 +314,12 @@ exact, not indicative.
 
 **Applying a type role.** `--text-body` is a bare length, so the `font` shorthand will not take
 it — `font: var(--text-body)` is invalid CSS and is dropped silently, leaving an unstyled element
-and no console error. Every role ships four properties; set them individually:
+and no console error. A role is **five** properties — the family is part of it, not a
+separate decision — so set them individually:
 
 ```css
 .button {
-    font-family: var(--font-sans);
+    font-family: var(--font-sans); /* the role's family, from the table below */
     font-size: var(--text-label);
     line-height: var(--text-label--line-height);
     font-weight: var(--text-label--font-weight);
@@ -447,17 +494,18 @@ use the one that describes your intent, because the values diverge the moment th
 | light | `#acbccd` | `--border`, `--input` |
 | light | `#574cff` | `--ring`, `--primary` |
 | light | `#423dc9` | `--primary-hover`, `--primary-subtle-foreground` |
-| light | `#40525e` | `--secondary`, `--secondary-subtle-foreground` |
+| light | `#883c00` | `--secondary-active`, `--secondary-subtle-foreground` |
 | light | `#7e4000` | `--warning-active`, `--warning-subtle-foreground` |
 | light | `#970d16` | `--danger-active`, `--danger-subtle-foreground` |
 | light | `#005783` | `--info-active`, `--info-subtle-foreground` |
-| dark | `#1b2127` | `--background`, `--warning-foreground` |
+| dark | `#1b2127` | `--background`, `--secondary-foreground`, `--warning-foreground` |
 | dark | `#556575` | `--surface-raised`, `--state-active` |
 | dark | `#3e4b58` | `--muted`, `--state-hover`, `--state-disabled`, `--border-subtle` |
-| dark | `#f4f6f8` | `--foreground`, `--primary-foreground`, `--secondary-foreground`, `--success-foreground`, `--danger-foreground`, `--info-foreground` |
+| dark | `#f4f6f8` | `--foreground`, `--primary-foreground`, `--success-foreground`, `--danger-foreground`, `--info-foreground` |
 | dark | `#8697a8` | `--foreground-tertiary`, `--border-strong` |
 | dark | `#252579` | `--state-selected`, `--primary-subtle` |
 | dark | `#6d7e90` | `--border`, `--input` |
+| dark | `#f9cfb7` | `--secondary-hover`, `--secondary-subtle-foreground` |
 | dark | `#2e924b` | `--success`, `--success-border` |
 | dark | `#f3d2b8` | `--warning-hover`, `--warning-subtle-foreground` |
 | dark | `#3083ba` | `--info`, `--info-border` |

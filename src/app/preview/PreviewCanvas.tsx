@@ -1,14 +1,21 @@
-import type { ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
+import { createPortal } from "react-dom"
 import { previewCss } from "../../export/css"
 import type { Mode, ResolvedTokens } from "../../engine/types"
 
 /**
- * The canvas injects the SAME declarations array the exporter prints, scoped to
- * `#preview-root` so brand colour never leaks into the app's own chrome.
+ * The canvas is an iframe, not a div.
  *
- * Everything rendered inside must use `var(--token)` only. There is a lint that
- * fails on a hex literal in `preview/contexts/` — if the preview can express a
- * colour the export can't, the tool is lying.
+ * A div constrained to 390px is not a 390px viewport: `vw` units and media
+ * queries both resolve against the browser window, so pinning the width showed
+ * the right column count and the wrong type size, silently. Fluid type made that
+ * obvious — the heading measured identically at every breakpoint — but media
+ * queries had been lying the whole time in the same way.
+ *
+ * An iframe *is* a viewport. Everything viewport-relative now means what it says.
+ *
+ * The declarations injected here are the same array the exporter prints, so the
+ * preview still cannot drift from the stylesheet it ships beside.
  */
 export function PreviewCanvas({
     resolved,
@@ -22,41 +29,76 @@ export function PreviewCanvas({
     width: number | null
     children: ReactNode
 }) {
+    const frame = useRef<HTMLIFrameElement>(null)
+    const [body, setBody] = useState<HTMLElement | null>(null)
+
+    // An about:blank iframe already has a document — use it. Rewriting it with
+    // doc.write() fires a second load that replaces the body React has just
+    // portalled into, so the canvas comes up empty.
+    const attach = () => {
+        const doc = frame.current?.contentDocument
+        if (!doc?.body) return
+        doc.body.style.margin = "0"
+        setBody((current) => (current === doc.body ? current : doc.body))
+    }
+
+    useEffect(attach, [])
+
+    useEffect(() => {
+        const doc = frame.current?.contentDocument
+        if (doc?.documentElement) doc.documentElement.style.colorScheme = mode
+    }, [mode, body])
+
     return (
         <div
             style={{
-                minHeight: "100%",
-                // The gutter makes a pinned width read as a frame rather than as
-                // the whole world, which is the difference between judging a
-                // layout and just looking at it.
+                height: "100%",
                 background: width ? "var(--app-panel)" : undefined,
                 padding: width ? "16px 0" : undefined,
-                // fit-content, so a breakpoint wider than the pane scrolls
-                // instead of being quietly squeezed. A canvas labelled "xl" that
-                // is actually 400px wide is worse than no canvas at all.
-                minWidth: width ? "fit-content" : undefined,
+                display: "flex",
+                justifyContent: "center",
+                // Wider than the pane scrolls rather than being squeezed: a canvas
+                // labelled "xl" that is actually 400px wide is worse than none.
+                overflowX: "auto",
             }}
         >
-            {/* Assets are served from the API route, so the preview renders in
-                the brand's real typeface rather than a fallback stack. */}
-            <style>
-                {previewCss(resolved, "#preview-root", `/api/assets/${resolved.config.meta.slug}`)}
-            </style>
-            <div
-                id="preview-root"
-                data-theme={mode}
+            <iframe
+                ref={frame}
+                onLoad={attach}
+                title="Preview"
                 style={{
-                    background: "var(--background)",
-                    color: "var(--foreground)",
-                    fontFamily: "var(--font-sans)",
-                    minHeight: width ? undefined : "100%",
-                    width: width ? `${width}px` : undefined,
-                    marginInline: width ? "auto" : undefined,
-                    outline: width ? "1px solid var(--border)" : undefined,
+                    border: width ? "1px solid var(--app-border)" : "none",
+                    width: width ? `${width}px` : "100%",
+                    flex: "0 0 auto",
+                    height: "100%",
+                    background: "var(--app-panel)",
                 }}
-            >
-                {children}
-            </div>
+            />
+            {body &&
+                createPortal(
+                    <>
+                        <style>
+                            {previewCss(
+                                resolved,
+                                ":root",
+                                `/api/assets/${resolved.config.meta.slug}`,
+                            )}
+                        </style>
+                        <div
+                            id="preview-root"
+                            data-theme={mode}
+                            style={{
+                                background: "var(--background)",
+                                color: "var(--foreground)",
+                                fontFamily: "var(--font-sans)",
+                                minHeight: "100vh",
+                            }}
+                        >
+                            {children}
+                        </div>
+                    </>,
+                    body,
+                )}
         </div>
     )
 }

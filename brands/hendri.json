@@ -13,7 +13,9 @@
             "unfussy"
         ],
         "deviations": [
-            "hendri.design also uses Inter and Alpha Lyrae Medium for specific roles — Inter for the machine-view panel, Alpha Lyrae for the Human/Machine toggle. This system's sans/serif/mono model has no slot for a third face, so those are not represented here.",
+            "`--text-display` and `--text-heading-lg` are fluid — they scale with the viewport between 390px and 1280px rather than holding one size. Never override them with a fixed rem value.",
+            "Alpha Lyrae ships one weight (500). Do not ask for bold display type: there isn't any, and the browser will synthesise a fake bold that looks wrong.",
+            "hendri.design also uses Inter for its machine-view panel. This system has no slot for a fourth family, so it is not represented here.",
             "No mono face is declared on the live site; `--font-mono` is a neutral system stack until one is chosen."
         ]
     },
@@ -812,24 +814,35 @@
     "typography": {
         "families": {
             "sans": "\"Space Grotesk\", ui-sans-serif, system-ui, -apple-system, sans-serif",
+            "display": "\"Alpha Lyrae Medium\", \"Space Grotesk\", ui-sans-serif, system-ui, sans-serif",
             "mono": "ui-monospace, SFMono-Regular, Menlo, monospace"
         },
         "fontLinks": [
             "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
         ],
+        "fontFiles": [
+            {
+                "fileName": "AlphaLyrae-Medium.woff2",
+                "family": "display",
+                "weight": 500,
+                "style": "normal"
+            }
+        ],
         "roles": [
             {
                 "role": "display",
-                "family": "sans",
+                "family": "display",
                 "sizeRem": 3.5,
+                "minSizeRem": 2.25,
                 "lineHeight": 1.05,
                 "weight": 500,
-                "tracking": "-0.04em"
+                "tracking": "-0.02em"
             },
             {
                 "role": "heading-lg",
                 "family": "sans",
                 "sizeRem": 2.25,
+                "minSizeRem": 1.75,
                 "lineHeight": 1.15,
                 "weight": 500,
                 "tracking": "-0.04em"
