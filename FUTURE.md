@@ -4,18 +4,32 @@ Start here next session. Read `STATUS.md` first for where things actually stand.
 
 ## Immediate next step
 
-**The static guideline page** (Phase 6). With assets and their documentation in place, a generated
-page can show the real mark in the real typeface — the artifact a client actually wants, and the
-one output the tool still doesn't produce. A second Vite entry SSG-rendering the preview contexts
-plus the token tables into `exports/<slug>/guidelines/index.html`.
+**The static guideline page** (Phase 6) — the one output the tool still doesn't produce, and the
+artifact a client actually wants. A second Vite entry SSG-rendering the preview contexts plus the
+token tables into `exports/<slug>/guidelines/index.html`, so a brand can be handed over as a page
+rather than a folder of Markdown.
 
-Worth running before or after: **another acceptance test**. The docs have gained a Brand assets
-section, the on-brand rule, and status hover states since the last run, and none of that has been
-tested on an agent. Use the `doc-acceptance-test` skill; brief it on something with a full-bleed
-brand band, since that is the newest rule.
+Two things make it more valuable than when it was first planned: assets exist, so it can show the
+real mark in the real typeface; and the preview kit already renders every documented recipe, so the
+page is mostly a second consumer of `preview/kit.tsx` rather than new design work.
 
-The canvas has four contexts — Components, Surfaces, Marketing, Dashboard — sharing
-`preview/kit.tsx`, and the width selector covers the base (390px) case as well as every breakpoint.
+One known obstacle, already logged below: **preview contexts are inline `style={{}}` objects, not
+CSS.** SSG output needs real stylesheets, so either the kit grows a class-based mode or the
+generator serialises the style objects. Decide that first — it shapes the whole phase.
+
+### Before shipping it to anyone
+
+Run the acceptance test again (`doc-acceptance-test` skill). Four runs in, it has found real defects
+every single time, including two that had shipped. Brief it on a shape not yet used — a dashboard or
+an app shell — since each new shape has surfaced a different class of failure.
+
+### Cheap wins if you want a short session instead
+
+- **Fluid type** (decision 1 below) — bounded, self-contained, and visibly improves the phone case.
+- **`--on-brand` tokens** (decision 2 below) — small, and turns a rule that has been got wrong twice
+  into something that cannot be.
+- **The stale-export trap** under *Known rough edges* — it has cost time in three separate sessions
+  and is the reason exports drift from the code.
 
 ## Two decisions the marketing context surfaced
 
@@ -43,11 +57,22 @@ A subagent built a page from the exported docs and listed what it had to invent.
 *declare* these gaps honestly, but declaring is not solving:
 
 - ~~**Breakpoints**~~ and ~~**container widths**~~ — done. See `DECISIONS.md` #10 and #11.
-- **Icon box size.** The craft rules specify stroke weight to a fraction of a pixel and never the box.
-- **Link colour in body copy.** `--primary` is documented as a fill; there is no `--link`.
-- **Standalone font weights**, **opacity**, **z-index**, **blur** — not modelled at all.
+- **Icon box size.** The craft rules specify stroke weight to a fraction of a pixel and never the
+  box. They also cover weight 400 and 600 only, and every button uses `label` at weight 500.
+- **Link colour in body copy.** There is no `--link`, and `--primary` — the obvious substitute — is
+  unreadable as text in dark mode (Lc −28.7). Documented as a trap; still not solved.
+- **App-shell interiors.** Sidebar and column widths, header heights, z-index, minimum table widths.
+  `--container-*` bound the page frame, not what's inside it. Every run has invented these.
+- **Card emphasis.** No token or recipe for "this is the recommended plan". `--primary` as a border
+  measures Lc 24.7 against `--surface` in dark, just under the visible bar.
+- **A scrim.** Opacity isn't modelled, so a real modal backdrop can't be built from these tokens.
+- **A wordmark treatment.** Even with a mark defined, nothing says which role, weight or colour the
+  brand name takes when set in type.
+- **Standalone font weights**, **opacity**, **blur** — not modelled at all.
 - **Reduced-motion duration.** The rule says "cut to near zero"; the smallest token is 100ms.
 - **A type step between 1.5rem and 2.25rem.** A price or a stat lands awkwardly between them.
+- **Theme persistence.** The attribute is defined; storing the choice, seeding from the OS
+  preference and avoiding a first-paint flash are left to the implementer. Every run built its own.
 
 ## Known rough edges
 
@@ -58,6 +83,16 @@ A subagent built a page from the exported docs and listed what it had to invent.
   `brands/<slug>.json` and letting it rebuild. **This has cost real time repeatedly** — it is the
   main reason exports drift from the code, since the app exports the saved brand, not the preset.
   Fix it before it bites again.
+- **The export can silently go stale**, and this is the same bug wearing a different hat. The app
+  exports the *saved brand*; the tests compare against the *preset*. When they diverge, an
+  acceptance run tests documentation the code no longer generates. **Before any acceptance run or
+  handover, regenerate and verify** — drop this into a temp test file and delete it after:
+  ```ts
+  for (const f of buildExport(resolveTokens(hendriPreset)))
+      expect(readFileSync(join("exports/hendri", f.path), "utf8")).toBe(f.content)
+  ```
+  A permanent version of this check is worth having; it wasn't added because it fails legitimately
+  whenever someone edits a brand without re-exporting.
 - **Undo history is memory-only.** A browser refresh clears it. `brands/.backup/<slug>.json` is the
   second line of defence and holds only the immediately-previous version. A short on-disk history
   would close the gap.

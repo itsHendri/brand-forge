@@ -1,71 +1,79 @@
-# Status — 2026-08-08
+# Status — 2026-08-09
 
-**Phases 0–4 done. Every value in the system is editable and exports correctly.**
+**Phases 0–5 done, plus assets. The tool does the whole loop it was built for.**
+Two sessions. 94 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
 
-Sessions 1-2. 94 tests pass, typecheck clean, preview-colour lint clean.
+Type a seed colour → get a complete system → see it on realistic UI → export it as something an AI
+agent can actually build from. That runs end to end today.
 
-## What works end to end
+## What exists
 
-Type a seed colour → get a system → see it on realistic UI → export it as something an AI agent can
-follow. That whole loop runs today.
+**Engine** (`src/engine/`, pure, no React)
+- `generateScale` — seed → 11-step OKLCH ramp. Lightness targets shared across every hue, chroma
+  bell, hue rotation centred on the anchor, per-step gamut clamping, and seed warping so the typed
+  colour appears verbatim. Dark ramps generated from their own targets, never inverted.
+- `defaultSemanticMapping` — 7 seeds → **57 semantic tokens**, every text and border colour chosen
+  by *measuring* APCA against the surface it actually sits on, not by picking a step number.
+- `resolveTokens` — the one pipeline. Emits `declarations` (206 light / 138 dark), the single
+  serialization the preview injects and every exporter prints.
+- `validateContrast` — APCA judges, WCAG 2 reported alongside. **The shipped preset reports zero
+  warnings of any level.**
+- `migrateConfig` — a loaded brand is merged over a complete default, block by block.
 
-- **Engine.** `generateScale` (OKLCH ramps, shared lightness targets, chroma bell, hue rotation,
-  gamut clamp, seed warping), `defaultSemanticMapping` (57 tokens chosen by measuring contrast, not
-  by step index), `resolveTokens` (the one pipeline), `validateContrast` (APCA judges, WCAG reports).
-- **App** at `localhost:5300`: all eight panels — Brand (identity, voice, deviations), Colour
-  (seeds + per-step override), Semantics (re-point any token), Type (families + role table), Layout
-  (breakpoints + containers), Space & shape (radius knob, live concentric demo, blessed-spacing
-  editor that refuses off-grid values), Motion (playable durations/easings), Rules (craft toggles
-  that really do change SKILL.md) — plus the live preview canvas, a breakpoint selector that pins it
-  to a real width, light/dark, contrast badge + warnings drawer with one-click fixes, and an export
-  dialog with a token-budget meter. Autosave writes `brands/hendri.json`.
-- **Export** writes `exports/hendri/`: `skill/SKILL.md`, `skill/references/DESIGN_SYSTEM.md`,
-  `tokens.css` (+ Tailwind v4 `@theme`), `tokens.json` (DTCG), `brand.json`.
+**App** at `localhost:5300` — eight panels (Brand, Colour, Semantics, Type, Layout, Space & shape,
+Motion, Rules), four preview contexts (Components, Surfaces & elevation, Marketing, Dashboard)
+sharing `preview/kit.tsx`, a width selector covering **base (390px)** and every breakpoint,
+light/dark, a contrast badge and warnings drawer with one-click fixes, undo/redo, a brand switcher
+with duplicate / new / delete, and an export dialog with a token-budget meter.
 
-## Verified
+**Export** writes `exports/<slug>/`: `skill/SKILL.md`, `skill/references/DESIGN_SYSTEM.md`,
+`tokens.css` (+ Tailwind v4 `@theme`, + `@font-face`), `tokens.json` (DTCG), `brand.json`, and
+`assets/` when the brand carries any. Docs total ~11.3k LLM tokens against an 18k budget.
 
-Browser-checked at 5300 in both modes. The generated system passes its own contrast audit with zero
-failures. `npm run lint:preview-colors` proves the preview contains no colour literals, so it cannot
-render anything the export can't express.
+## How work is protected
 
-**The acceptance test has run four times**, each with a subagent that had no knowledge of this
-project, building a real page from the exported skill folder alone. All four succeeded, and every
-critique found genuine defects — see CHANGELOG for the full list.
+Three layers, because autosave is instant and unconditional and a stray click on a colour input used
+to be permanent — it silently turned this project's own primary seed `#000000` three times.
 
-1. **Pricing page** — found the invalid `font:` shorthand in every recipe, the media-query/attribute
-   contradiction, card border+shadow doubling, an invisible outline button, washed button labels and
-   a token collision.
-2. **Docs/changelog page** — confirmed those fixes had landed, and pushed on layout: it could build
-   the responsive collapse without inventing a breakpoint, but had to invent a sidebar width, a
-   header height, a z-index and a table overflow strategy.
-3. **Settings page** — found the deepest ones: every status border sitting at Lc 0, a contrast claim
-   that counted only half its warnings, supporting text failing on raised surfaces, and status
-   colours with no hover state at all.
-4. **Plans/upgrade page**, briefed to hit the newest rules — confirmed the brand-band guidance
-   ("impossible to get wrong") and found that focus was invisible on a brand field, that four type
-   roles shipped no `letter-spacing` so the documented pattern failed silently, and that the
-   contrast claim still over-reached.
+1. **Undo/redo** (⌘Z / ⇧⌘Z) — every mutation snapshots first.
+2. **The seed field holds its own text**, committing only when the value parses.
+3. **`brands/.backup/<slug>.json`** — the dev server keeps the version each save replaces, which
+   covers the case undo can't (a browser refresh clears in-memory history).
 
-Runs 2, 3 and 4 independently recomputed every token hex from the OKLCH sources in `tokens.css`
-and confirmed the doc tables and the shared-value list are exact, with no drift — run 4 checked all
-90 values. The failures have consistently been in what the docs *infer* from the numbers, never in
-the numbers.
+## The quality gate
 
-The pattern is now the quality gate: build something real from the docs, then critique the docs.
+**The acceptance test has run four times.** Each time a subagent with no knowledge of this project
+built a real page from the exported skill folder alone, then critiqued *the documentation*. All four
+succeeded; every critique found genuine defects. The method is now a skill:
+`~/skills/skills/doc-acceptance-test/` (pushed to `github.com/itsHendri/skills`).
 
-## Open findings for Hendri
+| Run | Brief | Worst thing it found |
+|---|---|---|
+| 1 | Pricing page | `font: var(--text-label)` in every recipe — invalid CSS, dropped silently |
+| 2 | Docs/changelog | Layout gaps: no breakpoints, containers, sidebar widths |
+| 3 | Settings page | Every status border at Lc 0; contrast claim counting half its warnings |
+| 4 | Plans/upgrade | Focus invisible on a brand field (`--ring` **is** `--primary`) |
 
-1. **The secondary scale does no work.** Seeded provisionally from Foreground Secondary
-   (`#40525e`), it renders almost identically to the neutral ramp — same hue family, both low
-   chroma. hendri.design has no declared secondary brand colour. Pick one, or drop the slot.
-2. **Type families are placeholders** (Geist / Geist Mono), unconfirmed against the live site.
-3. **Breakpoints and containers now exist** (four min-widths, four named max-widths). Icon box size
-   and a link colour are still undefined, and the docs say so explicitly — see FUTURE.
+Runs 2–4 independently recomputed every token hex from the OKLCH sources and confirmed the doc
+tables and shared-value list are exact — run 4 checked all 90. **The numbers have never been wrong.
+Every failure has been in what the prose *infers* from them.** That is the argument for keeping
+generated tables generated and treating every hand-written sentence as a liability until an agent
+has tried to build from it.
+
+## Open for Hendri — decisions, not bugs
+
+1. **The secondary scale does no work.** Seeded provisionally from Foreground Secondary (`#40525e`),
+   it renders almost identically to the neutral ramp — same hue family, both low chroma.
+   hendri.design has no declared secondary. Pick one, or drop the slot.
+2. **Type families are placeholders** (Geist / Geist Mono via Google Fonts), unconfirmed against the
+   live site. No font files are uploaded, so the preview renders in the hosted faces.
+3. **No logo is set.** The upload works; nothing has been uploaded. The docs currently tell an agent
+   "no mark is defined — set the brand name in type and say that you did."
+4. **`--text-display` is fixed at 3.5rem** and runs to four lines / 235px at 390px. Fluid type is a
+   token-model change — see FUTURE.
+5. **Assets are committed, not ignored.** Fine for your own brand; a licensing decision the moment a
+   client's licensed font is involved. See DECISIONS #14.
 
 ## Next
 
-Phase 5: multi-brand (brand switcher over `brands/*.json`, "new client from Hendri template"), plus
-the Dashboard and MarketingHero preview contexts. Then Phase 6, the static guideline page.
-
-Worth doing before either: close the gaps in `FUTURE.md` that the acceptance test exposed —
-breakpoints first, since a multi-column layout can't be specified without them.
+See `FUTURE.md` — it is the entry point and is current.
