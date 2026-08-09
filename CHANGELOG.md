@@ -14,6 +14,10 @@ Keep-a-Changelog style. Newest first.
 - The preview width selector gained a **base (390px)** option. Mobile-first means everything below
   the smallest breakpoint is where the design starts, and it was the one width that could not be
   selected, because it isn't a breakpoint.
+- **Syne** is the display face, paired with Space Grotesk. Hosted on Google Fonts, so it links
+  rather than ships. Alpha Lyrae — the real face on hendri.design — is licensed and deliberately
+  not bundled; a licensed font was briefly pulled from the live site and wired into the export, and
+  has been removed from the working tree and from git history.
 - **Fluid type.** `--text-display` and `--text-heading-lg` scale across 390–1280px via `clamp()`,
   keeping a `rem` term so zoom still works. Everything else holds still.
 - **`display` is a family slot**, not a role borrowing the sans — Alpha Lyrae is a different

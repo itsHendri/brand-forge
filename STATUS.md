@@ -29,8 +29,8 @@ with duplicate / new / delete, and an export dialog with a token-budget meter.
 **Export** writes `exports/<slug>/`: `skill/SKILL.md`, `skill/references/DESIGN_SYSTEM.md`,
 `tokens.css` (+ Tailwind v4 `@theme`, + `@font-face`), `tokens.json` (DTCG), `brand.json`, and
 `assets/` when the brand carries any. Docs total ~11.3k LLM tokens against an 18k budget. The
-shipped brand is Hendri's real one — Signal `#574cff`, Ember `#f1760f`, Space Grotesk, and the
-wordmark lifted from hendri.design. No fonts are bundled.
+shipped brand is Hendri's real one — Signal `#574cff`, Ember `#f1760f`, Space Grotesk with Syne
+for display, and the wordmark lifted from hendri.design. No fonts are bundled.
 
 ## How work is protected
 
@@ -71,9 +71,9 @@ has tried to build from it.
    resolves to `#cc6000` so it can carry a label, while the ramp keeps `#f1760f` exactly at its
    anchor — which is what the wordmark points at. Worth a look to confirm you're happy with the
    compromise.
-3. **`--font-display` currently borrows the sans.** The slot exists and the upload path works;
-   Alpha Lyrae is licensed and deliberately not bundled, so display and sans are visually identical
-   until you upload a face you're happy to redistribute. Inter (machine panel) still has no slot.
+3. **`--font-display` is Syne**, standing in for Alpha Lyrae — which is licensed and deliberately
+   not bundled. Both faces are hosted (Google Fonts), so the export links and ships no font files.
+   Inter, which your machine panel uses, still has no slot in the sans/serif/mono/display model.
 4. **No mono face is declared** on the live site; `--font-mono` is a neutral system stack.
 6. **Assets are committed, not ignored.** Fine for your own brand; a licensing decision the moment a
    client's licensed font is involved. See DECISIONS #14.
