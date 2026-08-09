@@ -4,6 +4,21 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- **A brand persists only what a human changed.** `brands/*.json` stored all 57 resolved semantic
+  tokens, which froze every saved brand at whatever the generator produced the day it was written —
+  so improving `defaultSemanticMapping` reached new brands and no others, and the app exports the
+  saved brand. `color.semantics` becomes `color.semanticOverrides`: sparse, per token, per mode.
+  Everything untouched is regenerated on load by the new `semanticDefs()`. Overriding is per-mode,
+  an override cannot rewrite a description, and one naming a token that no longer exists is a
+  warning rather than a silent drop. The Semantics panel says how many tokens are pinned and gives
+  each a ↺ to put it back on the seeds. `hendri.json` fell from 40KB to 14.7KB with zero hand edits
+  found. `DECISIONS.md` #22.
+- **`npm run export`**, and a test that fails when `exports/` is stale. The export could only be
+  written from a browser, so it drifted from the code repeatedly — an acceptance run could critique
+  documentation the engine no longer produced. Regeneration is now headless and goes through the
+  same path the app does; `src/export/freshness.test.ts` compares every generated file against disk
+  and names the fixing command in each failure. It caught a stale `brand.json` on its first run.
+  `DECISIONS.md` #23.
 - Docs gained a **Brand assets** section (the mark and the typefaces, including the family-name trap
   and the keep-assets-beside-the-stylesheet warning) and the **on-brand rule** — a control on a
   coloured fill takes that fill's own `-foreground` for text and border. The outline recipe is now

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { hendriPreset } from "../presets/hendri"
 import { primitiveVar, resolveTokens, semanticByName } from "./resolve"
+import { defaultSemanticMapping } from "./semantics"
 import { SCALE_ROLES, STEPS } from "./types"
 
 const resolved = resolveTokens(hendriPreset)
@@ -8,7 +9,7 @@ const resolved = resolveTokens(hendriPreset)
 describe("resolveTokens", () => {
     it("resolves every scale and every semantic token", () => {
         for (const role of SCALE_ROLES) expect(resolved.scales[role]).toBeDefined()
-        expect(resolved.semantics.length).toBe(hendriPreset.color.semantics.length)
+        expect(resolved.semantics.length).toBe(defaultSemanticMapping(hendriPreset.color.scales).length)
     })
 
     it("reports no warnings at all for the shipped preset", () => {

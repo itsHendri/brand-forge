@@ -9,12 +9,19 @@ Atlassian as his two favourite systems on 2026-08-09; both were read in full (co
 colour roles, elevation model) and both answer most of the *Gaps* list below. Phase 6 moves behind
 this — see the reasoning under *After that*.
 
-### 0. First, stop the drift (prerequisite, not optional)
+### 0. ~~First, stop the drift~~ — done 2026-08-09
 
-Fix **saved brands don't pick up improved defaults** and **the export can silently go stale** — both
-under *Known rough edges*, both the same bug. Everything in step 1 improves `defaultSemanticMapping`,
-and none of it reaches `brands/hendri.json` or `exports/hendri/` until this is fixed. Doing it in the
-other order means adding a token, seeing nothing change, and losing an hour to it. Again.
+Both halves shipped. `brands/*.json` now stores only `color.semanticOverrides` — the deltas a human
+actually made — and everything else regenerates on load, so step 1's new tokens will reach the saved
+brand without anyone deleting a file (`DECISIONS.md` #22). `npm run export` regenerates `exports/`
+headlessly and `src/export/freshness.test.ts` fails when it goes stale (#23).
+
+Verified rather than assumed: the one real brand file had drifted in zero of its 57 tokens, so the
+format conversion froze nothing, and it shrank from 40KB to 14.7KB.
+
+**What this means for step 1:** add a token to `defaultSemanticMapping`, and it appears in the
+preview, in `brands/hendri.json` and in `exports/hendri/` without any manual step. If a test reports
+a stale export, run `npm run export`.
 
 ### 1. The settled batch — where Carbon and Atlassian independently agree
 
@@ -169,23 +176,8 @@ A subagent built a page from the exported docs and listed what it had to invent.
 
 ## Known rough edges
 
-- **Saved brands don't pick up improved defaults.** `brands/*.json` stores the resolved semantic
-  mapping, so when `defaultSemanticMapping` gets smarter, existing files keep the old wiring. That's
-  correct for user edits and wrong for untouched defaults. Needs either a "regenerate defaults"
-  action or a flag marking which tokens a human actually touched. The workaround is deleting
-  `brands/<slug>.json` and letting it rebuild. **This has cost real time repeatedly** — it is the
-  main reason exports drift from the code, since the app exports the saved brand, not the preset.
-  Fix it before it bites again.
-- **The export can silently go stale**, and this is the same bug wearing a different hat. The app
-  exports the *saved brand*; the tests compare against the *preset*. When they diverge, an
-  acceptance run tests documentation the code no longer generates. **Before any acceptance run or
-  handover, regenerate and verify** — drop this into a temp test file and delete it after:
-  ```ts
-  for (const f of buildExport(resolveTokens(hendriPreset)))
-      expect(readFileSync(join("exports/hendri", f.path), "utf8")).toBe(f.content)
-  ```
-  A permanent version of this check is worth having; it wasn't added because it fails legitimately
-  whenever someone edits a brand without re-exporting.
+- (~~Saved brands don't pick up improved defaults~~ and ~~the export can silently go stale~~ — both
+  fixed 2026-08-09. `DECISIONS.md` #22 and #23.)
 - **Undo history is memory-only.** A browser refresh clears it. `brands/.backup/<slug>.json` is the
   second line of defence and holds only the immediately-previous version. A short on-disk history
   would close the gap.

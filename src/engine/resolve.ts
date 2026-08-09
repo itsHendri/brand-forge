@@ -9,6 +9,7 @@
 import { validateContrast } from "./contrast"
 import { DARK_SHADOWS, deriveRadius, fluidSize, spaceName } from "./defaults"
 import { generateScale, oklchToCss, oklchToHex, parseSeed } from "./scale"
+import { semanticDefs } from "./semantics"
 import {
     SCALE_ROLES,
     STEPS,
@@ -97,7 +98,18 @@ function resolveSemantics(
     const warnings: Warning[] = []
     const semantics: ResolvedSemantic[] = []
 
-    for (const def of config.color.semantics) {
+    // Derived here, never read off the config: the stored set is the deltas only.
+    const { defs, orphaned } = semanticDefs(config.color.scales, config.color.semanticOverrides)
+    for (const name of orphaned) {
+        warnings.push({
+            level: "warn",
+            kind: "config",
+            message: `This brand overrides \`${name}\`, which the system no longer generates. The edit is being ignored — remove it, or restore the token.`,
+            tokens: [name],
+        })
+    }
+
+    for (const def of defs) {
         const values = {} as Record<Mode, ResolvedSwatch>
         let ok = true
         for (const mode of MODES) {
@@ -117,6 +129,7 @@ function resolveSemantics(
             values[mode] = swatch
         }
         if (ok) semantics.push({ ...def, values })
+
     }
 
     return { semantics, warnings }

@@ -14,7 +14,6 @@ import {
     DEFAULT_SPACING,
     DEFAULT_TYPE_ROLES,
 } from "../engine/defaults"
-import { defaultSemanticMapping } from "../engine/semantics"
 import type { BrandConfig, ScaleConfig } from "../engine/types"
 import { HENDRI_WORDMARK } from "./hendriWordmark"
 
@@ -66,7 +65,10 @@ export const hendriPreset: BrandConfig = {
     },
     color: {
         scales,
-        semantics: defaultSemanticMapping(scales),
+        // Nothing hand-moved: the preset is exactly what the seeds generate, and
+        // every token is derived on load. This is what makes the preset a real
+        // reference rather than a snapshot that ages.
+        semanticOverrides: [],
     },
     typography: {
         families: {

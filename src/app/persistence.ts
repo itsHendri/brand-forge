@@ -24,11 +24,19 @@ export async function loadBrand(slug: string, defaults: BrandConfig): Promise<Br
     const response = await fetch(`/api/brands/${slug}`)
     if (!response.ok) return null
     try {
-        const { config, filled } = migrateConfig(await response.json(), defaults)
+        const { config, filled, inferredOverrides } = migrateConfig(await response.json(), defaults)
         if (filled.length > 0) {
             // Worth saying out loud: the file on disk is older than the schema,
             // and the next autosave will rewrite it with these blocks included.
             console.info(`[brand-forge] ${slug}: filled missing blocks from defaults — ${filled.join(", ")}`)
+        }
+        if (inferredOverrides.length > 0) {
+            // This file predates overrides-only storage. These tokens differed
+            // from what the seeds generate and have been kept as hand edits —
+            // check them, because a stale default looks exactly like an edit.
+            console.warn(
+                `[brand-forge] ${slug}: converted ${inferredOverrides.length} stored token(s) into overrides — ${inferredOverrides.join(", ")}. If any of these were not deliberate, reset them in the Semantics panel.`,
+            )
         }
         return config
     } catch {

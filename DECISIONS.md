@@ -236,3 +236,59 @@ improvising a page.
 Taken with it: the surface+shadow pairing rule, and Atlassian's reason for it — in dark mode shadows
 barely read, so the surface itself must lighten with each level. That is already how this system
 behaves (#9), so the pairing formalises an instinct rather than changing behaviour.
+
+### 22. Only the deltas are persisted; the semantic set is derived — 2026-08-09
+
+`brands/*.json` used to store all 57 resolved semantic tokens. That made every saved brand a snapshot
+of whatever `defaultSemanticMapping` happened to produce on the day it was written, so improving the
+generator reached new brands and no others — and since the app exports the *saved brand*, not the
+preset, the exported docs could describe a system the engine no longer built. The documented
+workaround was to delete the file and let it rebuild, which also threw away any real edits. It cost
+time in at least three sessions.
+
+`color.semantics` is therefore replaced by `color.semanticOverrides`: sparse, one entry per token a
+human actually re-pointed, per mode. Everything else — names, groups, descriptions, and every
+untouched ref — is regenerated on load by `semanticDefs()`. A brand carrying one hand edit now tracks
+the generator for the other 56 tokens.
+
+Three consequences worth keeping:
+
+**Overriding is per-mode.** Pinning `--background` in light leaves dark tracking the seeds, because
+the two are decided by separate measurements and there is no reason a light-mode taste call should
+freeze the dark one.
+
+**An override cannot change a description.** It moves a ref. Descriptions are generated docs, and a
+brand that could edit them would be a brand that could lie about its own system.
+
+**An override naming a token that no longer exists is a warning, not a silent drop.** It means a
+token was renamed underneath a brand that had customised it; discarding the edit quietly is how
+someone loses work without being told.
+
+The migration from the old format diffs the stored set against the freshly generated one and keeps
+whatever differs. It cannot distinguish a hand edit from a stale default — a token that differs
+because the generator improved looks exactly like one a human moved. That was checked rather than
+assumed before shipping: the only real brand file had drifted in **zero of its 57 tokens**, so the
+conversion provably froze nothing, and the file shrank from 40KB to 14.7KB. The path remains for
+files written elsewhere, and it reports what it converted.
+
+### 23. A stale export is a failing test — 2026-08-09
+
+The app could only write an export from a browser, with somebody clicking a button. So `exports/`
+drifted from the code repeatedly: an acceptance run could critique documentation the engine had
+stopped producing, and a handover could ship a stylesheet nobody had generated. `FUTURE.md` proposed
+this check three times and never added it, reasoning that it "fails legitimately whenever someone
+edits a brand without re-exporting".
+
+That reasoning was backwards. An export that no longer matches its brand *is* the defect — the
+failure is the signal. What made the check unaffordable was that fixing it meant opening a browser.
+
+So `npm run export` regenerates `exports/<slug>/` headlessly from `brands/<slug>.json`, through the
+same `migrateConfig` → `resolveTokens` → `buildExport` path the app uses, and
+`src/export/freshness.test.ts` fails when disk and engine disagree. Every failure message names the
+one command that fixes it.
+
+It earned its place on the first run, catching `exports/hendri/brand.json` still carrying the old
+stored-semantics array.
+
+The logic lives in `scripts/exportFromDisk.ts` rather than `src/`, because it reads the filesystem
+and nothing the browser bundles is allowed to.

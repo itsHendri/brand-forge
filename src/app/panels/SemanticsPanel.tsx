@@ -17,13 +17,30 @@ const GROUP_ORDER: SemanticGroup[] = ["surface", "text", "state", "border", "bra
  * primitive it points at in the current mode — change the pointer, not the value.
  */
 export function SemanticsPanel({ resolved }: { resolved: ResolvedTokens }) {
-    const { mode, setSemanticRef, highlighted, highlight } = useStore()
+    const { mode, setSemanticRef, resetSemanticRef, highlighted, highlight } = useStore()
+    const overriddenCount = resolved.semantics.filter((token) => token.overridden[mode]).length
 
     return (
         <div className="flex flex-col gap-5">
             <p className="text-xs leading-relaxed text-[var(--app-ink-soft)]">
                 Semantics are what your code and your agents use. Each points at a primitive step in{" "}
                 <strong>{mode}</strong> mode.
+            </p>
+            <p className="text-xs leading-relaxed text-[var(--app-ink-soft)]">
+                {overriddenCount === 0 ? (
+                    <>
+                        Every token here is generated from your seeds, so all of them improve when the
+                        engine does. Change one and it stops tracking — the ↺ undoes that.
+                    </>
+                ) : (
+                    <>
+                        <strong>
+                            {overriddenCount} token{overriddenCount === 1 ? "" : "s"}
+                        </strong>{" "}
+                        in {mode} mode {overriddenCount === 1 ? "is" : "are"} pinned by hand and no longer{" "}
+                        {overriddenCount === 1 ? "tracks" : "track"} your seeds. Everything else still does.
+                    </>
+                )}
             </p>
 
             {GROUP_ORDER.map((group) => {
@@ -89,6 +106,29 @@ export function SemanticsPanel({ resolved }: { resolved: ResolvedTokens }) {
                                                 </option>
                                             ))}
                                         </select>
+                                        {/*
+                                          Always rendered, so the row never reflows
+                                          when a token becomes overridden — the
+                                          control just stops being invisible.
+                                        */}
+                                        <button
+                                            type="button"
+                                            onClick={() => resetSemanticRef(token.name, mode)}
+                                            disabled={!token.overridden[mode]}
+                                            aria-label={`Reset --${token.name} to the generated value`}
+                                            title={
+                                                token.overridden[mode]
+                                                    ? "Pinned by hand. Reset it to track your seeds again."
+                                                    : "Generated from your seeds."
+                                            }
+                                            className={`w-4 shrink-0 text-[11px] leading-none ${
+                                                token.overridden[mode]
+                                                    ? "cursor-pointer text-[var(--app-ink-soft)] hover:text-[var(--app-ink)]"
+                                                    : "invisible"
+                                            }`}
+                                        >
+                                            ↺
+                                        </button>
                                     </div>
                                 )
                             })}

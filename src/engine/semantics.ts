@@ -20,6 +20,7 @@ import {
     type Mode,
     type ScaleConfig,
     type ScaleRole,
+    type SemanticOverride,
     type SemanticTokenDef,
     type Step,
 } from "./types"
@@ -315,6 +316,41 @@ function statusTokens(
             description: `Border of a ${label} banner or field.`,
         },
     ]
+}
+
+/** A semantic token plus which of its refs a human moved. */
+export interface SemanticDef extends SemanticTokenDef {
+    overridden: Record<Mode, boolean>
+}
+
+/**
+ * The full semantic set for a brand: generated from the seeds, then overridden.
+ *
+ * This is the function to call — `defaultSemanticMapping` on its own is the
+ * generator, and using it directly is how a brand's hand edits get dropped.
+ *
+ * An override naming a token that no longer exists is reported rather than
+ * ignored: it means a token was renamed or removed under a brand that had
+ * customised it, and silently discarding the edit is how someone loses work
+ * without ever being told.
+ */
+export function semanticDefs(
+    scales: ScaleConfig[],
+    overrides: SemanticOverride[] = [],
+): { defs: SemanticDef[]; orphaned: string[] } {
+    const byName = new Map(overrides.map((override) => [override.name, override]))
+    const defs = defaultSemanticMapping(scales).map((def): SemanticDef => {
+        const override = byName.get(def.name)
+        byName.delete(def.name)
+        if (!override) return { ...def, overridden: { light: false, dark: false } }
+        return {
+            ...def,
+            light: override.light ?? def.light,
+            dark: override.dark ?? def.dark,
+            overridden: { light: Boolean(override.light), dark: Boolean(override.dark) },
+        }
+    })
+    return { defs, orphaned: [...byName.keys()] }
 }
 
 export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[] {

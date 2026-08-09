@@ -53,6 +53,7 @@ interface BrandForgeState {
     setScaleName: (role: ScaleRole, name: string) => void
     setStepOverride: (role: ScaleRole, mode: Mode, step: Step, hex: string | null) => void
     setSemanticRef: (token: string, mode: Mode, ref: SemanticRef) => void
+    resetSemanticRef: (token: string, mode: Mode) => void
     patch: (update: (draft: BrandConfig) => void) => void
     hydrate: () => Promise<void>
 
@@ -148,10 +149,24 @@ export const useStore = create<BrandForgeState>((set, get) => {
                 else delete scale.overrides[mode]![step]
             }),
 
+        // Records a delta, not a whole token. Anything not overridden keeps
+        // regenerating from the seeds, so this brand picks up an improved
+        // default the next time the engine gets smarter.
         setSemanticRef: (token, mode, ref) =>
             commit((draft) => {
-                const semantic = draft.color.semantics.find((s) => s.name === token)
-                if (semantic) semantic[mode] = ref
+                const existing = draft.color.semanticOverrides.find((o) => o.name === token)
+                if (existing) existing[mode] = ref
+                else draft.color.semanticOverrides.push({ name: token, [mode]: ref })
+            }),
+
+        // Drop the delta and fall back to what the seeds generate.
+        resetSemanticRef: (token, mode) =>
+            commit((draft) => {
+                const index = draft.color.semanticOverrides.findIndex((o) => o.name === token)
+                const existing = draft.color.semanticOverrides[index]
+                if (!existing) return
+                delete existing[mode]
+                if (!existing.light && !existing.dark) draft.color.semanticOverrides.splice(index, 1)
             }),
 
         patch: (update) => commit(update),

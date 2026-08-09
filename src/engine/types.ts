@@ -55,6 +55,22 @@ export interface SemanticRef {
     step: Step
 }
 
+/**
+ * A human re-pointing one semantic token, in one mode.
+ *
+ * This is the ONLY part of the semantic layer that is persisted. Everything else
+ * — the name, the group, the description, and every ref nobody touched — is
+ * regenerated from the seeds on load, so improving `defaultSemanticMapping`
+ * reaches brands that already exist instead of stopping at the ones not yet
+ * written. Storing the resolved set was the bug; storing the deltas is the fix.
+ */
+export interface SemanticOverride {
+    /** Matches `SemanticTokenDef.name`. An override for an unknown name is dropped, loudly. */
+    name: string
+    light?: SemanticRef
+    dark?: SemanticRef
+}
+
 export type SemanticGroup = "surface" | "text" | "brand" | "state" | "border" | "status"
 
 export interface SemanticTokenDef {
@@ -163,8 +179,11 @@ export interface BrandConfig {
     meta: BrandMeta
     color: {
         scales: ScaleConfig[]
-        /** Full semantic set. Seeded by defaultSemanticMapping(), then diverges freely. */
-        semantics: SemanticTokenDef[]
+        /**
+         * Sparse — only the tokens a human actually re-pointed. The full set is
+         * derived by `semanticDefs()`, never stored. See `SemanticOverride`.
+         */
+        semanticOverrides: SemanticOverride[]
     }
     typography: {
         families: { sans: string; serif?: string; mono: string; display?: string }
@@ -215,6 +234,8 @@ export type ResolvedScale = {
 
 export interface ResolvedSemantic extends SemanticTokenDef {
     values: Record<Mode, ResolvedSwatch>
+    /** Per mode: did a human re-point this, or is it what the seeds generated? */
+    overridden: Record<Mode, boolean>
 }
 
 export type Declaration = [cssVar: string, value: string]

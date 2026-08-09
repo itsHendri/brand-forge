@@ -1,7 +1,7 @@
 # Status — 2026-08-09
 
 **Phases 0–5 done, plus assets. The tool does the whole loop it was built for.**
-Two sessions. 101 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
+Three sessions. 115 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
 
 Type a seed colour → get a complete system → see it on realistic UI → export it as something an AI
 agent can actually build from. That runs end to end today.
@@ -18,7 +18,10 @@ agent can actually build from. That runs end to end today.
   serialization the preview injects and every exporter prints.
 - `validateContrast` — APCA judges, WCAG 2 reported alongside. **The shipped preset reports zero
   warnings of any level.**
-- `migrateConfig` — a loaded brand is merged over a complete default, block by block.
+- `semanticDefs` — the full set for a brand: generated from the seeds, then the sparse
+  `semanticOverrides` applied on top. **Call this, not `defaultSemanticMapping`.**
+- `migrateConfig` — a loaded brand is merged over a complete default, block by block, and a
+  pre-override file has its hand edits recovered as deltas.
 
 **App** at `localhost:5300` — eight panels (Brand, Colour, Semantics, Type, Layout, Space & shape,
 Motion, Rules), four preview contexts (Components, Surfaces & elevation, Marketing, Dashboard)
@@ -41,6 +44,11 @@ to be permanent — it silently turned this project's own primary seed `#000000`
 2. **The seed field holds its own text**, committing only when the value parses.
 3. **`brands/.backup/<slug>.json`** — the dev server keeps the version each save replaces, which
    covers the case undo can't (a browser refresh clears in-memory history).
+
+A fourth now guards the *other* direction — work being silently ignored rather than lost. A brand
+persists only the semantic tokens a human moved (`color.semanticOverrides`), everything else is
+regenerated on load, and `exports/` is held to the engine by a test whose fix is `npm run export`.
+Improving a default now reaches brands that already exist. See `DECISIONS.md` #22 and #23.
 
 ## The quality gate
 
