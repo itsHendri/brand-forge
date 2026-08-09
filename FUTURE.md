@@ -30,13 +30,12 @@ the CSS emits a `clamp()` instead of a fixed length. Worth doing for `display` a
 `heading-lg`; the rest are fine fixed. Deliberately not done unilaterally — it changes the token
 model, and "no responsive type" is currently an honest, documented position.
 
-**2. There is no role for a control on a brand field.** The outline button hardcodes
-`--foreground`, which is correct on a neutral surface and is dark ink on dark indigo when the button
-sits on a `--primary` band — the same class of bug as the outline button vanishing inside a card,
-which was already fixed once. The kit now has an `inverse` tone composed from
-`--primary-foreground`, but **the exported docs say nothing about it**. Either promote it to real
-tokens (`--on-brand`, `--on-brand-border`) or document the composition rule: *a control on a brand
-field takes the fill's own `-foreground` for both its text and its border.*
+**2. A control on a brand field has a rule but not a token.** The composition rule is now documented
+(*a control on a coloured fill takes that fill's own `-foreground` for text and border*) and the kit
+has an `inverse` tone, so this is no longer a silent trap. The open question is whether it should be
+**real tokens** — `--on-brand`, `--on-brand-border` — instead of a rule people have to apply. Rules
+get followed less reliably than tokens do, and this one has already been got wrong twice. Cheap to
+add if you want it; the argument against is that it is one more pair to keep contrast-checked.
 
 ## Gaps the acceptance test exposed
 
@@ -73,5 +72,8 @@ A subagent built a page from the exported docs and listed what it had to invent.
 
 ## Deliberately refused
 
-Component tokens, Figma sync, font-file management, per-brand preview content, hosting/auth.
-See `DECISIONS.md` #2 and #10 before reopening any of these.
+Component tokens, Figma sync, per-brand preview content, hosting/auth. See `DECISIONS.md` #2 and
+#16 before reopening any of these.
+
+(Font-file management was on this list and is no longer refused — it shipped, see `DECISIONS.md`
+#14 and #15.)

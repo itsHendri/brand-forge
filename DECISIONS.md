@@ -132,7 +132,12 @@ brand's problem if it disappears against a dark ground.
 The consequence: an SVG logo lives in `brand.json` and needs no file copied into the export, while
 a raster one does. `referencedAssets()` encodes exactly that.
 
-### 16. Scope deliberately refused — 2026-08-08
+### 16. Scope deliberately refused — 2026-08-08, revised 2026-08-09
 
-Not in v1, and not by accident: component tokens (see #2), Figma sync, font-file management (type
-families are CSS stacks plus an optional `<link>`), per-brand preview content, and hosting/auth.
+Not in v1, and not by accident: component tokens (see #2), Figma sync, per-brand preview content,
+and hosting/auth.
+
+**Superseded in part:** font-file management was on this list, on the grounds that type families
+could stay CSS stacks plus an optional `<link>`. That was wrong in practice — a brand that names a
+typeface it cannot carry renders in a fallback stack everywhere, which makes the preview a liar
+about the system it is previewing. Shipped 2026-08-09; see #14 and #15.
