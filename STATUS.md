@@ -1,7 +1,7 @@
 # Status — 2026-08-09
 
 **Phases 0–5 done, plus assets. The tool does the whole loop it was built for.**
-Two sessions. 94 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
+Two sessions. 96 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
 
 Type a seed colour → get a complete system → see it on realistic UI → export it as something an AI
 agent can actually build from. That runs end to end today.
@@ -28,7 +28,9 @@ with duplicate / new / delete, and an export dialog with a token-budget meter.
 
 **Export** writes `exports/<slug>/`: `skill/SKILL.md`, `skill/references/DESIGN_SYSTEM.md`,
 `tokens.css` (+ Tailwind v4 `@theme`, + `@font-face`), `tokens.json` (DTCG), `brand.json`, and
-`assets/` when the brand carries any. Docs total ~11.3k LLM tokens against an 18k budget.
+`assets/` when the brand carries any. Docs total ~11.3k LLM tokens against an 18k budget. The
+shipped brand is Hendri's real one — Signal `#574cff`, Ember `#f1760f`, Space Grotesk, and the
+wordmark lifted from hendri.design.
 
 ## How work is protected
 
@@ -62,16 +64,20 @@ has tried to build from it.
 
 ## Open for Hendri — decisions, not bugs
 
-1. **The secondary scale does no work.** Seeded provisionally from Foreground Secondary (`#40525e`),
-   it renders almost identically to the neutral ramp — same hue family, both low chroma.
-   hendri.design has no declared secondary. Pick one, or drop the slot.
-2. **Type families are placeholders** (Geist / Geist Mono via Google Fonts), unconfirmed against the
-   live site. No font files are uploaded, so the preview renders in the hosted faces.
-3. **No logo is set.** The upload works; nothing has been uploaded. The docs currently tell an agent
-   "no mark is defined — set the brand name in type and say that you did."
-4. **`--text-display` is fixed at 3.5rem** and runs to four lines / 235px at 390px. Fluid type is a
+1. **Is Ember orange enough, or do you want it redder?** `#f1760f` is your real declared secondary,
+   read off the live site. You asked for "orangey red"; this is orange. Shifting the hue toward red
+   (~`#e8501a`) is a one-field change if you want it.
+2. **The orange can't be a button colour** and the system now works around that: `--secondary`
+   resolves to `#cc6000` so it can carry a label, while the ramp keeps `#f1760f` exactly at its
+   anchor — which is what the wordmark points at. Worth a look to confirm you're happy with the
+   compromise.
+3. **A third typeface has no home.** The live site uses Inter (machine panel) and Alpha Lyrae Medium
+   (Human/Machine toggle) alongside Space Grotesk, and the sans/serif/mono model has no slot for
+   either. Recorded as a deviation. Widening the model is a real option.
+4. **No mono face is declared** on the live site; `--font-mono` is a neutral system stack.
+5. **`--text-display` is fixed at 3.5rem** and runs to four lines / 235px at 390px. Fluid type is a
    token-model change — see FUTURE.
-5. **Assets are committed, not ignored.** Fine for your own brand; a licensing decision the moment a
+6. **Assets are committed, not ignored.** Fine for your own brand; a licensing decision the moment a
    client's licensed font is involved. See DECISIONS #14.
 
 ## Next
