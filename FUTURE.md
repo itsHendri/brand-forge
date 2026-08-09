@@ -4,13 +4,27 @@ Start here next session. Read `STATUS.md` first for where things actually stand.
 
 ## Immediate next step
 
-**Phase 5 — multi-brand.** A brand switcher over `brands/*.json` (`listBrands()` in
-`persistence.ts` already exists and is unused), and "new client from Hendri template" — which is
-just a config clone with a new slug. Then the Dashboard and MarketingHero preview contexts, so the
-canvas exercises layout as well as components. Then Phase 6, the static guideline page.
+**Phase 6 — the preview canvas.** This is the half of the tool that hasn't had a real pass, and
+it's what Hendri keeps gesturing at when he mentions uicolors. Concretely, from his feedback:
 
-Panels are all built; `ColorPanel.tsx` and `ShapePanel.tsx` are the patterns to copy if another one
-is needed. Every panel mutates through `useStore().patch()`, which keeps autosave automatic.
+- **More surfaces, shown as surfaces.** A dedicated section laying out `background` / `surface` /
+  `surface-raised` / `muted` against each other, so the ladder is visible rather than inferred.
+- **Elevation as its own section** — the shadow scale, and the fact that dark mode swaps shadows
+  for a lighter surface plus a ring. Currently that rule is documented and never demonstrated.
+- **More contexts.** Dashboard and MarketingHero were planned and never built; a settings/form
+  context would exercise inputs properly. The acceptance-test pages are decent references for what
+  a real page needs.
+- **More components per context** — the ComponentsSheet is thin next to what the docs describe.
+
+Then asset upload (logo, font files stored next to the brand), and the static guideline page.
+
+Panels are all built; `ColorPanel.tsx` and `ShapePanel.tsx` are the patterns to copy. Every panel
+mutates through `useStore().patch()`, which keeps undo and autosave automatic.
+
+**Open question for Hendri:** he asked about referencing Figma design-system files. Figma files
+won't transfer directly (this tool isn't in Figma), but published *token documentation* with strong
+surface and elevation taxonomies would — the useful thing to collect is examples of how other
+systems name and demonstrate their surface ladder, not component libraries.
 
 ## Gaps the acceptance test exposed
 
@@ -30,11 +44,12 @@ A subagent built a page from the exported docs and listed what it had to invent.
   mapping, so when `defaultSemanticMapping` gets smarter, existing files keep the old wiring. That's
   correct for user edits and wrong for untouched defaults. Needs either a "regenerate defaults"
   action or a flag marking which tokens a human actually touched. The workaround is deleting
-  `brands/<slug>.json` and letting it rebuild. (Distinct from the *missing-block* case, which
-  `migrateConfig` now handles.)
-- **A stray click can write a real edit.** The colour swatches are `<input type="color">`, so an
-  accidental interaction autosaves a changed seed. It happened twice during browser automation this
-  session. Worth an undo stack, or at least a "revert to preset" action.
+  `brands/<slug>.json` and letting it rebuild. **This has cost real time repeatedly** — it is the
+  main reason exports drift from the code, since the app exports the saved brand, not the preset.
+  Fix it before it bites again.
+- **Undo history is memory-only.** A browser refresh clears it. `brands/.backup/<slug>.json` is the
+  second line of defence and holds only the immediately-previous version. A short on-disk history
+  would close the gap.
 - **`client-zip` is in the plan but not installed** — the download path writes one file at a time
   instead of a zip.
 - **`migrateConfig` fills missing blocks but does not validate their contents.** A file with
