@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { resolveTokens } from "../engine/resolve"
+import { BrandSwitcher } from "./BrandSwitcher"
 import { ExportDialog } from "./ExportDialog"
 import { BrandPanel } from "./panels/BrandPanel"
 import { ColorPanel } from "./panels/ColorPanel"
@@ -26,8 +27,21 @@ const PANELS: Array<{ id: PanelId; label: string }> = [
 ]
 
 export function App() {
-    const { config, mode, panel, setMode, setPanel, saving, hydrate, previewWidth, setPreviewWidth } =
-        useStore()
+    const {
+        config,
+        mode,
+        panel,
+        setMode,
+        setPanel,
+        saving,
+        hydrate,
+        previewWidth,
+        setPreviewWidth,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+    } = useStore()
     const resolved = useMemo(() => resolveTokens(config), [config])
     const [showWarnings, setShowWarnings] = useState(false)
     const [showExport, setShowExport] = useState(false)
@@ -37,11 +51,43 @@ export function App() {
         void hydrate()
     }, [hydrate])
 
+    useEffect(() => {
+        const onKey = (event: KeyboardEvent) => {
+            if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "z") return
+            event.preventDefault()
+            if (event.shiftKey) redo()
+            else undo()
+        }
+        window.addEventListener("keydown", onKey)
+        return () => window.removeEventListener("keydown", onKey)
+    }, [undo, redo])
+
     return (
         <div className="relative grid h-full grid-cols-[340px_1fr] grid-rows-[52px_1fr]">
             <header className="col-span-2 flex items-center gap-4 border-b border-[var(--app-border)] px-4">
                 <strong className="text-sm">Brand Forge</strong>
-                <span className="text-sm text-[var(--app-ink-soft)]">{config.meta.name}</span>
+                <BrandSwitcher />
+
+                <div className="flex overflow-hidden rounded-md border border-[var(--app-border)] text-xs">
+                    <button
+                        type="button"
+                        onClick={undo}
+                        disabled={!canUndo()}
+                        title="Undo (⌘Z)"
+                        className="px-2 py-1.5 disabled:opacity-30"
+                    >
+                        ↶
+                    </button>
+                    <button
+                        type="button"
+                        onClick={redo}
+                        disabled={!canRedo()}
+                        title="Redo (⇧⌘Z)"
+                        className="px-2 py-1.5 disabled:opacity-30"
+                    >
+                        ↷
+                    </button>
+                </div>
 
                 <div className="ml-auto flex items-center gap-3">
                     {/* Pinning the canvas to a breakpoint is how the responsive

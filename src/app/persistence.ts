@@ -10,7 +10,14 @@ import type { BrandConfig } from "../engine/types"
 export async function listBrands(): Promise<string[]> {
     const response = await fetch("/api/brands")
     if (!response.ok) return []
-    return response.json()
+    const all = (await response.json()) as string[]
+    // `.backup` lives inside brands/; it is not a brand.
+    return all.filter((slug) => !slug.startsWith("."))
+}
+
+export async function deleteBrand(slug: string): Promise<boolean> {
+    const response = await fetch(`/api/brands/${slug}`, { method: "DELETE" })
+    return response.ok
 }
 
 export async function loadBrand(slug: string, defaults: BrandConfig): Promise<BrandConfig | null> {

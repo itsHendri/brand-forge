@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react"
+import { parseSeed } from "../../engine/scale"
 import { SCALE_ROLES, STEPS, type ResolvedTokens } from "../../engine/types"
 import { useStore } from "../store"
 
@@ -56,11 +58,9 @@ export function ColorPanel({ resolved }: { resolved: ResolvedTokens }) {
                             onChange={(event) => setSeed(editingScale, event.target.value)}
                             className="h-9 w-12 cursor-pointer rounded border border-[var(--app-border)] bg-transparent p-0.5"
                         />
-                        <input
+                        <SeedField
                             value={scaleConfig.seed}
-                            onChange={(event) => setSeed(editingScale, event.target.value)}
-                            spellCheck={false}
-                            className="flex-1 rounded-md border border-[var(--app-border)] px-2 py-1.5 font-mono text-sm"
+                            onCommit={(seed) => setSeed(editingScale, seed)}
                         />
                     </div>
                 </label>
@@ -129,4 +129,32 @@ export function ColorPanel({ resolved }: { resolved: ResolvedTokens }) {
 /** <input type="color"> only accepts #rrggbb, so fall back to the resolved swatch. */
 function toHexInput(seed: string, fallback: string): string {
     return /^#[0-9a-fA-F]{6}$/.test(seed.trim()) ? seed.trim() : fallback
+}
+
+/**
+ * Typing a hex goes through half-finished states — `#5`, `#57`, `#574c`. Writing
+ * each of those to the brand replaces the whole ramp with garbage and fills the
+ * undo stack with keystrokes, so the field holds its own text and only commits
+ * when the value actually parses as a colour.
+ */
+function SeedField({ value, onCommit }: { value: string; onCommit: (seed: string) => void }) {
+    const [draft, setDraft] = useState(value)
+    useEffect(() => setDraft(value), [value])
+
+    const valid = parseSeed(draft) !== null
+    return (
+        <input
+            value={draft}
+            spellCheck={false}
+            onChange={(event) => {
+                setDraft(event.target.value)
+                if (parseSeed(event.target.value) !== null) onCommit(event.target.value)
+            }}
+            onBlur={() => setDraft(value)}
+            title={valid ? undefined : "Not a colour yet — nothing has been changed"}
+            className={`flex-1 rounded-md border px-2 py-1.5 font-mono text-sm ${
+                valid ? "border-[var(--app-border)]" : "border-amber-400 bg-amber-50"
+            }`}
+        />
+    )
 }
