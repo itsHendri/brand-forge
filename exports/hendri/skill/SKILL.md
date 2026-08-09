@@ -13,7 +13,7 @@ Full token tables, component recipes and wrong/right pairs live in
 
 ## Before you write a line
 
-1. Check that `tokens.css` is imported and that `assets/` sits beside it — the `@font-face` `src` URLs are relative, and moving one without the other silently drops the page to a fallback stack. Dark mode is `data-theme="dark"` on `<html>`; light is either `data-theme="light"` or no
+1. Check that `tokens.css` is imported. Dark mode is `data-theme="dark"` on `<html>`; light is either `data-theme="light"` or no
    attribute at all — both are defined, so a toggle can write either value or remove it.
    The brand mark is inline SVG in `brand.json`; set its fills to `currentColor` when you place it, so it follows the surrounding ink and inverts in dark mode.
 2. Work out which semantic tokens the thing you're building needs. If you cannot name them, you do

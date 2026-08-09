@@ -18,7 +18,7 @@ The voice is considered, warm, precise, unfussy. Let that show in copy and restr
 - **Type roles are named for their job**, never `h1`/`h2`/`text-2xl`: `--text-display`, `--text-heading-lg`, `--text-heading`, `--text-heading-sm`, `--text-body-lg`, `--text-body`, `--text-body-sm`, `--text-label`, `--text-code`. Heading level is semantics for the document outline; size comes from the role token.
 - **Labels on solid fills come from the neutral ramp**, not from the fill's own scale, and their polarity is chosen by measuring contrast against each fill. That means they do not all match — in both modes. `--warning-foreground` can be dark while `--primary-foreground` is light. Do not "correct" this to a single colour.
 - `--text-display` and `--text-heading-lg` are fluid — they scale with the viewport between 390px and 1280px rather than holding one size. Never override them with a fixed rem value.
-- Alpha Lyrae ships one weight (500). Do not ask for bold display type: there isn't any, and the browser will synthesise a fake bold that looks wrong.
+- `--font-display` currently points at the same face as `--font-sans`. The real display face is Alpha Lyrae, which is licensed and not bundled — treat display and sans as visually identical until it is.
 - hendri.design also uses Inter for its machine-view panel. This system has no slot for a fourth family, so it is not represented here.
 - No mono face is declared on the live site; `--font-mono` is a neutral system stack until one is chosen.
 
@@ -124,7 +124,7 @@ re-points itself in dark mode. This is the whole API.
 
 | Token | Family | Size | Line height | Weight | Tracking |
 | --- | --- | --- | --- | --- | --- |
-| `--text-display` | `--font-display` | **fluid** 2.25–3.5rem | `--text-display--line-height` · 1.05 | `--text-display--font-weight` · 500 | `--text-display--letter-spacing` · -0.02em |
+| `--text-display` | `--font-display` | **fluid** 2.25–3.5rem | `--text-display--line-height` · 1.05 | `--text-display--font-weight` · 500 | `--text-display--letter-spacing` · -0.04em |
 | `--text-heading-lg` | `--font-sans` | **fluid** 1.75–2.25rem | `--text-heading-lg--line-height` · 1.15 | `--text-heading-lg--font-weight` · 500 | `--text-heading-lg--letter-spacing` · -0.04em |
 | `--text-heading` | `--font-sans` | 1.5rem | `--text-heading--line-height` · 1.25 | `--text-heading--font-weight` · 500 | `--text-heading--letter-spacing` · -0.04em |
 | `--text-heading-sm` | `--font-sans` | 1.125rem | `--text-heading-sm--line-height` · 1.4 | `--text-heading-sm--font-weight` · 500 | `--text-heading-sm--letter-spacing` · -0.02em |
@@ -135,11 +135,11 @@ re-points itself in dark mode. This is the whole API.
 | `--text-code` | `--font-mono` | 0.875rem | `--text-code--line-height` · 1.5 | `--text-code--font-weight` · 400 | `--text-code--letter-spacing` · normal |
 
 Families: `--font-sans` is `"Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif`, `--font-mono` is
-`ui-monospace, SFMono-Regular, Menlo, monospace`, and `--font-display` is `"Alpha Lyrae Medium", "Space Grotesk", ui-sans-serif, system-ui, sans-serif`.
+`ui-monospace, SFMono-Regular, Menlo, monospace`, and `--font-display` is `"Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif`.
 
 **`--font-display` is a different typeface, not a bigger weight of the body font.** It is
 drawn for size and belongs on the `display` role only. Do not set it on headings, buttons or body
-copy, and note it ships in only 500 — asking for a weight it doesn't have gets you a browser-synthesised fake bold, which looks wrong in a way people notice without being able to name.
+copy.
 ### Fluid roles
 
 `--text-display` scales from **2.25rem** to **3.5rem**, and `--text-heading-lg` scales from **1.75rem** to **2.25rem** across the viewport range
@@ -190,20 +190,14 @@ colour into the mark — on a `--primary` field it would disappear into its own 
 
 ### Typefaces
 
-The font files ship in `assets/` and `tokens.css` already declares them — importing the
-stylesheet is all that is required, there is no separate `<link>` to add.
+No font files ship with this system. The faces are hosted, and `<head>` needs:
 
-| File | Family | Weight | Style |
-| --- | --- | --- | --- |
-| `assets/AlphaLyrae-Medium.woff2` | `--font-display` | 500 | normal |
+```html
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap">
+```
 
-The `@font-face` rules are named after the **first family in each stack** — `Alpha Lyrae Medium` — not after the stack itself. If you regenerate those rules by hand, keep
-that: a face declared as `"Space Grotesk", ui-sans-serif, …` matches
-nothing and loads nothing, silently.
-
-Keep `assets/` next to `tokens.css`. The `src` URLs are relative, so moving one without the
-other leaves the page rendering in a fallback stack — which looks like a design decision rather
-than a missing file.
+Without them the named families only render where they happen to be installed already, and
+everything else falls back to the system stack.
 
 ## Layout — breakpoints and containers
 

@@ -147,11 +147,13 @@ describe("assets", () => {
         expect(fileAt2(resolveTokens(bare), "tokens.css")).not.toContain("@font-face")
     })
 
-    it("ships the display face as a file, because it has no hosted source", () => {
-        // Alpha Lyrae is Framer-served — there is no stylesheet to link, so it
-        // travels as bytes or it doesn't render.
-        expect(referencedAssets(resolved)).toContain("AlphaLyrae-Medium.woff2")
-        expect(fileAt("tokens.css")).toContain('font-family: "Alpha Lyrae Medium";')
+    it("bundles no font the user did not upload", () => {
+        // The tool may ship any asset a user adds and must never acquire one on
+        // their behalf — a licensed face was pulled from the live site and wired
+        // in before anyone was asked, which is the wrong order.
+        expect(hendriPreset.typography.fontFiles ?? []).toEqual([])
+        expect(referencedAssets(resolved)).not.toContain("AlphaLyrae-Medium.woff2")
+        expect(fileAt("tokens.css")).not.toContain("Alpha Lyrae")
     })
 
     it("marks binary entries so the writer knows they are bytes", () => {

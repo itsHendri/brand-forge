@@ -30,7 +30,7 @@ with duplicate / new / delete, and an export dialog with a token-budget meter.
 `tokens.css` (+ Tailwind v4 `@theme`, + `@font-face`), `tokens.json` (DTCG), `brand.json`, and
 `assets/` when the brand carries any. Docs total ~11.3k LLM tokens against an 18k budget. The
 shipped brand is Hendri's real one — Signal `#574cff`, Ember `#f1760f`, Space Grotesk, and the
-wordmark lifted from hendri.design.
+wordmark lifted from hendri.design. No fonts are bundled.
 
 ## How work is protected
 
@@ -71,12 +71,10 @@ has tried to build from it.
    resolves to `#cc6000` so it can carry a label, while the ramp keeps `#f1760f` exactly at its
    anchor — which is what the wordmark points at. Worth a look to confirm you're happy with the
    compromise.
-3. **A third typeface has no home.** The live site uses Inter (machine panel) and Alpha Lyrae Medium
-   (Human/Machine toggle) alongside Space Grotesk, and the sans/serif/mono model has no slot for
-   either. Recorded as a deviation. Widening the model is a real option.
+3. **`--font-display` currently borrows the sans.** The slot exists and the upload path works;
+   Alpha Lyrae is licensed and deliberately not bundled, so display and sans are visually identical
+   until you upload a face you're happy to redistribute. Inter (machine panel) still has no slot.
 4. **No mono face is declared** on the live site; `--font-mono` is a neutral system stack.
-5. **Alpha Lyrae ships one weight (500)** and has no hosted source, so it travels as a 114KB file in
-   the export. Worth confirming you're happy redistributing it that way.
 6. **Assets are committed, not ignored.** Fine for your own brand; a licensing decision the moment a
    client's licensed font is involved. See DECISIONS #14.
 

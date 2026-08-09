@@ -23,6 +23,15 @@ Run the acceptance test again (`doc-acceptance-test` skill). Four runs in, it ha
 every single time, including two that had shipped. Brief it on a shape not yet used — a dashboard or
 an app shell — since each new shape has surfaced a different class of failure.
 
+### Custom font upload, properly
+
+The upload path works and nothing ships through it. What's missing is the *product* around it: a
+face uploaded per family slot, weights detected or entered, and a clear statement in the export
+about what is being redistributed. `--font-display` borrows the sans until then.
+
+Rule to keep: **the tool bundles what a user uploads and never acquires a font on their behalf.**
+See `DECISIONS.md` #17.
+
 ### Cheap wins if you want a short session instead
 
 - **Fluid type** (decision 1 below) — bounded, self-contained, and visibly improves the phone case.

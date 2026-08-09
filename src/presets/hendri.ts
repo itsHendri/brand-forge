@@ -60,7 +60,7 @@ export const hendriPreset: BrandConfig = {
         voice: ["considered", "warm", "precise", "unfussy"],
         deviations: [
             "`--text-display` and `--text-heading-lg` are fluid — they scale with the viewport between 390px and 1280px rather than holding one size. Never override them with a fixed rem value.",
-            "Alpha Lyrae ships one weight (500). Do not ask for bold display type: there isn't any, and the browser will synthesise a fake bold that looks wrong.",
+            "`--font-display` currently points at the same face as `--font-sans`. The real display face is Alpha Lyrae, which is licensed and not bundled — treat display and sans as visually identical until it is.",
             "hendri.design also uses Inter for its machine-view panel. This system has no slot for a fourth family, so it is not represented here.",
             "No mono face is declared on the live site; `--font-mono` is a neutral system stack until one is chosen.",
         ],
@@ -74,26 +74,26 @@ export const hendriPreset: BrandConfig = {
             // Space Grotesk does nearly all the work on hendri.design — headings
             // and body both — so it is the sans, not a display face.
             sans: '"Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif',
-            // Alpha Lyrae is the display face. It only ships at weight 500, so
-            // the display role sits there rather than at the 600 the other
-            // headings use.
-            display: '"Alpha Lyrae Medium", "Space Grotesk", ui-sans-serif, system-ui, sans-serif',
+            // Hendri's display face is Alpha Lyrae, but it is a licensed
+            // Framer-served font with no hosted stylesheet — the only way to make
+            // it render is to bundle the file, which means redistributing it.
+            // Not worth doing for a preview, so the slot points at the sans until
+            // he uploads a face he's happy to ship.
+            display: '"Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif',
             // Undeclared on the live site; a neutral stack until Hendri picks one.
             mono: "ui-monospace, SFMono-Regular, Menlo, monospace",
         },
         fontLinks: [
             "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap",
         ],
-        // Alpha Lyrae has no hosted stylesheet — it is a Framer-served face — so
-        // it travels as a file or it does not render at all.
-        fontFiles: [
-            { fileName: "AlphaLyrae-Medium.woff2", family: "display", weight: 500, style: "normal" },
-        ],
+        // No font files are bundled. The upload path exists and works; nothing
+        // ships until Hendri chooses a face he is happy to redistribute.
+        fontFiles: [],
         // Tracking and weights measured off the live site rather than guessed:
         // Space Grotesk runs negative at every size, and its headings sit at 500.
         roles: DEFAULT_TYPE_ROLES.map((role) => {
-            // Alpha Lyrae ships one weight, and its own tracking — leave it alone.
-            if (role.role === "display") return { ...role, weight: 500, tracking: "-0.02em" }
+            // Display follows the sans treatment while it borrows the sans face.
+            if (role.role === "display") return { ...role, weight: 500, tracking: "-0.04em" }
             if (role.family !== "sans") return role
             if (role.role.startsWith("heading")) {
                 return { ...role, weight: 500, tracking: role.role === "heading-sm" ? "-0.02em" : "-0.04em" }

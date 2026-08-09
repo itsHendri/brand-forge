@@ -150,9 +150,19 @@ applying a role. The docs had a four-property recipe and a type table with no fa
 anything following them rendered the display face in the body font — silently, and the preview kit
 was doing exactly that until this change. The table now carries a Family column.
 
-Alpha Lyrae ships one weight (500) and has no hosted stylesheet — it is Framer-served — so it
-travels as a font file or it does not render. That is recorded as a brand deviation, because asking
-for a weight a face doesn't have gets a browser-synthesised fake bold.
+**Superseded in part on 2026-08-09 — the face is not bundled.** Alpha Lyrae has no hosted
+stylesheet, so the only way to make it render is to ship the file, and shipping it means
+redistributing a licensed font with every export. I downloaded it from the live site and wired it in
+before asking, which was the wrong order: bundling someone else's licensed asset is the user's call,
+not a technical detail to be settled by whether it works.
+
+`--font-display` now points at the same stack as `--font-sans`, and the brand records that as a
+deviation so nobody reads the two as visually distinct. The slot stays, because the *intent* — a
+display face separate from the body face — is correct and the upload path already exists. It fills
+in when Hendri picks a face he is happy to redistribute.
+
+The general rule this leaves behind: **the tool may bundle any asset a user uploads, and should
+never acquire one on their behalf.**
 
 ### 18. `display` and `heading-lg` are fluid; nothing else is — 2026-08-09
 
