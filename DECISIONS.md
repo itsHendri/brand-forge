@@ -18,6 +18,17 @@ Salesforce is actively retreating from them, shadcn thrives without them, and th
 surface area for no benefit at this scale. Component-level guidance lives in the exported docs as
 **recipes** ("a button is `--primary` + `--primary-foreground` + `--radius-md`") instead.
 
+**Amended 2026-08-09 — the industry is not unanimous, and this entry implied it was.** Carbon ships
+component tokens as a documented tier of its system: `$button-primary`, `$tag-background-red`,
+`$notification-background-error`, each scoped with "should never be used for anything other than
+their own component". It is one of the two systems this project is now benchmarked against.
+
+The refusal stands, on a narrower and more honest argument: Carbon maintains a React component
+library those tokens have to stay in sync with, and a component token is how you version a component
+independently of the palette. We ship documentation and recipes and have no components to version,
+so the tier would cost surface area and buy nothing. If Brand Forge ever emits components, reopen
+this.
+
 ### 3. Primitives use Tailwind 50–950; semantics use role names — 2026-08-08
 
 Two audiences, two vocabularies. `50…950` is the numbering every developer and every language model
@@ -203,3 +214,25 @@ and hosting/auth.
 could stay CSS stacks plus an optional `<link>`. That was wrong in practice — a brand that names a
 typeface it cannot carry renders in a fallback stack everywhere, which makes the preview a liar
 about the system it is previewing. Shipped 2026-08-09; see #14 and #15.
+
+### 21. Elevation levels are named for purpose, not numbered — 2026-08-09
+
+Carbon and Atlassian solve surface layering in opposite ways, and the choice was live because our
+own model is thin: `--surface` and `--surface-raised` are **the same value in light mode**, so
+"raised" is conveyed by shadow alone, and `--shadow-overlay` has no surface to pair with.
+
+Carbon numbers contextually — `$layer-01/02/03`, `$field-01/02/03`, `$border-subtle-00..03`, each
+defined as sitting on the one below. It is precise, and it requires the consumer to track what it is
+sitting on. Atlassian names by purpose — `sunken / default / raised / overlay` — and mandates that
+each surface be paired with its matching shadow.
+
+Atlassian's scheme wins here for the reason already written down in #3: step numbers "carry no
+meaning, so exposing them to an agent produces hardcoded values." The consumer of this system is a
+language model reading a Markdown table. `overlay` is self-describing; `layer-02` needs the
+numbering legend that #3 exists to avoid writing. Carbon's numbering earns its keep inside a
+component library where the nesting depth is known at build time; ours is read by something
+improvising a page.
+
+Taken with it: the surface+shadow pairing rule, and Atlassian's reason for it — in dark mode shadows
+barely read, so the surface itself must lighten with each level. That is already how this system
+behaves (#9), so the pairing formalises an instinct rather than changing behaviour.
