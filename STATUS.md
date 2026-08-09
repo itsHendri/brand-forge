@@ -2,7 +2,7 @@
 
 **Phases 0–4 done. Every value in the system is editable and exports correctly.**
 
-Session 1. 67 tests pass, typecheck clean, preview-colour lint clean.
+Session 1. 73 tests pass, typecheck clean, preview-colour lint clean.
 
 ## What works end to end
 
@@ -10,7 +10,7 @@ Type a seed colour → get a system → see it on realistic UI → export it as 
 follow. That whole loop runs today.
 
 - **Engine.** `generateScale` (OKLCH ramps, shared lightness targets, chroma bell, hue rotation,
-  gamut clamp, seed warping), `defaultSemanticMapping` (49 tokens chosen by measuring contrast, not
+  gamut clamp, seed warping), `defaultSemanticMapping` (57 tokens chosen by measuring contrast, not
   by step index), `resolveTokens` (the one pipeline), `validateContrast` (APCA judges, WCAG reports).
 - **App** at `localhost:5300`: all eight panels — Brand (identity, voice, deviations), Colour
   (seeds + per-step override), Semantics (re-point any token), Type (families + role table), Layout
@@ -28,11 +28,19 @@ Browser-checked at 5300 in both modes. The generated system passes its own contr
 failures. `npm run lint:preview-colors` proves the preview contains no colour literals, so it cannot
 render anything the export can't express.
 
-**The acceptance test ran for real**: a subagent with no knowledge of this project built a pricing
-page from the exported skill folder alone. It succeeded — and its critique found nine defects,
-of which the serious ones are now fixed (invalid `font:` shorthand in every recipe, the
-media-query/attribute contradiction, card border+shadow doubling, the invisible outline button,
-washed button labels, and the `foreground-secondary` collision). See CHANGELOG.
+**The acceptance test has run twice**, each time with a subagent that had no knowledge of this
+project, building a real page from the exported skill folder alone. Both succeeded, and both
+critiques found genuine defects — see CHANGELOG for the full list.
+
+Run 1 (pricing page) found the invalid `font:` shorthand in every recipe, the media-query/attribute
+contradiction, card border+shadow doubling, an invisible outline button, washed button labels and a
+token collision. Run 2 (settings page) confirmed those fixes had landed and found deeper ones: every
+status border sitting at Lc 0, a contrast claim that counted only half its warnings, supporting text
+failing on raised surfaces, and status colours with no hover state at all. Both agents independently
+recomputed all the token hexes against `tokens.css` and confirmed the tables and the shared-value
+list are exact.
+
+The pattern is now the quality gate: build something real from the docs, then critique the docs.
 
 ## Open findings for Hendri
 

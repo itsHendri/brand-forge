@@ -32,6 +32,25 @@ Keep-a-Changelog style. Newest first.
 - `migrateConfig` — a loaded brand is merged over a complete default block by block, so adding a
   field to `BrandConfig` no longer crashes every file written before it existed.
 
+### Fixed — 2026-08-08 (second acceptance run)
+
+- **Every status border was invisible.** `--{status}-border` sat one step from `--{status}-subtle`,
+  measuring Lc 0 — an outline nobody can see. Borders are now picked by measuring against the fill
+  they divide, like text is.
+- **The contrast claim was false.** It counted only `fail`-level warnings; non-text boundaries
+  report as `warn`, so fourteen were being ignored while the docs said every pair cleared.
+- **Supporting text failed on raised surfaces.** Text colours were solved against the page, so
+  `--foreground-secondary` on a dialog measured Lc 48.7. `surface-raised` is now a checked ground,
+  and the two supporting colours are scoped to the surfaces they serve.
+- **Status colours had no interactive states.** The docs prescribed destructive buttons and made
+  their hover inexpressible. `--{status}-hover` and `--{status}-active` now exist (57 tokens, was 49).
+- The concentric rule claimed nested children "just aren't flush" — in a form, most are. It now says
+  square is the expected outcome, and which recipe wins when they disagree.
+- Inputs no longer specify `--surface` (the card's own colour) as their fill.
+- Added a neutral badge role; `--secondary-subtle` is invisible against a card.
+- Flagged `--primary` as unreadable link text in dark mode (Lc −28.7).
+- The "does not define" list gained six gaps it hadn't admitted to.
+
 ### Fixed — 2026-08-08
 
 - **Tailwind's `lg:` variants silently never applied.** The `@theme` block emitted
