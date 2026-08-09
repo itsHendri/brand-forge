@@ -28,17 +28,22 @@ Browser-checked at 5300 in both modes. The generated system passes its own contr
 failures. `npm run lint:preview-colors` proves the preview contains no colour literals, so it cannot
 render anything the export can't express.
 
-**The acceptance test has run twice**, each time with a subagent that had no knowledge of this
-project, building a real page from the exported skill folder alone. Both succeeded, and both
-critiques found genuine defects — see CHANGELOG for the full list.
+**The acceptance test has run three times**, each with a subagent that had no knowledge of this
+project, building a real page from the exported skill folder alone. All three succeeded, and every
+critique found genuine defects — see CHANGELOG for the full list.
 
-Run 1 (pricing page) found the invalid `font:` shorthand in every recipe, the media-query/attribute
-contradiction, card border+shadow doubling, an invisible outline button, washed button labels and a
-token collision. Run 2 (settings page) confirmed those fixes had landed and found deeper ones: every
-status border sitting at Lc 0, a contrast claim that counted only half its warnings, supporting text
-failing on raised surfaces, and status colours with no hover state at all. Both agents independently
-recomputed all the token hexes against `tokens.css` and confirmed the tables and the shared-value
-list are exact.
+1. **Pricing page** — found the invalid `font:` shorthand in every recipe, the media-query/attribute
+   contradiction, card border+shadow doubling, an invisible outline button, washed button labels and
+   a token collision.
+2. **Docs/changelog page** — confirmed those fixes had landed, and pushed on layout: it could build
+   the responsive collapse without inventing a breakpoint, but had to invent a sidebar width, a
+   header height, a z-index and a table overflow strategy.
+3. **Settings page** — found the deepest ones: every status border sitting at Lc 0, a contrast claim
+   that counted only half its warnings, supporting text failing on raised surfaces, and status
+   colours with no hover state at all.
+
+Runs 2 and 3 independently recomputed every token hex from the OKLCH sources in `tokens.css` and
+confirmed the doc tables and the shared-value list are exact, with no drift.
 
 The pattern is now the quality gate: build something real from the docs, then critique the docs.
 
