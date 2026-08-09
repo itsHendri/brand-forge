@@ -68,7 +68,10 @@ export function toTokensCss(resolved: ResolvedTokens, options: { darkMedia?: boo
 
     const parts = [
         header,
-        declarationBlock(resolved.declarations.light, ":root"),
+        // `[data-theme="light"]` is spelled out rather than left to fall through
+        // to `:root`. A toggle that writes "light" to get back from dark worked
+        // only by accident before, and an accident is a thing that stops working.
+        declarationBlock(resolved.declarations.light, ':root,\n[data-theme="light"]'),
         declarationBlock(resolved.declarations.dark, '[data-theme="dark"]'),
     ]
 

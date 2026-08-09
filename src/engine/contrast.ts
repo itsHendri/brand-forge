@@ -69,6 +69,14 @@ export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; usage: Usage }> = [
     // small supporting text uses the darker `muted-foreground`.
     { fg: "foreground-secondary", bg: "background", usage: "large" },
     { fg: "foreground-secondary", bg: "surface", usage: "large" },
+    // `surface-raised` is where dialogs and popovers live, so a subtitle on one
+    // is an obvious pairing — and it was going unchecked.
+    { fg: "foreground", bg: "surface-raised", usage: "body" },
+    { fg: "foreground-secondary", bg: "surface-raised", usage: "large" },
+    // `muted-foreground` is deliberately NOT checked against `surface-raised`:
+    // holding a caption colour to a popover's lightness drags it to near-white
+    // in dark mode, where it stops being distinguishable from `foreground`.
+    // Supporting text on a raised surface is `foreground-secondary`.
     { fg: "muted-foreground", bg: "background", usage: "body" },
     { fg: "muted-foreground", bg: "surface", usage: "body" },
     { fg: "muted-foreground", bg: "muted", usage: "body" },
@@ -91,6 +99,8 @@ export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; usage: Usage }> = [
     { fg: "ring", bg: "background", usage: "non-text" },
     ...(["success", "warning", "danger", "info"] as const).flatMap((status) => [
         { fg: `${status}-foreground`, bg: status, usage: "ui" as Usage },
+        { fg: `${status}-foreground`, bg: `${status}-hover`, usage: "ui" as Usage },
+        { fg: `${status}-foreground`, bg: `${status}-active`, usage: "ui" as Usage },
         { fg: `${status}-subtle-foreground`, bg: `${status}-subtle`, usage: "body" as Usage },
         { fg: `${status}-border`, bg: `${status}-subtle`, usage: "non-text" as Usage },
     ]),

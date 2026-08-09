@@ -135,13 +135,13 @@
                 "group": "text",
                 "light": {
                     "scale": "neutral",
-                    "step": 700
+                    "step": 800
                 },
                 "dark": {
                     "scale": "neutral",
-                    "step": 300
+                    "step": 200
                 },
-                "description": "Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. For anything at `body-sm` or below use `muted-foreground`, which is darker because small text needs more contrast."
+                "description": "Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is the only supporting text colour verified against `surface-raised`, so use it inside dialogs and popovers. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it."
             },
             {
                 "name": "muted-foreground",
@@ -154,7 +154,7 @@
                     "scale": "neutral",
                     "step": 100
                 },
-                "description": "Secondary text on `muted` or `background` — captions, helper text, metadata."
+                "description": "Small supporting text — captions, helper text, metadata — on `background`, `surface` or `muted`. Verified against those three only; on `surface-raised` use `foreground-secondary`."
             },
             {
                 "name": "foreground-tertiary",
@@ -226,11 +226,11 @@
                 "group": "border",
                 "light": {
                     "scale": "neutral",
-                    "step": 300
+                    "step": 400
                 },
                 "dark": {
                     "scale": "neutral",
-                    "step": 700
+                    "step": 600
                 },
                 "description": "Default hairline between regions — card edges, dividers, table rules."
             },
@@ -245,18 +245,18 @@
                     "scale": "neutral",
                     "step": 800
                 },
-                "description": "Barely-there separator inside an already-bounded area."
+                "description": "Barely-there separator inside an already-bounded area. Deliberately below the visible-boundary threshold — never use it as the only thing dividing two regions."
             },
             {
                 "name": "border-strong",
                 "group": "border",
                 "light": {
                     "scale": "neutral",
-                    "step": 400
+                    "step": 500
                 },
                 "dark": {
                     "scale": "neutral",
-                    "step": 600
+                    "step": 500
                 },
                 "description": "Emphasised border — hovered fields, pulled-out quotes."
             },
@@ -265,11 +265,11 @@
                 "group": "border",
                 "light": {
                     "scale": "neutral",
-                    "step": 300
+                    "step": 400
                 },
                 "dark": {
                     "scale": "neutral",
-                    "step": 700
+                    "step": 600
                 },
                 "description": "Border of a form control at rest."
             },
@@ -469,6 +469,32 @@
                 "description": "Text and icons on a solid `success` fill."
             },
             {
+                "name": "success-hover",
+                "group": "state",
+                "light": {
+                    "scale": "success",
+                    "step": 700
+                },
+                "dark": {
+                    "scale": "success",
+                    "step": 700
+                },
+                "description": "Hover state of a solid `success` fill — a success button."
+            },
+            {
+                "name": "success-active",
+                "group": "state",
+                "light": {
+                    "scale": "success",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "success",
+                    "step": 800
+                },
+                "description": "Pressed state of a solid `success` fill."
+            },
+            {
                 "name": "success-subtle",
                 "group": "status",
                 "light": {
@@ -492,18 +518,18 @@
                     "scale": "success",
                     "step": 200
                 },
-                "description": "Text on `success-subtle`. This is the success text colour �� not `success`."
+                "description": "Text on `success-subtle`. This is the success text colour — not `success`."
             },
             {
                 "name": "success-border",
                 "group": "status",
                 "light": {
                     "scale": "success",
-                    "step": 200
+                    "step": 400
                 },
                 "dark": {
                     "scale": "success",
-                    "step": 800
+                    "step": 600
                 },
                 "description": "Border of a success banner or field."
             },
@@ -532,6 +558,32 @@
                     "step": 950
                 },
                 "description": "Text and icons on a solid `warning` fill."
+            },
+            {
+                "name": "warning-hover",
+                "group": "state",
+                "light": {
+                    "scale": "warning",
+                    "step": 700
+                },
+                "dark": {
+                    "scale": "warning",
+                    "step": 200
+                },
+                "description": "Hover state of a solid `warning` fill — a warning button."
+            },
+            {
+                "name": "warning-active",
+                "group": "state",
+                "light": {
+                    "scale": "warning",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "warning",
+                    "step": 100
+                },
+                "description": "Pressed state of a solid `warning` fill."
             },
             {
                 "name": "warning-subtle",
@@ -564,11 +616,11 @@
                 "group": "status",
                 "light": {
                     "scale": "warning",
-                    "step": 200
+                    "step": 400
                 },
                 "dark": {
                     "scale": "warning",
-                    "step": 800
+                    "step": 600
                 },
                 "description": "Border of a warning banner or field."
             },
@@ -597,6 +649,32 @@
                     "step": 50
                 },
                 "description": "Text and icons on a solid `danger` fill."
+            },
+            {
+                "name": "danger-hover",
+                "group": "state",
+                "light": {
+                    "scale": "danger",
+                    "step": 700
+                },
+                "dark": {
+                    "scale": "danger",
+                    "step": 700
+                },
+                "description": "Hover state of a solid `danger` fill — a destructive button."
+            },
+            {
+                "name": "danger-active",
+                "group": "state",
+                "light": {
+                    "scale": "danger",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "danger",
+                    "step": 800
+                },
+                "description": "Pressed state of a solid `danger` fill."
             },
             {
                 "name": "danger-subtle",
@@ -629,11 +707,11 @@
                 "group": "status",
                 "light": {
                     "scale": "danger",
-                    "step": 200
+                    "step": 400
                 },
                 "dark": {
                     "scale": "danger",
-                    "step": 800
+                    "step": 500
                 },
                 "description": "Border of a destructive banner or field."
             },
@@ -662,6 +740,32 @@
                     "step": 50
                 },
                 "description": "Text and icons on a solid `info` fill."
+            },
+            {
+                "name": "info-hover",
+                "group": "state",
+                "light": {
+                    "scale": "info",
+                    "step": 700
+                },
+                "dark": {
+                    "scale": "info",
+                    "step": 700
+                },
+                "description": "Hover state of a solid `info` fill — a info button."
+            },
+            {
+                "name": "info-active",
+                "group": "state",
+                "light": {
+                    "scale": "info",
+                    "step": 800
+                },
+                "dark": {
+                    "scale": "info",
+                    "step": 800
+                },
+                "description": "Pressed state of a solid `info` fill."
             },
             {
                 "name": "info-subtle",
@@ -694,11 +798,11 @@
                 "group": "status",
                 "light": {
                     "scale": "info",
-                    "step": 200
+                    "step": 400
                 },
                 "dark": {
                     "scale": "info",
-                    "step": 800
+                    "step": 600
                 },
                 "description": "Border of a info banner or field."
             }
@@ -709,6 +813,9 @@
             "sans": "\"Geist\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
             "mono": "\"Geist Mono\", ui-monospace, SFMono-Regular, Menlo, monospace"
         },
+        "fontLinks": [
+            "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+        ],
         "roles": [
             {
                 "role": "display",

@@ -11,8 +11,33 @@ describe("resolveTokens", () => {
         expect(resolved.semantics.length).toBe(hendriPreset.color.semantics.length)
     })
 
-    it("reports no failures for the shipped preset", () => {
-        expect(resolved.warnings.filter((w) => w.level === "fail")).toEqual([])
+    it("reports no warnings at all for the shipped preset", () => {
+        // Deliberately stricter than "no failures". Non-text boundaries report as
+        // `warn`, so counting only failures let every status border sit at Lc 0 —
+        // invisible — while the docs claimed the system was clean.
+        expect(resolved.warnings).toEqual([])
+    })
+
+    it("gives every solid fill its own hover and pressed state", () => {
+        // Without these, the docs tell you to build a destructive button and then
+        // make its hover inexpressible: `--state-hover` is a neutral wash, and
+        // computing one with filter/opacity is banned by name.
+        for (const role of ["primary", "secondary", "success", "warning", "danger", "info"]) {
+            expect(semanticByName(resolved, `${role}-hover`), `${role}-hover`).toBeDefined()
+            expect(semanticByName(resolved, `${role}-active`), `${role}-active`).toBeDefined()
+        }
+    })
+
+    it("keeps borders visible against the surfaces they divide", () => {
+        for (const [fg, bg] of [
+            ["border", "background"],
+            ["input", "surface"],
+            ["danger-border", "danger-subtle"],
+        ]) {
+            const border = semanticByName(resolved, fg!)!.values.light!
+            const ground = semanticByName(resolved, bg!)!.values.light!
+            expect(Math.abs(border.oklch.l - ground.oklch.l), `${fg} on ${bg}`).toBeGreaterThan(0.08)
+        }
     })
 
     it("makes the typed brand colour the actual primary fill", () => {

@@ -32,7 +32,9 @@ Full token tables, component recipes and wrong/right pairs live in
 
 ## Before you write a line
 
-1. Check that \`tokens.css\` is imported and \`<html>\` can carry \`data-theme="dark"\`.
+1. Check that \`tokens.css\` is imported. Dark mode is \`data-theme="dark"\` on \`<html>\`; light is
+   either \`data-theme="light"\` or no attribute at all — both are defined, so a toggle can write
+   either value or remove it.
 2. Work out which semantic tokens the thing you're building needs. If you cannot name them, you do
    not understand the component yet.
 3. If no semantic token fits, **say so and stop**. Do not reach for a primitive or invent a hex.
@@ -54,11 +56,15 @@ Full token tables, component recipes and wrong/right pairs live in
    \`--primary-foreground\`; \`--danger\` takes \`--danger-foreground\`. The polarity differs between
    fills on purpose — some are light, some dark. Do not unify them.
 7. **Status is ${statusNames.join(", ")}** — not \`destructive\`. A banner is
-   \`--<status>-subtle\` + \`--<status>-subtle-foreground\` + \`--<status>-border\`. The solid
-   \`--<status>\` is for fills and badges, never for text on a page background.
-8. **Interaction:** hover is \`--primary-hover\` / \`--state-hover\`, pressed is \`--primary-active\`
-   / \`--state-active\`, current is \`--state-selected\`. Never compute a hover colour with
-   \`filter: brightness()\` or an opacity overlay.
+   \`--<status>-subtle\` + \`--<status>-subtle-foreground\` + \`--<status>-border\`, and so is a
+   badge. The solid \`--<status>\` is for things that act or plot — buttons, status dots, chart
+   series — never for text on a page background.
+8. **Interaction:** every solid fill has its own hover and pressed token —
+   \`--primary-hover\`/\`--primary-active\`, \`--secondary-*\`, and one per status
+   (\`--danger-hover\` for a destructive button). Neutral surfaces use \`--state-hover\` /
+   \`--state-active\`, and the current item is \`--state-selected\`. Never compute a hover colour
+   with \`filter: brightness()\` or an opacity overlay. The \`--state-*\` fills are washes over an
+   existing surface, so they have no \`-foreground\` of their own — text keeps the colour it had.
 9. **Focus is never removed.** \`outline: 2px solid var(--ring); outline-offset: 2px\` on
    \`:focus-visible\`.
 10. **Spacing comes from the blessed subset only:**
@@ -68,10 +74,11 @@ Full token tables, component recipes and wrong/right pairs live in
     styles for the narrowest case and add \`min-width\` queries on top. Never a \`max-width\`
     breakpoint, never a number outside this set, and never \`var(--breakpoint-*)\` inside a media
     query — custom properties do not resolve there and the rule is dropped in silence.
-12. **Nothing spans the viewport.** Every region sits in a container, centred with
+12. **No content spans the viewport.** Every region's content sits in a container, centred with
     \`margin-inline: auto\`: ${config.layout.containers.map((c) => `\`--container-${c.name}\` (${c.maxRem}rem)`).join(", ")}.
     Running text takes \`--container-prose\` even inside a wider frame — a full-bleed paragraph is a
-    bug, not a stylistic choice.
+    bug, not a stylistic choice. Backgrounds and borders may span the window; a sticky bar is a
+    full-bleed background with contained content inside it.
 13. **Radius:** \`--radius-sm\` ${resolved.radius.sm}px, \`--radius-md\` ${resolved.radius.md}px,
     \`--radius-lg\` ${resolved.radius.lg}px, \`--radius-xl\` ${resolved.radius.xl}px. A rounded box
     inside another uses \`inner = outer − padding\`, floored at 0.

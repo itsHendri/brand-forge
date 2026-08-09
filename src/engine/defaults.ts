@@ -143,7 +143,7 @@ export const POLISH_RULES: Array<{ id: string; title: string; rule: string; defa
     {
         id: "concentric-radius",
         title: "Concentric radius",
-        rule: "A rounded element inside another uses `inner = outer − padding`. Square it off at 0. Only applies when padding ≤ 24px.",
+        rule: "A rounded box flush against its parent's inner edge uses `inner = outer − padding`, squared off at 0. Elements that float inside the padding with space on every side — badges, chips, inline code, buttons — are not concentric with anything and keep their own radius.",
         default: true,
     },
     {
@@ -185,7 +185,7 @@ export const POLISH_RULES: Array<{ id: string; title: string; rule: string; defa
     {
         id: "tabular-numbers",
         title: "Tabular numbers",
-        rule: "Any number that changes in place (counters, timers, prices in a table) gets `font-variant-numeric: tabular-nums`. Not phone numbers or version strings.",
+        rule: "`font-variant-numeric: tabular-nums` for numbers that change in place (counters, timers) or that are compared down a column (amounts, counts, durations). Not for identifiers that merely contain digits — version strings, phone numbers, order references — even when they sit in a table.",
         default: true,
     },
     {

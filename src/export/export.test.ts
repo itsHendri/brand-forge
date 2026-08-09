@@ -31,9 +31,15 @@ describe("tokens.css", () => {
     const css = fileAt("tokens.css")
 
     it("emits both modes and never leaks a raw colour into a semantic", () => {
-        expect(css).toContain(":root {")
+        expect(css).toContain(":root,")
         expect(css).toContain('[data-theme="dark"] {')
         expect(css).toMatch(/--primary: var\(--primary-\d+\);/)
+    })
+
+    it("defines light explicitly, so getting back from dark isn't luck", () => {
+        // A toggle that writes data-theme="light" used to work only by falling
+        // through to :root. Accidents stop working.
+        expect(css).toContain('[data-theme="light"] {')
     })
 
     it("does not ship a media query while the docs promise an attribute", () => {
@@ -141,6 +147,30 @@ describe("DESIGN_SYSTEM.md", () => {
         })
     })
 
+    describe("claims the docs make about themselves", () => {
+        it("does not claim every pair clears the body threshold", () => {
+            // It doesn't: `-foreground` labels and `foreground-secondary` are held
+            // to the Lc 60 bar and land in the 65-75 range. Saying "all of them
+            // clear" next to "body targets Lc 75" reads as a stronger promise
+            // than the validator actually makes.
+            expect(md).not.toContain("were generated against those thresholds and all of them clear")
+            expect(md).toContain("its own")
+        })
+
+        it("scopes the concentric rule so it doesn't forbid the radius scale", () => {
+            // A card is --radius-lg with --space-6 padding, so `outer - padding`
+            // is 0 for every child. Unscoped, the rule bans small radii outright.
+            expect(md).toContain("flush against the parent's inner edge")
+            expect(md).not.toContain("Only applies while padding ≤ 24px")
+        })
+
+        it("agrees with SKILL.md about badges", () => {
+            const skillText = fileAt("SKILL.md")
+            expect(md).toContain("**Badge** — subtle by default")
+            expect(skillText).not.toContain("for fills and badges")
+        })
+    })
+
     it("shows wrong alongside right", () => {
         expect(md).toContain("❌")
         expect(md).toContain("✅")
@@ -186,7 +216,7 @@ describe("SKILL.md", () => {
     it("carries the layout rules, including the media-query trap", () => {
         expect(skill).toContain("Breakpoints are mobile-first and closed")
         expect(skill).toContain("640px (`sm`)")
-        expect(skill).toContain("Nothing spans the viewport")
+        expect(skill).toContain("No content spans the viewport")
         expect(skill).toContain("--container-prose")
     })
 

@@ -12,10 +12,10 @@ The voice is considered, warm, precise, unfussy. Let that show in copy and restr
 - **Never use a primitive (`--primary-600`) in a component.** Primitives exist so a human can tune the ramp. Components and generated code use semantics only. If no semantic fits, say so rather than reaching past the layer.
 - **Radius is derived from one base of 10px**, not from Tailwind's defaults: `--radius-sm` 5px, `--radius-md` 10px, `--radius-lg` 15px, `--radius-xl` 20px.
 - **Breakpoints are a closed set and mobile-first only:** 640px (`sm`), 768px (`md`), 1024px (`lg`), 1280px (`xl`). Any other number is not a breakpoint, and there are no `max-width` breakpoints. `var(--breakpoint-*)` does not work inside a media query — write the pixel value.
-- **Nothing spans the viewport.** Every region sits in a `--container-*`, and running text takes `--container-prose` even inside a wider frame. A full-bleed paragraph is a bug.
+- **No content spans the viewport.** Every region's *content* sits in a `--container-*`, centred with `margin-inline: auto`, and running text takes `--container-prose` even inside a wider frame. Backgrounds and borders may still go full-bleed — a sticky top bar or a footer rule spans the window while the things inside it stay contained. A full-bleed paragraph is a bug; a full-bleed background is not.
 - **Spacing is a blessed subset, not every multiple of 4.** Only `--space-1` (4px), `--space-2` (8px), `--space-3` (12px), `--space-4` (16px), `--space-6` (24px), `--space-8` (32px), `--space-12` (48px), `--space-16` (64px), `--space-24` (96px) exist. A value between two of them is a bug, not a refinement.
 - **Type roles are named for their job**, never `h1`/`h2`/`text-2xl`: `--text-display`, `--text-heading-lg`, `--text-heading`, `--text-heading-sm`, `--text-body-lg`, `--text-body`, `--text-body-sm`, `--text-label`, `--text-code`. Heading level is semantics for the document outline; size comes from the role token.
-- **Labels on solid fills come from the neutral ramp**, not from the fill's own scale, and their polarity was chosen by measuring contrast. `--warning-foreground` may be dark while `--primary-foreground` is light. Do not "correct" this to a single colour.
+- **Labels on solid fills come from the neutral ramp**, not from the fill's own scale, and their polarity is chosen by measuring contrast against each fill. That means they do not all match — in both modes. `--warning-foreground` can be dark while `--primary-foreground` is light. Do not "correct" this to a single colour.
 - The secondary scale is provisional — hendri.design has no declared secondary brand colour yet.
 - Type families are placeholders pending confirmation against the live site.
 
@@ -27,7 +27,7 @@ Two layers, and only one of them is yours to use.
 (`primary`, `secondary`, `neutral`, `success`, `warning`, `danger`, `info`), 11 steps each, generated in OKLCH. They exist so a human can tune colour.
 **Do not reference them in code.**
 
-**Semantics** — the 49 tokens below. Every one aliases a primitive, and
+**Semantics** — the 57 tokens below. Every one aliases a primitive, and
 re-points itself in dark mode. This is the whole API.
 
 ### Surfaces
@@ -44,8 +44,8 @@ re-points itself in dark mode. This is the whole API.
 | Token | Light | Dark | Use it for |
 | --- | --- | --- | --- |
 | `--foreground` | `#1f262d` | `#f4f6f8` | Primary text and icons. The default ink for body copy and headings. |
-| `--foreground-secondary` | `#5e6d7d` | `#bcc6d1` | Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. For anything at `body-sm` or below use `muted-foreground`, which is darker because small text needs more contrast. |
-| `--muted-foreground` | `#36414d` | `#e7ebef` | Secondary text on `muted` or `background` — captions, helper text, metadata. |
+| `--foreground-secondary` | `#475664` | `#d3dae1` | Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is the only supporting text colour verified against `surface-raised`, so use it inside dialogs and popovers. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it. |
+| `--muted-foreground` | `#36414d` | `#e7ebef` | Small supporting text — captions, helper text, metadata — on `background`, `surface` or `muted`. Verified against those three only; on `surface-raised` use `foreground-secondary`. |
 | `--foreground-tertiary` | `#92a2b3` | `#8697a8` | Deliberately faint text: placeholders, disabled labels, watermarks. NEVER body copy — it does not meet contrast for reading. |
 
 ### Interactive states
@@ -60,15 +60,23 @@ re-points itself in dark mode. This is the whole API.
 | `--primary-active` | `#323397` | `#3734a6` | Pressed/active state of a solid `primary` fill. |
 | `--secondary-hover` | `#324048` | `#536673` | Hover state of a solid `secondary` fill. |
 | `--secondary-active` | `#1e262c` | `#3d4c56` | Pressed/active state of a solid `secondary` fill. |
+| `--success-hover` | `#008536` | `#127733` | Hover state of a solid `success` fill — a success button. |
+| `--success-active` | `#006a27` | `#095a22` | Pressed state of a solid `success` fill. |
+| `--warning-hover` | `#9a5100` | `#f3d2b8` | Hover state of a solid `warning` fill — a warning button. |
+| `--warning-active` | `#7e4000` | `#f9e7d9` | Pressed state of a solid `warning` fill. |
+| `--danger-hover` | `#bd0014` | `#af2a28` | Hover state of a solid `danger` fill — a destructive button. |
+| `--danger-active` | `#970d16` | `#871b1b` | Pressed state of a solid `danger` fill. |
+| `--info-hover` | `#006da4` | `#13699b` | Hover state of a solid `info` fill — a info button. |
+| `--info-active` | `#005783` | `#044f77` | Pressed state of a solid `info` fill. |
 
 ### Borders and focus
 
 | Token | Light | Dark | Use it for |
 | --- | --- | --- | --- |
-| `--border` | `#c7d2df` | `#556575` | Default hairline between regions — card edges, dividers, table rules. |
-| `--border-subtle` | `#dce3eb` | `#3e4b58` | Barely-there separator inside an already-bounded area. |
-| `--border-strong` | `#acbccd` | `#6d7e90` | Emphasised border — hovered fields, pulled-out quotes. |
-| `--input` | `#c7d2df` | `#556575` | Border of a form control at rest. |
+| `--border` | `#acbccd` | `#6d7e90` | Default hairline between regions — card edges, dividers, table rules. |
+| `--border-subtle` | `#dce3eb` | `#3e4b58` | Barely-there separator inside an already-bounded area. Deliberately below the visible-boundary threshold — never use it as the only thing dividing two regions. |
+| `--border-strong` | `#92a2b3` | `#8697a8` | Emphasised border — hovered fields, pulled-out quotes. |
+| `--input` | `#acbccd` | `#6d7e90` | Border of a form control at rest. |
 | `--ring` | `#574cff` | `#7e85ff` | Focus ring. Always visible on keyboard focus — never remove it. |
 
 ### Brand
@@ -91,23 +99,23 @@ re-points itself in dark mode. This is the whole API.
 | `--success` | `#16a34a` | `#2e924b` | Solid success fill — success buttons, filled badges, chart series. |
 | `--success-foreground` | `#f7f9fb` | `#f4f6f8` | Text and icons on a solid `success` fill. |
 | `--success-subtle` | `#e3f6e7` | `#084016` | Background of a success banner, alert or inline message. |
-| `--success-subtle-foreground` | `#0f5120` | `#c1e4c8` | Text on `success-subtle`. This is the success text colour �� not `success`. |
-| `--success-border` | `#c8edd0` | `#095a22` | Border of a success banner or field. |
+| `--success-subtle-foreground` | `#0f5120` | `#c1e4c8` | Text on `success-subtle`. This is the success text colour — not `success`. |
+| `--success-border` | `#7ad38f` | `#2e924b` | Border of a success banner or field. |
 | `--warning` | `#b86300` | `#ebb992` | Solid warning fill — warning buttons, filled badges, chart series. |
 | `--warning-foreground` | `#f7f9fb` | `#1b2127` | Text and icons on a solid `warning` fill. |
 | `--warning-subtle` | `#feeddf` | `#522700` | Background of a warning banner, alert or inline message. |
 | `--warning-subtle-foreground` | `#7e4000` | `#f3d2b8` | Text on `warning-subtle`. This is the warning text colour — not `warning`. |
-| `--warning-border` | `#fad7bc` | `#713900` | Border of a warning banner or field. |
+| `--warning-border` | `#eb9c59` | `#b6630b` | Border of a warning banner or field. |
 | `--danger` | `#dc2626` | `#d0443c` | Solid destructive fill — destructive buttons, filled badges, chart series. |
 | `--danger-foreground` | `#f7f9fb` | `#f4f6f8` | Text and icons on a solid `danger` fill. |
 | `--danger-subtle` | `#ffebe7` | `#611213` | Background of a destructive banner, alert or inline message. |
 | `--danger-subtle-foreground` | `#970d16` | `#ffcbc2` | Text on `danger-subtle`. This is the destructive text colour — not `danger`. |
-| `--danger-border` | `#ffd7d0` | `#871b1b` | Border of a destructive banner or field. |
+| `--danger-border` | `#ff8f81` | `#e96558` | Border of a destructive banner or field. |
 | `--info` | `#0284c7` | `#3083ba` | Solid info fill — info buttons, filled badges, chart series. |
 | `--info-foreground` | `#f7f9fb` | `#f4f6f8` | Text and icons on a solid `info` fill. |
 | `--info-subtle` | `#e4f2fe` | `#033855` | Background of a info banner, alert or inline message. |
 | `--info-subtle-foreground` | `#005783` | `#c2ddf4` | Text on `info-subtle`. This is the info text colour — not `info`. |
-| `--info-border` | `#cae6fe` | `#044f77` | Border of a info banner or field. |
+| `--info-border` | `#77bdf3` | `#3083ba` | Border of a info banner or field. |
 
 ## Type
 
@@ -125,6 +133,12 @@ re-points itself in dark mode. This is the whole API.
 
 Families: `--font-sans` is `"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif`, `--font-mono` is
 `"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace`.
+
+**The faces have to be loaded or the stack silently falls back to system fonts.** Put this in `<head>`:
+
+```html
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+```
 
 ## Layout — breakpoints and containers
 
@@ -187,9 +201,23 @@ Spacing runs on a 4px grid, blessed subset only:
 Radius derives from a single 10px base:
 `--radius-sm` 5px, `--radius-md` 10px, `--radius-lg` 15px, `--radius-xl` 20px, `--radius-full` 9999px.
 
-**Concentric radius.** A rounded element inside another uses `inner = outer − padding`, floored at
-0. A card at `--radius-lg` (15px) with `--space-4` (16px) padding holds children at
-0px. Only applies while padding ≤ 24px; past that, treat the surfaces separately.
+**Concentric radius.** `inner = outer − padding`, floored at 0.
+A card at `--radius-lg` (15px) with `--space-4` (16px) padding holds children at 0px.
+
+**It governs boxes flush against the parent's inner edge — nothing else.** An element that floats
+inside the padding with space on every side — a badge, an inline `<code>`, a chip, a button — is
+not concentric with anything and keeps its own radius.
+
+Everything full-width inside a padded card *is* flush, and that is most of a form: inputs, banners,
+nested panels, tables. Inside this card (`--radius-lg` 15px, `--space-6` 24px
+padding) the formula gives 0, so **those elements are square**, and the recipes below that specify
+`--radius-md` for an Input or an Alert describe them standing on the page, not nested in a card.
+When the two disagree, concentric wins — it is the more specific statement.
+
+If square-edged fields inside rounded cards is not the look you want, that is a real tension and the
+fix is a smaller card radius or a padding change, not an exception. Note the formula can also
+produce values off the radius scale (a 15px panel with 8px padding gives 7px); that is expected —
+use the computed number, don't snap it.
 
 Elevation is `--shadow-sm` | `--shadow-md` | `--shadow-lg` | `--shadow-overlay`. In dark mode
 these become a hairline ring rather than a drop shadow — depth there comes from surface lightness,
@@ -252,14 +280,29 @@ using both doubles the edge — visibly so in dark mode, where the shadow *is* a
 Anything rounded inside a card takes 0px — that's the concentric rule applied to this
 card's 15px radius and 24px padding, not a token.
 
-**Input** — height 40px, `padding: 0 var(--space-3)`, `background: var(--surface)`,
-`border: 1px solid var(--input)`, `border-radius: var(--radius-md)`,
-`color: var(--foreground)`. Placeholder uses `--foreground-tertiary`. Focus:
-`outline: 2px solid var(--ring); outline-offset: 2px`.
+**Input** — height 40px, `padding: 0 var(--space-3)`, `background: transparent`,
+`border: 1px solid var(--input)`, `border-radius: var(--radius-md)` on the page (0 inside a padded
+card — see the concentric rule), `color: var(--foreground)`. Transparent for the same reason the
+outline button is: a field sits inside cards as often as on the page, and `--surface` is the card's
+own colour, so a fixed fill leaves it with no edge but its border. Placeholder uses
+`--foreground-tertiary`. Focus: `outline: 2px solid var(--ring); outline-offset: 2px`.
 
-**Badge** — `background: var(--primary-subtle)`, `color: var(--primary-subtle-foreground)`,
-`border-radius: var(--radius-sm)` (5px), `padding: var(--space-1) var(--space-2)`,
-type role `label`.
+**Badge** — subtle by default: `background: var(--{role}-subtle)`,
+`color: var(--{role}-subtle-foreground)`, `border-radius: var(--radius-sm)` (5px),
+`padding: var(--space-1) var(--space-2)`, type role `label`. `{role}` is `primary` or any
+status. A badge is a label, and a page full of solid fills reads as a page full of buttons — so the
+solid `--{role}` belongs on things that are *doing* something (buttons, chart series, status dots),
+not on things that are *naming* something. Use a solid badge only when a single one must dominate.
+
+For a **neutral badge** — "Off", "None", "Default", the state that isn't a status — use
+`background: var(--muted)` with `color: var(--muted-foreground)`. Do not reach for
+`--secondary-subtle`: it is a near-invisible wash against `--surface` and reads as a rendering
+artefact rather than a chip.
+
+**Interactive state fills** — `--state-hover`, `--state-active`, `--state-selected` and
+`--state-disabled` are washes laid over an existing surface, so they carry no `-foreground` of
+their own: text keeps whatever colour it already had, normally `--foreground`. The exception is
+`--state-disabled`, which pairs with `--foreground-tertiary`.
 
 **Alert** — `background: var(--{status}-subtle)`, `color: var(--{status}-subtle-foreground)`,
 `border: 1px solid var(--{status}-border)`, `border-radius: var(--radius-md)`,
@@ -267,7 +310,13 @@ type role `label`.
 
 **Table** — header row `background: var(--muted)` with `color: var(--muted-foreground)`;
 row separators `1px solid var(--border-subtle)`; hovered row `--state-hover`; selected row
-`--state-selected`. Numeric cells get `font-variant-numeric: tabular-nums`.
+`--state-selected`. Columns of numbers that are compared or that change get
+`font-variant-numeric: tabular-nums` — but not columns of identifiers that merely contain digits,
+like version strings or reference numbers.
+
+A table is the most common thing to break a narrow screen. Wrap it in an element with
+`overflow-x: auto` and give that element `tabindex="0"` so it can be scrolled by keyboard; let the
+table scroll inside the page rather than making the page scroll.
 
 **Asymmetric hover timing.** "Exits are faster than entrances" needs two declarations in CSS — the
 base rule times the exit, the `:hover` rule times the entrance. One `transition` cannot do it:
@@ -329,16 +378,25 @@ use the one that describes your intent, because the values diverge the moment th
 | --- | --- | --- |
 | light | `#f7f9fb` | `--surface`, `--surface-raised`, `--primary-foreground`, `--secondary-foreground`, `--success-foreground`, `--warning-foreground`, `--danger-foreground`, `--info-foreground` |
 | light | `#dce3eb` | `--muted`, `--state-hover`, `--state-disabled`, `--border-subtle` |
-| light | `#c7d2df` | `--state-active`, `--border`, `--input` |
+| light | `#92a2b3` | `--foreground-tertiary`, `--border-strong` |
 | light | `#edefff` | `--state-selected`, `--primary-subtle` |
+| light | `#acbccd` | `--border`, `--input` |
 | light | `#574cff` | `--ring`, `--primary` |
 | light | `#423dc9` | `--primary-hover`, `--primary-subtle-foreground` |
 | light | `#40525e` | `--secondary`, `--secondary-subtle-foreground` |
+| light | `#7e4000` | `--warning-active`, `--warning-subtle-foreground` |
+| light | `#970d16` | `--danger-active`, `--danger-subtle-foreground` |
+| light | `#005783` | `--info-active`, `--info-subtle-foreground` |
 | dark | `#1b2127` | `--background`, `--warning-foreground` |
-| dark | `#556575` | `--surface-raised`, `--state-active`, `--border`, `--input` |
+| dark | `#556575` | `--surface-raised`, `--state-active` |
 | dark | `#3e4b58` | `--muted`, `--state-hover`, `--state-disabled`, `--border-subtle` |
 | dark | `#f4f6f8` | `--foreground`, `--primary-foreground`, `--secondary-foreground`, `--success-foreground`, `--danger-foreground`, `--info-foreground` |
+| dark | `#8697a8` | `--foreground-tertiary`, `--border-strong` |
 | dark | `#252579` | `--state-selected`, `--primary-subtle` |
+| dark | `#6d7e90` | `--border`, `--input` |
+| dark | `#2e924b` | `--success`, `--success-border` |
+| dark | `#f3d2b8` | `--warning-hover`, `--warning-subtle-foreground` |
+| dark | `#3083ba` | `--info`, `--info-border` |
 
 ## What this system does not define
 
@@ -346,16 +404,27 @@ The system stops here on purpose. These have **no tokens**, so if you need one,
 pick a value, keep it consistent within the file you're writing, and flag it — do not present it as
 part of the system:
 
-- **Icon box size.** The icon *stroke* is specified (see the craft rules); the box is not.
-- **Link colour in body copy.** `--primary` is documented as a fill. There is no `--link`.
+- **Icon box size.** The icon *stroke* is specified (see the craft rules); the box is not. The
+  stroke rule also covers weight 400 and 600 only, and every button uses `label` at weight 500.
+- **Link colour in body copy.** There is no `--link`. **Do not reach for `--primary`** — it is a
+  fill, and as text on a dark background it is unreadable. `--primary-subtle-foreground` is the
+  brand ink that survives both modes; it is off-label but it measures.
+- **App-shell dimensions.** No sidebar or column widths, no header height, no z-index scale, no
+  minimum table width. `--container-*` bound the page frame, not its interior.
 - **Font weights as standalone tokens.** Weight arrives with a type role and nothing else.
-- **Opacity, z-index, blur.** Not modelled at all.
+- **Opacity and blur.** Not modelled at all.
+- **Theme persistence.** The attribute is defined; storing the choice, seeding it from the OS
+  preference, and avoiding a flash on first paint are all yours.
+- **Touch-target switching.** The craft rules ask for 44px on touch, but the breakpoint set is
+  width-based and CSS cannot detect touch from it. Pick a rule and state it.
 
 ## Contrast
 
 Text pairs are validated with APCA (Lc), which unlike WCAG 2 models dark-mode perception correctly.
-Body text targets Lc 75, UI and large text Lc 60, non-text boundaries Lc 25. The pairings in this
-file were generated against those thresholds and all of them clear.
+**Each pair is held to the threshold for its own job, not to a single number:** Lc 75 for body text,
+Lc 60 for UI labels and large text, Lc 25 for non-text boundaries.
+
+Every pair clears **its own** threshold — text and non-text alike, in both modes. That is not the same as every pair clearing 75: labels on solid fills and `--foreground-secondary` are held to the Lc 60 bar and sit well below the body target, which is correct for their job and wrong for small body copy. Set supporting text below `body-lg` in `--muted-foreground`.
 
 `--foreground-tertiary` is deliberately below the reading threshold. It is for placeholders and
 watermarks. If you find yourself wanting it for text a person must read, use `--muted-foreground`.

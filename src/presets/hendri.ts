@@ -68,6 +68,11 @@ export const hendriPreset: BrandConfig = {
             sans: '"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
             mono: '"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
         },
+        // Without these the families above are just names and every page renders
+        // in the fallback stack — which is what an acceptance test found happening.
+        fontLinks: [
+            "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap",
+        ],
         roles: DEFAULT_TYPE_ROLES,
     },
     layout: { breakpoints: DEFAULT_BREAKPOINTS, containers: DEFAULT_CONTAINERS },

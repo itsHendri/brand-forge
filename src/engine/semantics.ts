@@ -236,6 +236,19 @@ function statusTokens(
     const darkFill = pickFill(ramp.dark, neutral.dark, shift(anchor, -DARK_LIFT))
     const label = role === "danger" ? "destructive" : role
 
+    // Status fills get hover/active for the same reason brand fills do: the
+    // system tells you to build a destructive button, and without these its
+    // hover state is inexpressible — `--state-hover` is a neutral wash, and
+    // computing one with filter/opacity is banned by name.
+    const foreground = {
+        light: onFill(neutral.light, ramp.light[lightFill]!),
+        dark: onFill(neutral.dark, ramp.dark[darkFill]!),
+    }
+    const direction = {
+        light: interactionDirection(neutral.light, foreground.light.step, ramp.light[lightFill]!),
+        dark: interactionDirection(neutral.dark, foreground.dark.step, ramp.dark[darkFill]!),
+    }
+
     return [
         {
             name: role,
@@ -247,9 +260,23 @@ function statusTokens(
         {
             name: `${role}-foreground`,
             group: "status",
-            light: onFill(neutral.light, ramp.light[lightFill]!),
-            dark: onFill(neutral.dark, ramp.dark[darkFill]!),
+            light: foreground.light,
+            dark: foreground.dark,
             description: `Text and icons on a solid \`${role}\` fill.`,
+        },
+        {
+            name: `${role}-hover`,
+            group: "state",
+            light: { scale: role, step: shift(lightFill, direction.light) },
+            dark: { scale: role, step: shift(darkFill, direction.dark) },
+            description: `Hover state of a solid \`${role}\` fill — a ${label} button.`,
+        },
+        {
+            name: `${role}-active`,
+            group: "state",
+            light: { scale: role, step: shift(lightFill, direction.light * 2) },
+            dark: { scale: role, step: shift(darkFill, direction.dark * 2) },
+            description: `Pressed state of a solid \`${role}\` fill.`,
         },
         {
             name: `${role}-subtle`,
@@ -268,8 +295,17 @@ function statusTokens(
         {
             name: `${role}-border`,
             group: "status",
-            light: { scale: role, step: 200 },
-            dark: { scale: role, step: 800 },
+            // Measured against the fill it outlines. Adjacent steps (100 next to
+            // 200) produce a border at Lc 0 — a boundary nobody can see, which is
+            // the same as no boundary while costing a token.
+            light: {
+                scale: role,
+                step: pickAgainst(ramp.light, ramp.light[100]!, [200, 300, 400, 500], LC_THRESHOLD["non-text"]),
+            },
+            dark: {
+                scale: role,
+                step: pickAgainst(ramp.dark, ramp.dark[900]!, [800, 700, 600, 500], LC_THRESHOLD["non-text"]),
+            },
             description: `Border of a ${label} banner or field.`,
         },
     ]
@@ -286,17 +322,21 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
     })
 
     // Surfaces come first because every text colour is chosen against them.
-    const surfaces = { background: n(100, 950), surface: n(50, 900), muted: n(200, 800) }
+    const surfaces = {
+        background: n(100, 950),
+        surface: n(50, 900),
+        raised: n(50, 700),
+        muted: n(200, 800),
+    }
 
-    /** Readable on BOTH the page and a card — the harder of the two wins. */
-    const textOnSurfaces = (required: number) => ({
+    const borderOnPage = {
         light: {
             scale: "neutral" as const,
             step: pickAgainst(
                 neutral.light,
                 neutral.light[surfaces.background.light.step]!,
-                INK_CANDIDATES,
-                required,
+                [200, 300, 400, 500],
+                LC_THRESHOLD["non-text"],
             ),
         },
         dark: {
@@ -304,9 +344,43 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             step: pickAgainst(
                 neutral.dark,
                 neutral.dark[surfaces.background.dark.step]!,
-                PAPER_CANDIDATES,
-                required,
+                [800, 700, 600, 500],
+                LC_THRESHOLD["non-text"],
             ),
+        },
+    }
+
+    /**
+     * The surface a text colour has the least room against — not the page.
+     * Ink struggles on the darkest surface; paper struggles on the lightest.
+     * Measuring against `background` alone passes, then fails on a dialog:
+     * in dark mode `surface-raised` is four steps lighter than the page.
+     */
+    const hardestGround: Record<Mode, string> = {
+        light: neutral.light[surfaces.muted.light.step]!,
+        dark: neutral.dark[surfaces.raised.dark.step]!,
+    }
+
+    /**
+     * The flat surfaces — page, card, quiet fill. `surface-raised` is excluded
+     * on purpose: in dark mode it is four steps lighter than the page, and
+     * holding a caption colour to it drags `muted-foreground` all the way to
+     * near-white, where it becomes indistinguishable from `foreground`. A
+     * caption inside a popover is rare; a caption on a card is everywhere.
+     */
+    const flatGround: Record<Mode, string> = {
+        light: neutral.light[surfaces.muted.light.step]!,
+        dark: neutral.dark[surfaces.muted.dark.step]!,
+    }
+
+    const textAgainst = (ground: Record<Mode, string>, required: number) => ({
+        light: {
+            scale: "neutral" as const,
+            step: pickAgainst(neutral.light, ground.light, INK_CANDIDATES, required),
+        },
+        dark: {
+            scale: "neutral" as const,
+            step: pickAgainst(neutral.dark, ground.dark, PAPER_CANDIDATES, required),
         },
     })
 
@@ -330,7 +404,7 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             // Dark mode climbs the ramp to show elevation. Light mode has nowhere
             // lighter to go than `surface`, so the two match there on purpose and
             // the separation comes from `--shadow-lg`.
-            ...n(50, 700),
+            ...surfaces.raised,
             description:
                 "Popovers, dropdowns, dialogs — one level above `surface`. In light mode this equals `surface`: elevation there is `--shadow-lg`, not a lighter fill.",
         },
@@ -356,23 +430,18 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             // `--foreground` or `--muted-foreground`. It reads lighter than
             // `--muted-foreground` on purpose: this is for larger supporting
             // copy, and smaller text needs MORE contrast, not less.
-            ...textOnSurfaces(LC_THRESHOLD.large),
+            // Measured against every surface including `surface-raised`, so it
+            // is the supporting-text colour that works inside a dialog too.
+            ...textAgainst(hardestGround, LC_THRESHOLD.large),
             description:
-                "Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. For anything at `body-sm` or below use `muted-foreground`, which is darker because small text needs more contrast.",
+                "Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is the only supporting text colour verified against `surface-raised`, so use it inside dialogs and popovers. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it.",
         },
         {
             name: "muted-foreground",
             group: "text",
-            // Measured against `muted`, the busiest ground it sits on.
-            light: {
-                scale: "neutral",
-                step: pickAgainst(neutral.light, neutral.light[surfaces.muted.light.step]!, INK_CANDIDATES, LC_THRESHOLD.body),
-            },
-            dark: {
-                scale: "neutral",
-                step: pickAgainst(neutral.dark, neutral.dark[surfaces.muted.dark.step]!, PAPER_CANDIDATES, LC_THRESHOLD.body),
-            },
-            description: "Secondary text on `muted` or `background` — captions, helper text, metadata.",
+            ...textAgainst(flatGround, LC_THRESHOLD.body),
+            description:
+                "Small supporting text — captions, helper text, metadata — on `background`, `surface` or `muted`. Verified against those three only; on `surface-raised` use `foreground-secondary`.",
         },
         {
             name: "foreground-tertiary",
@@ -413,25 +482,33 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
         {
             name: "border",
             group: "border",
-            ...n(300, 700),
+            // Measured against `background`, which is the harder of the two
+            // grounds it sits on — it is nearer the border than `surface` is.
+            // A hairline someone has to see is held to the non-text bar; if that
+            // lands darker than fashion likes, override the step by hand.
+            ...borderOnPage,
             description: "Default hairline between regions — card edges, dividers, table rules.",
         },
         {
             name: "border-subtle",
             group: "border",
+            // Deliberately below the visibility bar: this one is allowed to be
+            // barely there, because it separates things already inside a boundary.
             ...n(200, 800),
-            description: "Barely-there separator inside an already-bounded area.",
+            description:
+                "Barely-there separator inside an already-bounded area. Deliberately below the visible-boundary threshold — never use it as the only thing dividing two regions.",
         },
         {
             name: "border-strong",
             group: "border",
-            ...n(400, 600),
+            light: { scale: "neutral", step: shift(borderOnPage.light.step, 1) },
+            dark: { scale: "neutral", step: shift(borderOnPage.dark.step, -1) },
             description: "Emphasised border — hovered fields, pulled-out quotes.",
         },
         {
             name: "input",
             group: "border",
-            ...n(300, 700),
+            ...borderOnPage,
             description: "Border of a form control at rest.",
         },
         {

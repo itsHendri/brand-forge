@@ -103,7 +103,7 @@ function deviations(resolved: ResolvedTokens): string[] {
     )
 
     out.push(
-        `**Nothing spans the viewport.** Every region sits in a \`--container-*\`, and running text takes \`--container-prose\` even inside a wider frame. A full-bleed paragraph is a bug.`,
+        `**No content spans the viewport.** Every region's *content* sits in a \`--container-*\`, centred with \`margin-inline: auto\`, and running text takes \`--container-prose\` even inside a wider frame. Backgrounds and borders may still go full-bleed — a sticky top bar or a footer rule spans the window while the things inside it stay contained. A full-bleed paragraph is a bug; a full-bleed background is not.`,
     )
 
     const blessed = config.spacing.blessed
@@ -115,12 +115,23 @@ function deviations(resolved: ResolvedTokens): string[] {
         `**Type roles are named for their job**, never \`h1\`/\`h2\`/\`text-2xl\`: ${config.typography.roles.map((role) => `\`--text-${role.role}\``).join(", ")}. Heading level is semantics for the document outline; size comes from the role token.`,
     )
 
-    const flipped = resolved.semantics.filter(
-        (token) => token.name.endsWith("-foreground") && token[  "light"].scale === "neutral",
+    const onFills = resolved.semantics.filter(
+        (token) => token.name.endsWith("-foreground") && token.light.scale === "neutral",
     )
-    if (flipped.length > 0) {
+    if (onFills.length > 0) {
+        // Only claim the polarity actually splits in a mode where it does.
+        const split = (["light", "dark"] as const).filter((mode) => {
+            const lightnesses = onFills.map((token) => token.values[mode]!.oklch.l)
+            return Math.max(...lightnesses) - Math.min(...lightnesses) > 0.3
+        })
+        const where =
+            split.length === 2
+                ? "in both modes"
+                : split.length === 1
+                  ? `in ${split[0]} mode (they are all the same colour in ${split[0] === "dark" ? "light" : "dark"})`
+                  : "should a fill ever need it"
         out.push(
-            `**Labels on solid fills come from the neutral ramp**, not from the fill's own scale, and their polarity was chosen by measuring contrast. \`--warning-foreground\` may be dark while \`--primary-foreground\` is light. Do not "correct" this to a single colour.`,
+            `**Labels on solid fills come from the neutral ramp**, not from the fill's own scale, and their polarity is chosen by measuring contrast against each fill. That means they do not all match — ${where}. \`--warning-foreground\` can be dark while \`--primary-foreground\` is light. Do not "correct" this to a single colour.`,
         )
     }
 
@@ -180,14 +191,29 @@ using both doubles the edge — visibly so in dark mode, where the shadow *is* a
 Anything rounded inside a card takes ${cardInner}px — that's the concentric rule applied to this
 card's ${r.lg}px radius and 24px padding, not a token.
 
-**Input** — height 40px, \`padding: 0 var(--space-3)\`, \`background: var(--surface)\`,
-\`border: 1px solid var(--input)\`, \`border-radius: var(--radius-md)\`,
-\`color: var(--foreground)\`. Placeholder uses \`--foreground-tertiary\`. Focus:
-\`outline: 2px solid var(--ring); outline-offset: 2px\`.
+**Input** — height 40px, \`padding: 0 var(--space-3)\`, \`background: transparent\`,
+\`border: 1px solid var(--input)\`, \`border-radius: var(--radius-md)\` on the page (0 inside a padded
+card — see the concentric rule), \`color: var(--foreground)\`. Transparent for the same reason the
+outline button is: a field sits inside cards as often as on the page, and \`--surface\` is the card's
+own colour, so a fixed fill leaves it with no edge but its border. Placeholder uses
+\`--foreground-tertiary\`. Focus: \`outline: 2px solid var(--ring); outline-offset: 2px\`.
 
-**Badge** — \`background: var(--primary-subtle)\`, \`color: var(--primary-subtle-foreground)\`,
-\`border-radius: var(--radius-sm)\` (${r.sm}px), \`padding: var(--space-1) var(--space-2)\`,
-type role \`label\`.
+**Badge** — subtle by default: \`background: var(--{role}-subtle)\`,
+\`color: var(--{role}-subtle-foreground)\`, \`border-radius: var(--radius-sm)\` (${r.sm}px),
+\`padding: var(--space-1) var(--space-2)\`, type role \`label\`. \`{role}\` is \`primary\` or any
+status. A badge is a label, and a page full of solid fills reads as a page full of buttons — so the
+solid \`--{role}\` belongs on things that are *doing* something (buttons, chart series, status dots),
+not on things that are *naming* something. Use a solid badge only when a single one must dominate.
+
+For a **neutral badge** — "Off", "None", "Default", the state that isn't a status — use
+\`background: var(--muted)\` with \`color: var(--muted-foreground)\`. Do not reach for
+\`--secondary-subtle\`: it is a near-invisible wash against \`--surface\` and reads as a rendering
+artefact rather than a chip.
+
+**Interactive state fills** — \`--state-hover\`, \`--state-active\`, \`--state-selected\` and
+\`--state-disabled\` are washes laid over an existing surface, so they carry no \`-foreground\` of
+their own: text keeps whatever colour it already had, normally \`--foreground\`. The exception is
+\`--state-disabled\`, which pairs with \`--foreground-tertiary\`.
 
 **Alert** — \`background: var(--{status}-subtle)\`, \`color: var(--{status}-subtle-foreground)\`,
 \`border: 1px solid var(--{status}-border)\`, \`border-radius: var(--radius-md)\`,
@@ -195,7 +221,13 @@ type role \`label\`.
 
 **Table** — header row \`background: var(--muted)\` with \`color: var(--muted-foreground)\`;
 row separators \`1px solid var(--border-subtle)\`; hovered row \`--state-hover\`; selected row
-\`--state-selected\`. Numeric cells get \`font-variant-numeric: tabular-nums\`.
+\`--state-selected\`. Columns of numbers that are compared or that change get
+\`font-variant-numeric: tabular-nums\` — but not columns of identifiers that merely contain digits,
+like version strings or reference numbers.
+
+A table is the most common thing to break a narrow screen. Wrap it in an element with
+\`overflow-x: auto\` and give that element \`tabindex="0"\` so it can be scrolled by keyboard; let the
+table scroll inside the page rather than making the page scroll.
 
 **Asymmetric hover timing.** "Exits are faster than entrances" needs two declarations in CSS — the
 base rule times the exit, the \`:hover\` rule times the entrance. One \`transition\` cannot do it:
@@ -285,10 +317,19 @@ const NOT_DEFINED = `The system stops here on purpose. These have **no tokens**,
 pick a value, keep it consistent within the file you're writing, and flag it — do not present it as
 part of the system:
 
-- **Icon box size.** The icon *stroke* is specified (see the craft rules); the box is not.
-- **Link colour in body copy.** \`--primary\` is documented as a fill. There is no \`--link\`.
+- **Icon box size.** The icon *stroke* is specified (see the craft rules); the box is not. The
+  stroke rule also covers weight 400 and 600 only, and every button uses \`label\` at weight 500.
+- **Link colour in body copy.** There is no \`--link\`. **Do not reach for \`--primary\`** — it is a
+  fill, and as text on a dark background it is unreadable. \`--primary-subtle-foreground\` is the
+  brand ink that survives both modes; it is off-label but it measures.
+- **App-shell dimensions.** No sidebar or column widths, no header height, no z-index scale, no
+  minimum table width. \`--container-*\` bound the page frame, not its interior.
 - **Font weights as standalone tokens.** Weight arrives with a type role and nothing else.
-- **Opacity, z-index, blur.** Not modelled at all.`
+- **Opacity and blur.** Not modelled at all.
+- **Theme persistence.** The attribute is defined; storing the choice, seeding it from the OS
+  preference, and avoiding a flash on first paint are all yours.
+- **Touch-target switching.** The craft rules ask for 44px on touch, but the breakpoint set is
+  width-based and CSS cannot detect touch from it. Pick a rule and state it.`
 
 function layoutSection(resolved: ResolvedTokens): string {
     const { breakpoints, containers } = resolved.config.layout
@@ -409,6 +450,12 @@ ${table(["Token", "Size", "Line height", "Weight", "Tracking"], typeRows)}
 Families: \`--font-sans\` is \`${config.typography.families.sans}\`, \`--font-mono\` is
 \`${config.typography.families.mono}\`.
 
+${
+        config.typography.fontLinks && config.typography.fontLinks.length > 0
+            ? `**The faces have to be loaded or the stack silently falls back to system fonts.** Put this in \`<head>\`:\n\n\`\`\`html\n${config.typography.fontLinks.map((href) => `<link rel="stylesheet" href="${href}">`).join("\n")}\n\`\`\``
+            : `**No webfont source is declared**, so the named families only render where they are already installed. Everything else falls back to the system stack. Load them yourself, or say so.`
+    }
+
 ## Layout — breakpoints and containers
 
 ${layoutSection(resolved)}
@@ -423,9 +470,23 @@ ${Object.entries(resolved.radius)
         .map(([step, px]) => `\`--radius-${step}\` ${step === "full" ? "9999px" : `${px}px`}`)
         .join(", ")}.
 
-**Concentric radius.** A rounded element inside another uses \`inner = outer − padding\`, floored at
-0. A card at \`--radius-lg\` (${resolved.radius.lg}px) with \`--space-4\` (16px) padding holds children at
-${Math.max(0, resolved.radius.lg - 16)}px. Only applies while padding ≤ 24px; past that, treat the surfaces separately.
+**Concentric radius.** \`inner = outer − padding\`, floored at 0.
+A card at \`--radius-lg\` (${resolved.radius.lg}px) with \`--space-4\` (16px) padding holds children at ${Math.max(0, resolved.radius.lg - 16)}px.
+
+**It governs boxes flush against the parent's inner edge — nothing else.** An element that floats
+inside the padding with space on every side — a badge, an inline \`<code>\`, a chip, a button — is
+not concentric with anything and keeps its own radius.
+
+Everything full-width inside a padded card *is* flush, and that is most of a form: inputs, banners,
+nested panels, tables. Inside this card (\`--radius-lg\` ${resolved.radius.lg}px, \`--space-6\` 24px
+padding) the formula gives 0, so **those elements are square**, and the recipes below that specify
+\`--radius-md\` for an Input or an Alert describe them standing on the page, not nested in a card.
+When the two disagree, concentric wins — it is the more specific statement.
+
+If square-edged fields inside rounded cards is not the look you want, that is a real tension and the
+fix is a smaller card radius or a padding change, not an exception. Note the formula can also
+produce values off the radius scale (a 15px panel with 8px padding gives 7px); that is expected —
+use the computed number, don't snap it.
 
 Elevation is \`--shadow-sm\` | \`--shadow-md\` | \`--shadow-lg\` | \`--shadow-overlay\`. In dark mode
 these become a hairline ring rather than a drop shadow — depth there comes from surface lightness,
@@ -458,8 +519,16 @@ ${NOT_DEFINED}
 ## Contrast
 
 Text pairs are validated with APCA (Lc), which unlike WCAG 2 models dark-mode perception correctly.
-Body text targets Lc 75, UI and large text Lc 60, non-text boundaries Lc 25. The pairings in this
-file were generated against those thresholds${resolved.warnings.filter((w) => w.level === "fail").length === 0 ? " and all of them clear." : `, and ${resolved.warnings.filter((w) => w.level === "fail").length} currently do not — see the brand's warnings.`}
+**Each pair is held to the threshold for its own job, not to a single number:** Lc 75 for body text,
+Lc 60 for UI labels and large text, Lc 25 for non-text boundaries.
+
+${(() => {
+        const contrast = resolved.warnings.filter((w) => w.kind === "contrast")
+        if (contrast.length > 0) {
+            return `**${contrast.length} pairs currently miss their threshold** — see the brand's warnings. Do not treat the values in this file as validated until they are cleared.`
+        }
+        return `Every pair clears **its own** threshold — text and non-text alike, in both modes. That is not the same as every pair clearing 75: labels on solid fills and \`--foreground-secondary\` are held to the Lc 60 bar and sit well below the body target, which is correct for their job and wrong for small body copy. Set supporting text below \`body-lg\` in \`--muted-foreground\`.`
+    })()}
 
 \`--foreground-tertiary\` is deliberately below the reading threshold. It is for placeholders and
 watermarks. If you find yourself wanting it for text a person must read, use \`--muted-foreground\`.
