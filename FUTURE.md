@@ -4,13 +4,17 @@ Start here next session. Read `STATUS.md` first for where things actually stand.
 
 ## Immediate next step
 
-**Asset upload.** A brand names `"Geist"` and ships a Google Fonts `<link>`; it cannot yet carry a
-logo or a font file. Storing assets next to the brand (`brands/<slug>/` instead of
-`brands/<slug>.json`) is the change that makes a brand genuinely self-contained and portable to a
-client. This is the last thing standing between the current tool and "forge a whole identity".
+**A marketing context** — the one build shape the canvas still lacks. Display type at scale, a hero,
+long-form copy at the prose measure, and a logo lockup. It is the context that would show whether
+the display role and the brand colour actually carry a page rather than a component sheet.
 
-Then a **marketing context** (the one build shape the canvas still lacks — display type at scale,
-a hero, long-form copy), and the **static guideline page**.
+Then the **static guideline page** (Phase 6), which is now more valuable than it was: with assets
+in place, a generated page can show the real mark in the real typeface, which is the artifact a
+client actually wants.
+
+Also worth doing soon: **surface the logo and fonts in the docs**. `DESIGN_SYSTEM.md` documents the
+type roles but says nothing about the mark, and the exported `@font-face` rules are not explained
+anywhere — an agent handed the export would not know a logo exists.
 
 The canvas now has three contexts (Components, Surfaces, Dashboard) sharing `preview/kit.tsx`.
 Add new ones there; every kit component is the exported recipe rendered literally, which is what

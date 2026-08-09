@@ -4,6 +4,10 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- Asset upload — logo and font files stored in `brands/assets/<slug>/`. Uploaded fonts become
+  `@font-face` rules in the preview and the exported stylesheet, and ship with the export as real
+  bytes. An SVG logo is stored inline so its ink follows the foreground token and inverts in dark
+  mode; a raster logo is stored as a file and used as-is.
 - Preview canvas rebuilt around a shared component kit (`preview/kit.tsx`), with three contexts:
   **Components**, **Surfaces & elevation**, and **Dashboard**. Surfaces are shown nested so the
   ladder is judgeable rather than inferred, and elevation is its own section demonstrating the
