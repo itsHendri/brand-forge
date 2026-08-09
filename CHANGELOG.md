@@ -4,6 +4,12 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- **Marketing context** — hero at display scale, feature grid, stat row, long-form copy at the prose
+  measure, a full-width brand band, and logo lockups in the header and footer. The context that
+  tests whether the display role and the brand colour carry a page rather than a component sheet.
+- The preview width selector gained a **base (390px)** option. Mobile-first means everything below
+  the smallest breakpoint is where the design starts, and it was the one width that could not be
+  selected, because it isn't a breakpoint.
 - Asset upload — logo and font files stored in `brands/assets/<slug>/`. Uploaded fonts become
   `@font-face` rules in the preview and the exported stylesheet, and ship with the export as real
   bytes. An SVG logo is stored inline so its ink follows the foreground token and inverts in dark

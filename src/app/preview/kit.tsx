@@ -101,7 +101,14 @@ export function Card({
     )
 }
 
-type ButtonTone = "primary" | "secondary" | "outline" | "ghost" | Status
+/**
+ * `inverse` is for a control sitting ON a brand field, where the surrounding
+ * text is already `--primary-foreground`. The plain `outline` tone assumes a
+ * neutral ground — it hardcodes `--foreground`, which on an indigo band is dark
+ * ink on dark blue. The system has no "on a brand field" role, so this composes
+ * one from the pair that already governs that context.
+ */
+type ButtonTone = "primary" | "secondary" | "outline" | "ghost" | "inverse" | Status
 type ButtonState = "rest" | "hover" | "active" | "disabled" | "focus"
 
 const FILLED: Record<string, true> = {
@@ -127,7 +134,13 @@ export function Button({
 
     const palette: CSSProperties = filled
         ? { background: `var(--${tone}${suffix})`, color: `var(--${tone}-foreground)` }
-        : tone === "outline"
+        : tone === "inverse"
+          ? {
+                background: "transparent",
+                color: "var(--primary-foreground)",
+                border: "1px solid var(--primary-foreground)",
+            }
+          : tone === "outline"
           ? {
                 background: "transparent",
                 color: "var(--foreground)",

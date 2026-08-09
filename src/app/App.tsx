@@ -12,13 +12,18 @@ import { ShapePanel } from "./panels/ShapePanel"
 import { TypePanel } from "./panels/TypePanel"
 import { ComponentsSheet } from "./preview/contexts/ComponentsSheet"
 import { Dashboard } from "./preview/contexts/Dashboard"
+import { Marketing } from "./preview/contexts/Marketing"
 import { SurfacesSheet } from "./preview/contexts/SurfacesSheet"
 import { PreviewCanvas } from "./preview/PreviewCanvas"
 import type { PreviewContextId } from "./store"
 
+/** A representative phone. Not a breakpoint — the width beneath all of them. */
+const BASE_WIDTH = 390
+
 const CONTEXTS: Array<{ id: PreviewContextId; label: string }> = [
     { id: "components", label: "Components" },
     { id: "surfaces", label: "Surfaces" },
+    { id: "marketing", label: "Marketing" },
     { id: "dashboard", label: "Dashboard" },
 ]
 import { useStore, type PanelId } from "./store"
@@ -126,6 +131,18 @@ export function App() {
                         >
                             Fill
                         </button>
+                        {/* The base case. Mobile-first means everything below the
+                            smallest breakpoint is where the design starts — and it
+                            was the one width the selector couldn't show, because it
+                            isn't a breakpoint. */}
+                        <button
+                            type="button"
+                            title="390px — the base case, below every breakpoint. Where mobile-first starts."
+                            onClick={() => setPreviewWidth(BASE_WIDTH)}
+                            className={`px-2 py-1.5 ${previewWidth === BASE_WIDTH ? "bg-[var(--app-ink)] text-white" : ""}`}
+                        >
+                            base
+                        </button>
                         {config.layout.breakpoints.map((breakpoint) => (
                             <button
                                 key={breakpoint.name}
@@ -213,6 +230,7 @@ export function App() {
                 <PreviewCanvas resolved={resolved} mode={mode} width={previewWidth}>
                     {context === "components" && <ComponentsSheet />}
                     {context === "surfaces" && <SurfacesSheet />}
+                    {context === "marketing" && <Marketing />}
                     {context === "dashboard" && <Dashboard />}
                 </PreviewCanvas>
             </main>

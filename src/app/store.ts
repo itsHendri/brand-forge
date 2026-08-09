@@ -16,7 +16,7 @@ export type PanelId =
     | "shape"
     | "motion"
     | "rules"
-export type PreviewContextId = "components" | "surfaces" | "dashboard"
+export type PreviewContextId = "components" | "surfaces" | "marketing" | "dashboard"
 
 interface BrandForgeState {
     config: BrandConfig

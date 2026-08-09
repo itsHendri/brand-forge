@@ -4,17 +4,18 @@ Start here next session. Read `STATUS.md` first for where things actually stand.
 
 ## Immediate next step
 
-**A marketing context** — the one build shape the canvas still lacks. Display type at scale, a hero,
-long-form copy at the prose measure, and a logo lockup. It is the context that would show whether
-the display role and the brand colour actually carry a page rather than a component sheet.
+**Surface assets and the on-brand rule in the docs.** `DESIGN_SYSTEM.md` documents type roles in
+detail and says nothing about the mark; the exported `@font-face` rules are not explained anywhere;
+and the "control on a brand field" rule below exists only in the preview kit. An agent handed the
+export today would not know a logo exists. This is the cheapest remaining win and the next
+acceptance run would find all three.
 
-Then the **static guideline page** (Phase 6), which is now more valuable than it was: with assets
-in place, a generated page can show the real mark in the real typeface, which is the artifact a
-client actually wants.
+Then the **static guideline page** (Phase 6), which is worth more than it was: with assets in place
+a generated page can show the real mark in the real typeface, which is the artifact a client
+actually wants.
 
-Also worth doing soon: **surface the logo and fonts in the docs**. `DESIGN_SYSTEM.md` documents the
-type roles but says nothing about the mark, and the exported `@font-face` rules are not explained
-anywhere — an agent handed the export would not know a logo exists.
+The canvas now has four contexts — Components, Surfaces, Marketing, Dashboard — sharing
+`preview/kit.tsx`, and the width selector covers the base (390px) case as well as every breakpoint.
 
 The canvas now has three contexts (Components, Surfaces, Dashboard) sharing `preview/kit.tsx`.
 Add new ones there; every kit component is the exported recipe rendered literally, which is what
@@ -26,6 +27,27 @@ keeps undo and autosave automatic.
 transfer directly (this tool isn't in Figma). What would help is published *token documentation*
 with strong surface and elevation taxonomies — examples of how other systems name and demonstrate
 their surface ladder, not component libraries.
+
+## Two decisions the marketing context surfaced
+
+Both are real gaps in the *system*, not the canvas, and both need Hendri's call.
+
+**1. `--text-display` is fixed at 3.5rem, and it shows.** At the base width (390px) the hero heading
+runs to **four lines and 235px** — a quarter of a phone viewport before the page has said anything.
+It fits without overflow and nothing breaks mid-word, so this is a taste failure rather than a bug.
+The fix is fluid type: a role would gain a min size and grow with the viewport
+(`clamp(2.25rem, 1.5rem + 4vw, 3.5rem)`), which means `TypeRole` gains an optional `minSizeRem` and
+the CSS emits a `clamp()` instead of a fixed length. Worth doing for `display` and probably
+`heading-lg`; the rest are fine fixed. Deliberately not done unilaterally — it changes the token
+model, and "no responsive type" is currently an honest, documented position.
+
+**2. There is no role for a control on a brand field.** The outline button hardcodes
+`--foreground`, which is correct on a neutral surface and is dark ink on dark indigo when the button
+sits on a `--primary` band — the same class of bug as the outline button vanishing inside a card,
+which was already fixed once. The kit now has an `inverse` tone composed from
+`--primary-foreground`, but **the exported docs say nothing about it**. Either promote it to real
+tokens (`--on-brand`, `--on-brand-border`) or document the composition rule: *a control on a brand
+field takes the fill's own `-foreground` for both its text and its border.*
 
 ## Gaps the acceptance test exposed
 
