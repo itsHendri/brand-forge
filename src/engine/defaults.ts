@@ -89,6 +89,17 @@ export const DEFAULT_SPACING = { basePx: 4, blessed: [4, 8, 12, 16, 24, 32, 48, 
 /** Names follow Tailwind's px/4 numbering so `--space-6` is 24px, as expected. */
 export const spaceName = (px: number, basePx = 4): string => String(px / basePx)
 
+/**
+ * Two opacities, both for *non-text* or already-unreadable states.
+ *
+ * `disabled` is for controls whose label is `--foreground-tertiary` anyway, so
+ * fading it further costs nothing that was being read. `loading` dims content
+ * behind a spinner, which nobody is reading either. Neither is a licence to
+ * fade live text: opacity defeats the contrast audit, because the resulting
+ * colour depends on a ground the system cannot see.
+ */
+export const DEFAULT_OPACITY: BrandConfig["opacity"] = { disabled: 0.4, loading: 0.6 }
+
 export const DEFAULT_MOTION: BrandConfig["motion"] = {
     durations: { instant: 100, fast: 150, base: 200, slow: 320 },
     easings: {
@@ -170,6 +181,12 @@ export const POLISH_RULES: Array<{ id: string; title: string; rule: string; defa
         id: "concentric-radius",
         title: "Concentric radius",
         rule: "A rounded box flush against its parent's inner edge uses `inner = outer − padding`, squared off at 0. Flush means touching the padding on both sides: a full-width field, banner or button follows the formula even though it is a control. Elements that float inside the padding with space around them — badges, chips, inline code, an auto-width button — are not concentric with anything and keep their own radius. When in doubt, ask whether the element's edge and the parent's edge are parallel and one padding apart; if they are, it is flush.",
+        default: true,
+    },
+    {
+        id: "underline-links",
+        title: "Links in body copy are underlined",
+        rule: "A link inside running text carries an underline, not just `--link`. Colour alone is never sufficient (WCAG 1.4.1), and on this palette it is measurably not enough: `--link` and `--foreground` sit at the same lightness in both modes and differ only in hue, so anyone reading in greyscale or with a colour vision deficiency sees no link at all. Underline by default and remove it only where the link is already unmistakable as a control — nav items, buttons, cards. Use `text-underline-offset` rather than a border, so descenders stay legible.",
         default: true,
     },
     {

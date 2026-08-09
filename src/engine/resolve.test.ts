@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { hendriPreset } from "../presets/hendri"
+import { apca, LC_THRESHOLD } from "./contrast"
+import { DEFAULT_POLISH } from "./defaults"
 import { primitiveVar, resolveTokens, semanticByName } from "./resolve"
 import { defaultSemanticMapping } from "./semantics"
 import { SCALE_ROLES, STEPS } from "./types"
@@ -203,5 +205,106 @@ describe("resolveTokens", () => {
         const swatch = resolveTokens(withOverride).scales.primary!.steps.light[500]!
         expect(swatch.hex).toBe("#ff0000")
         expect(swatch.overridden).toBe(true)
+    })
+})
+
+/**
+ * The batch added from the Carbon and Atlassian reference. Each of these
+ * existed as a documented gap that every acceptance run had to invent around.
+ */
+describe("the inverse, link, focus, scrim and skeleton tokens", () => {
+    const value = (name: string, mode: "light" | "dark") => semanticByName(resolved, name)!.values[mode]!
+
+    it("gives links enough contrast to be read as body text, in both modes", () => {
+        // The trap this token exists to remove: `--primary` as a link measures
+        // Lc -28.7 in dark. Anything claiming to be body text clears Lc 75.
+        for (const mode of ["light", "dark"] as const) {
+            for (const ground of ["background", "surface", "muted"]) {
+                const lc = Math.abs(apca(value("link", mode).hex, value(ground, mode).hex))
+                expect(lc, `link on ${ground} (${mode})`).toBeGreaterThanOrEqual(LC_THRESHOLD.body)
+            }
+        }
+    })
+
+    it("does not let a link rely on colour alone", () => {
+        // `--link` sits at the same lightness as `--foreground` on this palette
+        // and is told apart by hue only, which is invisible in greyscale. The
+        // system compensates with a rule, so the rule has to actually be there.
+        expect(DEFAULT_POLISH["underline-links"]).toBe(true)
+    })
+
+    it("inverts against the mode rather than always going dark", () => {
+        // A dark chip on a dark page is not an inverse region. Light mode's
+        // inverse must be darker than its page and dark mode's must be lighter.
+        expect(value("inverse", "light").oklch.l).toBeLessThan(value("background", "light").oklch.l)
+        expect(value("inverse", "dark").oklch.l).toBeGreaterThan(value("background", "dark").oklch.l)
+    })
+
+    it("keeps everything placed on an inverse region readable there", () => {
+        for (const mode of ["light", "dark"] as const) {
+            const ground = value("inverse", mode).hex
+            expect(Math.abs(apca(value("inverse-foreground", mode).hex, ground))).toBeGreaterThanOrEqual(
+                LC_THRESHOLD.body,
+            )
+            expect(Math.abs(apca(value("link-inverse", mode).hex, ground))).toBeGreaterThanOrEqual(
+                LC_THRESHOLD.body,
+            )
+        }
+    })
+
+    it("gives focus a ring that survives a brand fill", () => {
+        // Acceptance run 4: focus was invisible on a brand field because
+        // `--ring` IS `--primary`. That must stay fixed.
+        for (const mode of ["light", "dark"] as const) {
+            const onBrand = Math.abs(apca(value("ring", mode).hex, value("primary", mode).hex))
+            const inverseOnBrand = Math.abs(apca(value("ring-inverse", mode).hex, value("primary", mode).hex))
+            expect(inverseOnBrand, `ring-inverse on primary (${mode})`).toBeGreaterThanOrEqual(
+                LC_THRESHOLD["non-text"],
+            )
+            // The whole reason the second token exists.
+            expect(inverseOnBrand, `${mode}: ring-inverse must beat ring on a brand fill`).toBeGreaterThan(
+                onBrand,
+            )
+        }
+    })
+
+    it("pairs the inset ring with the ring itself, not with the page", () => {
+        for (const mode of ["light", "dark"] as const) {
+            const lc = Math.abs(apca(value("ring-inset", mode).hex, value("ring", mode).hex))
+            expect(lc, `ring-inset on ring (${mode})`).toBeGreaterThanOrEqual(LC_THRESHOLD["non-text"])
+        }
+    })
+
+    it("emits the scrim as a translucent literal, not an opaque alias", () => {
+        // A `var(--neutral-950)` holds `oklch(L C H)` and has no alpha to bend,
+        // so this is the one token that cannot alias its primitive.
+        for (const mode of ["light", "dark"] as const) {
+            const declaration = resolved.declarations[mode].find(([name]) => name === "--scrim")
+            expect(declaration, `--scrim missing in ${mode}`).toBeDefined()
+            expect(declaration![1]).toMatch(/^oklch\([^)]+ \/ 0\.\d+\)$/)
+        }
+    })
+
+    it("carries more scrim in dark mode, where a dim one reads as nothing", () => {
+        const alphaOf = (mode: "light" | "dark") =>
+            Number(/\/ ([\d.]+)\)/.exec(resolved.declarations[mode].find(([n]) => n === "--scrim")![1])![1])
+        expect(alphaOf("dark")).toBeGreaterThan(alphaOf("light"))
+    })
+
+    it("keeps skeleton blocks visible against their own container", () => {
+        // Measured against `skeleton-surface`, not the page — the blocks only
+        // ever appear inside it, and picking against the page is how they end
+        // up invisible in the one place they are used.
+        for (const mode of ["light", "dark"] as const) {
+            const lc = Math.abs(apca(value("skeleton", mode).hex, value("skeleton-surface", mode).hex))
+            expect(lc, `skeleton on skeleton-surface (${mode})`).toBeGreaterThanOrEqual(
+                LC_THRESHOLD["non-text"],
+            )
+        }
+    })
+
+    it("ships exactly two opacities, and neither is for live text", () => {
+        const names = resolved.declarations.light.filter(([n]) => n.startsWith("--opacity")).map(([n]) => n)
+        expect(names).toEqual(["--opacity-disabled", "--opacity-loading"])
     })
 })

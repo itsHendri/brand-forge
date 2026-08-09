@@ -23,33 +23,37 @@ format conversion froze nothing, and it shrank from 40KB to 14.7KB.
 preview, in `brands/hendri.json` and in `exports/hendri/` without any manual step. If a test reports
 a stale export, run `npm run export`.
 
-### 1. The settled batch — where Carbon and Atlassian independently agree
+### 1. ~~The settled batch~~ — done 2026-08-09
 
-Both systems make these tokens rather than rules, which is about as settled as the evidence gets.
+All of it shipped. 57 → 68 semantic tokens, plus two opacities. Every one is chosen by measurement
+and covered by a contrast pair, and the shipped preset still reports zero warnings.
 
-- **An inverse / on-fill family.** This closes the `--on-brand` question that was open below. Carbon:
-  `$text-on-color`, `$icon-on-color`, `$border-inverse`, `$focus-inverse`, `$link-inverse`.
-  Atlassian makes `inverse` a first-class colour role for "UI elements that sit on bold emphasis
-  backgrounds". Both cover **icon and focus too**, not just text and border as previously planned.
-  Per-role `-foreground` already handles text on a fill; what's missing is border, ring, icon and
-  secondary text.
-- **A link family** — `--link`, hover, visited, and an inverse. Carbon ships eight link tokens and
-  its `$link-primary` is *the same blue* as `$interactive`; it still names them separately, because
-  `$link-inverse` has to diverge. That is our documented dark-mode trap (`--primary` as body-copy
-  link, Lc −28.7) with the industry answer attached.
-- **Focus is three tokens, not one.** `$focus`, `$focus-inset` (a contrast border paired with focus,
-  for when one colour can't work on both grounds) and `$focus-inverse`. Acceptance run 4 found focus
-  invisible on a brand field because `--ring` **is** `--primary`; this is the named fix.
-- **Opacity is two tokens** — Atlassian ships exactly `opacity.disabled` and `opacity.loading`. The
-  gap list phrased this as a project. It isn't.
-- **Skeleton is two tokens** — Carbon separates `$skeleton-element` from `$skeleton-background`.
-  This was not previously on the gap list at all, and every dashboard needs it.
-- **A scrim** — Carbon `$overlay` is black at 60%; Atlassian has a blanket token group.
+- **Inverse region** — `--inverse`, `--inverse-foreground`, `--inverse-border`, plus `--link-inverse`
+  and `--ring-inverse`. Inverse means *opposite to the mode*, so on a dark page the chip is light.
+- **Links** — `--link`, `--link-hover`, `--link-inverse`. Measured as body text against the hardest
+  flat surface, which is what `--primary` never was.
+- **Focus** — `--ring-inverse` for a coloured or inverted ground, `--ring-inset` as the companion
+  hairline. Acceptance run 4's defect is now a token rather than a rule.
+- **Opacity** — `--opacity-disabled`, `--opacity-loading`. Two, and neither is for live text.
+- **Skeleton** — `--skeleton` on `--skeleton-surface`, measured against each other.
+- **Scrim** — `--scrim`, the one translucent token (`DECISIONS.md` #24).
 
-### 2. Make the state tokens transparent — a defect the comparison exposed
+Two findings came out of building it, both worth knowing:
 
-Not previously on any list. Carbon's `$background-hover` is **Gray 50 at 12%, transparent**, so it
-works on any surface. Ours are opaque aliases to neutral steps:
+**A link cannot rely on colour here.** `--link` and `--foreground` sit at the *same lightness* in
+both modes and differ only in hue, so in greyscale there is no link at all. The palette cannot fix
+it — only the two lightest primary steps clear the body bar on the darkest flat ground in dark mode.
+So the system mandates an underline instead, as a polish rule (`underline-links`) and in every place
+the token is documented.
+
+**Dark mode in the preview had been broken since the iframe landed.** See `DECISIONS.md` #25 — the
+canvas rendered light values under a dark label for a session and a half, and every test stayed
+green. Fixed.
+
+### 2. Make the state tokens transparent — next
+
+Carbon's `$background-hover` is **Gray 50 at 12%, transparent**, so it works on any surface. Ours
+are opaque aliases to neutral steps:
 
 ```
 --background: var(--neutral-100);  --surface: var(--neutral-50);  --muted: var(--neutral-200);
@@ -62,7 +66,8 @@ principle directly in its `elevation.surface.sunken` vs `color.background.neutra
 tokens darken in both modes, transparent ones adapt to whatever they sit on.
 
 Switching the four `--state-*` tokens to alpha fixes hover on every surface without a hover token
-per layer, and it is why "a clickable card" is not currently buildable from this system.
+per layer, and it is why "a clickable card" is not currently buildable from this system. The
+mechanism now exists — `SemanticRef.alpha`, added for the scrim — so this is a small change.
 
 ### 3. Rename the elevation model on Atlassian's scheme
 
@@ -81,10 +86,11 @@ there is now a proven shape to copy. Sidebar and column widths go in the same pa
 
 Brief it on an app shell — the shape never yet used, and the one these tokens are meant to unblock.
 
-### Cost to watch
+### Cost so far
 
-Roughly 25 new tokens, 57 → low 80s. The docs are at ~11.3k against an 18k budget, so there is room,
-but the token-budget meter is the thing to watch as the tables grow.
+Steps 0 and 1 took the system from 57 to 68 semantic tokens and the docs from ~11.3k to ~13.1k
+against an 18k budget — 73%. Steps 2–4 add few new tokens (step 2 changes values, step 3 renames,
+step 4 adds layout numbers rather than colours), so the budget should hold. Watch the meter anyway.
 
 ## After that — Phase 6
 
@@ -121,13 +127,6 @@ about what is being redistributed. `--font-display` borrows the sans until then.
 Rule to keep: **the tool bundles what a user uploads and never acquires a font on their behalf.**
 See `DECISIONS.md` #17.
 
-### Cheap wins if you want a short session instead
-
-- **`--on-brand` tokens** (see below) — small, and turns a rule that has been got wrong twice into
-  something that cannot be.
-- **The stale-export trap** under *Known rough edges* — it has cost time in three separate sessions
-  and is the reason exports drift from the code.
-
 ## One decision still open from the marketing context
 
 (~~Fluid type~~ — done 2026-08-09. `display` and `heading-lg` scale across 390–1280px; see
@@ -152,9 +151,8 @@ A subagent built a page from the exported docs and listed what it had to invent.
 - ~~**Breakpoints**~~ and ~~**container widths**~~ — done. See `DECISIONS.md` #10 and #11.
 - **Icon box size.** The craft rules specify stroke weight to a fraction of a pixel and never the
   box. They also cover weight 400 and 600 only, and every button uses `label` at weight 500.
-- **Link colour in body copy.** There is no `--link`, and `--primary` — the obvious substitute — is
-  unreadable as text in dark mode (Lc −28.7). Documented as a trap; still not solved. **Planned —
-  step 1 above.**
+- ~~**Link colour in body copy.**~~ Done — `--link`, `--link-hover`, `--link-inverse`, plus a polish
+  rule requiring the underline, because the colour alone is not distinguishable in greyscale.
 - **App-shell interiors.** Sidebar and column widths, header heights, z-index, minimum table widths.
   `--container-*` bound the page frame, not what's inside it. Every run has invented these.
   **Planned — step 4 above.**
@@ -162,13 +160,12 @@ A subagent built a page from the exported docs and listed what it had to invent.
   measures Lc 24.7 against `--surface` in dark, just under the visible bar. Atlassian's answer is
   the raised elevation plus its paired shadow, used "sparingly, limited to one focal point" — which
   step 3 makes available.
-- **A scrim.** Opacity isn't modelled, so a real modal backdrop can't be built from these tokens.
-  **Planned — step 1 above** (scrim, plus `opacity.disabled` / `opacity.loading`).
-- **Skeleton colours.** Not previously listed. Carbon separates the element from its container;
-  nothing here models either. **Planned — step 1 above.**
+- ~~**A scrim.**~~ Done — `--scrim`, the one translucent token (`DECISIONS.md` #24).
+- ~~**Skeleton colours.**~~ Done — `--skeleton` on `--skeleton-surface`.
 - **A wordmark treatment.** Even with a mark defined, nothing says which role, weight or colour the
   brand name takes when set in type.
-- **Standalone font weights**, **opacity**, **blur** — not modelled at all.
+- **Standalone font weights** and **blur** — not modelled at all. (~~Opacity~~ is, as exactly two
+  tokens: `--opacity-disabled` and `--opacity-loading`.)
 - **Reduced-motion duration.** The rule says "cut to near zero"; the smallest token is 100ms.
 - **A type step between 1.5rem and 2.25rem.** A price or a stat lands awkwardly between them.
 - **Theme persistence.** The attribute is defined; storing the choice, seeding from the OS

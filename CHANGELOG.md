@@ -4,6 +4,28 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- **Eleven tokens taken from Carbon and Atlassian**, 57 → 68. An inverse region (`--inverse`,
+  `--inverse-foreground`, `--inverse-border`) that means *opposite to the current mode*, so on a
+  dark page the chip is light. Links (`--link`, `--link-hover`, `--link-inverse`) measured as body
+  text, closing the trap where `--primary` as a link reads at Lc −28.7 in dark. Two more focus rings
+  — `--ring-inverse` for a coloured ground and `--ring-inset` as the companion hairline — which turns
+  acceptance run 4's defect from a rule into a token. A `--scrim`, `--skeleton` on
+  `--skeleton-surface`, and exactly two opacities. Every one is covered by a contrast pair and the
+  preset still reports zero warnings.
+- **A link must be underlined, and that is now a rule.** `--link` and `--foreground` sit at the same
+  lightness in both modes and differ only in hue, so in greyscale there is no link at all. The
+  palette cannot fix it, so the system states the requirement instead — a new `underline-links`
+  polish rule, and the same warning wherever the token is documented.
+- **`SemanticRef` can carry an `alpha`**, and a ref that does emits a literal `oklch(L C H / a)`
+  instead of aliasing its primitive — the one documented exception to `DECISIONS.md` #6, because a
+  `var()` has no alpha channel to bend. The docs learned about it too: the token table printed
+  `#1f262d` for `--scrim`, which is a lie somebody would build an opaque backdrop from.
+- **Fixed: dark mode in the preview had been showing light values.** The canvas set `data-theme` on
+  a wrapper div while the injected stylesheet scoped its dark block to `:root[data-theme="dark"]`,
+  so the selector matched nothing — since the iframe landed, a session and a half ago. Every test
+  stayed green throughout; it was caught by rendering the new inverse token and seeing it come back
+  dark on a dark page. `DECISIONS.md` #25.
+
 - **A brand persists only what a human changed.** `brands/*.json` stored all 57 resolved semantic
   tokens, which froze every saved brand at whatever the generator produced the day it was written —
   so improving `defaultSemanticMapping` reached new brands and no others, and the app exports the

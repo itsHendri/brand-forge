@@ -46,7 +46,14 @@ export function PreviewCanvas({
 
     useEffect(() => {
         const doc = frame.current?.contentDocument
-        if (doc?.documentElement) doc.documentElement.style.colorScheme = mode
+        if (!doc?.documentElement) return
+        doc.documentElement.style.colorScheme = mode
+        // On the *document element*, because the injected stylesheet scopes its
+        // dark block to `:root[data-theme="dark"]`. Setting it on the wrapper
+        // div instead — which is what this did until 2026-08-09 — produces a
+        // selector that matches nothing, so the canvas silently rendered light
+        // values under a dark label. See DECISIONS #25.
+        doc.documentElement.setAttribute("data-theme", mode)
     }, [mode, body])
 
     return (
@@ -86,7 +93,6 @@ export function PreviewCanvas({
                         </style>
                         <div
                             id="preview-root"
-                            data-theme={mode}
                             style={{
                                 background: "var(--background)",
                                 color: "var(--foreground)",

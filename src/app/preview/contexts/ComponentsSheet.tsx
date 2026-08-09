@@ -28,7 +28,11 @@ const TYPE_SAMPLES = [
     ["label", "Section label"],
 ] as const
 
-export function ComponentsSheet() {
+export function ComponentsSheet({ secondaryAnchor }: { secondaryAnchor: number }) {
+    // The step the secondary seed landed on verbatim — the brand colour as typed,
+    // which is not always the same thing as the fill the system can put a label on.
+    const anchorFill = `var(--secondary-${secondaryAnchor})`
+
     return (
         <Page>
             <header style={{ marginBottom: "var(--space-12)" }}>
@@ -258,6 +262,320 @@ export function ComponentsSheet() {
                         </div>
                     ))}
                 </Card>
+            </Section>
+
+            <Section
+                title="Links"
+                lead="A link is body text, so it is measured as body text. --primary is a fill colour and fails here — in dark mode it lands at Lc −28.7."
+            >
+                <Card>
+                    <p style={{ ...typeRole("body"), margin: 0, maxWidth: "var(--container-prose)" }}>
+                        Every colour in this system is generated from a seed and{" "}
+                        <a
+                            href="#"
+                            onClick={(event) => event.preventDefault()}
+                            style={{
+                                color: "var(--link)",
+                                textDecoration: "underline",
+                                textUnderlineOffset: "0.2em",
+                            }}
+                        >
+                            checked against the surface it actually sits on
+                        </a>
+                        , rather than picked from a step number. The hover state{" "}
+                        <a
+                            href="#"
+                            onClick={(event) => event.preventDefault()}
+                            style={{
+                                color: "var(--link-hover)",
+                                textDecoration: "underline",
+                                textUnderlineOffset: "0.2em",
+                            }}
+                        >
+                            gains contrast
+                        </a>{" "}
+                        rather than losing it.
+                    </p>
+                    <p
+                        style={{
+                            ...typeRole("body-sm"),
+                            color: "var(--muted-foreground)",
+                            margin: "var(--space-4) 0 0",
+                            maxWidth: "var(--container-prose)",
+                        }}
+                    >
+                        The underline is not decoration. --link sits at the same lightness as
+                        --foreground and is told apart by hue alone, which disappears in greyscale — so
+                        colour on its own does not mark a link here.
+                    </p>
+                </Card>
+            </Section>
+
+            <Section
+                title="Inverse regions"
+                lead="Opposite to the current mode, not a fixed dark: on a dark page an inverted chip is light."
+            >
+                <div
+                    style={{
+                        background: "var(--inverse)",
+                        color: "var(--inverse-foreground)",
+                        borderRadius: "var(--radius-lg)",
+                        padding: "var(--space-6)",
+                        maxWidth: "var(--container-prose)",
+                    }}
+                >
+                    <p style={{ ...typeRole("body"), margin: 0 }}>
+                        A tooltip, a dark chip, a footer band. Text takes --inverse-foreground, and a{" "}
+                        <a
+                            href="#"
+                            onClick={(event) => event.preventDefault()}
+                            style={{
+                                color: "var(--link-inverse)",
+                                textDecoration: "underline",
+                                textUnderlineOffset: "0.2em",
+                            }}
+                        >
+                            link takes --link-inverse
+                        </a>{" "}
+                        — the page-measured --link is unreadable in here.
+                    </p>
+                    <hr
+                        style={{
+                            border: 0,
+                            borderTop: "1px solid var(--inverse-border)",
+                            margin: "var(--space-4) 0",
+                        }}
+                    />
+                    <p style={{ ...typeRole("body-sm"), margin: 0 }}>
+                        The divider above is --inverse-border.
+                    </p>
+                </div>
+            </Section>
+
+            <Section
+                title="Focus"
+                lead="--ring is the brand colour, so on a brand fill it is invisible. That shipped once; these are the two tokens that fix it."
+            >
+                <Row>
+                    <button
+                        type="button"
+                        style={{
+                            ...typeRole("label"),
+                            background: "var(--surface)",
+                            color: "var(--foreground)",
+                            border: "1px solid var(--border)",
+                            borderRadius: "var(--radius-md)",
+                            padding: "var(--space-3) var(--space-4)",
+                            outline: "2px solid var(--ring)",
+                            outlineOffset: "2px",
+                        }}
+                    >
+                        --ring on a neutral ground
+                    </button>
+                    <button
+                        type="button"
+                        style={{
+                            ...typeRole("label"),
+                            background: "var(--primary)",
+                            color: "var(--primary-foreground)",
+                            border: 0,
+                            borderRadius: "var(--radius-md)",
+                            padding: "var(--space-3) var(--space-4)",
+                            outline: "2px solid var(--ring)",
+                            outlineOffset: "2px",
+                        }}
+                    >
+                        --ring on a brand fill
+                    </button>
+                    <button
+                        type="button"
+                        style={{
+                            ...typeRole("label"),
+                            background: "var(--primary)",
+                            color: "var(--primary-foreground)",
+                            border: 0,
+                            borderRadius: "var(--radius-md)",
+                            padding: "var(--space-3) var(--space-4)",
+                            outline: "2px solid var(--ring-inverse)",
+                            outlineOffset: "2px",
+                        }}
+                    >
+                        --ring-inverse on a brand fill
+                    </button>
+                    <button
+                        type="button"
+                        style={{
+                            ...typeRole("label"),
+                            background: "var(--primary)",
+                            color: "var(--primary-foreground)",
+                            border: 0,
+                            borderRadius: "var(--radius-md)",
+                            padding: "var(--space-3) var(--space-4)",
+                            // The pair: one hairline always contrasts, whichever
+                            // ground the control turns out to be sitting on.
+                            boxShadow: "0 0 0 2px var(--ring-inset), 0 0 0 4px var(--ring)",
+                        }}
+                    >
+                        --ring + --ring-inset
+                    </button>
+                </Row>
+            </Section>
+
+            <Section
+                title="When a fill can't carry a label"
+                lead="A mid-lightness accent is the classic case: neither white nor near-black clears the bar on it. The system steps the fill darker so it can hold a label, and keeps the seed exactly where you typed it."
+            >
+                <Row>
+                    <div
+                        style={{
+                            ...typeRole("label"),
+                            background: anchorFill,
+                            color: "var(--neutral-950)",
+                            borderRadius: "var(--radius-md)",
+                            padding: "var(--space-3) var(--space-4)",
+                        }}
+                    >
+                        the seed, dark label
+                    </div>
+                    <div
+                        style={{
+                            ...typeRole("label"),
+                            background: anchorFill,
+                            color: "var(--neutral-50)",
+                            borderRadius: "var(--radius-md)",
+                            padding: "var(--space-3) var(--space-4)",
+                        }}
+                    >
+                        the seed, light label
+                    </div>
+                    <div
+                        style={{
+                            ...typeRole("label"),
+                            background: "var(--secondary)",
+                            color: "var(--secondary-foreground)",
+                            borderRadius: "var(--radius-md)",
+                            padding: "var(--space-3) var(--space-4)",
+                        }}
+                    >
+                        --secondary (what ships)
+                    </div>
+                </Row>
+                <p
+                    style={{
+                        ...typeRole("body-sm"),
+                        color: "var(--muted-foreground)",
+                        margin: "var(--space-3) 0 0",
+                        maxWidth: "var(--container-prose)",
+                    }}
+                >
+                    The first two are the seed verbatim. Whichever of them you can read, the third is what
+                    the system chose — and the seed itself is still in the ramp, which is what the mark
+                    points at.
+                </p>
+            </Section>
+
+            <Section
+                title="Loading and overlay"
+                lead="Skeletons, the scrim, and the only two opacities the system blesses."
+            >
+                <Grid min="260px">
+                    <Card>
+                        <div
+                            style={{
+                                background: "var(--skeleton-surface)",
+                                borderRadius: "var(--radius-md)",
+                                padding: "var(--space-4)",
+                                display: "grid",
+                                gap: "var(--space-3)",
+                            }}
+                        >
+                            {["60%", "100%", "85%"].map((width) => (
+                                <div
+                                    key={width}
+                                    style={{
+                                        background: "var(--skeleton)",
+                                        borderRadius: "var(--radius-sm)",
+                                        height: "var(--space-3)",
+                                        width,
+                                    }}
+                                />
+                            ))}
+                        </div>
+                        <p
+                            style={{
+                                ...typeRole("body-sm"),
+                                color: "var(--muted-foreground)",
+                                margin: "var(--space-3) 0 0",
+                            }}
+                        >
+                            --skeleton blocks on --skeleton-surface.
+                        </p>
+                    </Card>
+
+                    <div
+                        style={{
+                            position: "relative",
+                            borderRadius: "var(--radius-lg)",
+                            overflow: "hidden",
+                            border: "1px solid var(--border)",
+                            minHeight: "var(--space-24)",
+                        }}
+                    >
+                        <div style={{ background: "var(--surface)", padding: "var(--space-4)" }}>
+                            <p style={{ ...typeRole("body"), margin: 0 }}>Page content underneath.</p>
+                            <p
+                                style={{
+                                    ...typeRole("body-sm"),
+                                    color: "var(--muted-foreground)",
+                                    margin: "var(--space-2) 0 0",
+                                }}
+                            >
+                                Still legible through the scrim, which is the point of it.
+                            </p>
+                        </div>
+                        <div
+                            style={{
+                                position: "absolute",
+                                inset: 0,
+                                background: "var(--scrim)",
+                                display: "grid",
+                                placeItems: "center",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    ...typeRole("label"),
+                                    background: "var(--surface-raised)",
+                                    color: "var(--foreground)",
+                                    boxShadow: "var(--shadow-lg)",
+                                    borderRadius: "var(--radius-md)",
+                                    padding: "var(--space-3) var(--space-4)",
+                                }}
+                            >
+                                A dialog over --scrim
+                            </div>
+                        </div>
+                    </div>
+
+                    <Card>
+                        <Row>
+                            <Button tone="primary">Enabled</Button>
+                            <span style={{ opacity: "var(--opacity-disabled)" }}>
+                                <Button tone="primary">Disabled</Button>
+                            </span>
+                        </Row>
+                        <p
+                            style={{
+                                ...typeRole("body-sm"),
+                                color: "var(--muted-foreground)",
+                                margin: "var(--space-3) 0 0",
+                            }}
+                        >
+                            --opacity-disabled. Never fade live text with it — opacity defeats the
+                            contrast audit, because the result depends on a ground the system can't see.
+                        </p>
+                    </Card>
+                </Grid>
             </Section>
 
             <Section title="Radius" lead="One knob, four derived steps — and the concentric rule for anything flush inside.">

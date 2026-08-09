@@ -1,7 +1,7 @@
 # Status — 2026-08-09
 
 **Phases 0–5 done, plus assets. The tool does the whole loop it was built for.**
-Three sessions. 115 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
+Three sessions. 125 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
 
 Type a seed colour → get a complete system → see it on realistic UI → export it as something an AI
 agent can actually build from. That runs end to end today.
@@ -12,9 +12,11 @@ agent can actually build from. That runs end to end today.
 - `generateScale` — seed → 11-step OKLCH ramp. Lightness targets shared across every hue, chroma
   bell, hue rotation centred on the anchor, per-step gamut clamping, and seed warping so the typed
   colour appears verbatim. Dark ramps generated from their own targets, never inverted.
-- `defaultSemanticMapping` — 7 seeds → **57 semantic tokens**, every text and border colour chosen
+- `defaultSemanticMapping` — 7 seeds → **68 semantic tokens**, every text and border colour chosen
   by *measuring* APCA against the surface it actually sits on, not by picking a step number.
-- `resolveTokens` — the one pipeline. Emits `declarations` (206 light / 138 dark), the single
+  Includes links, an inverse region, three focus rings, a translucent scrim and skeletons — the
+  batch taken from Carbon and Atlassian on 2026-08-09.
+- `resolveTokens` — the one pipeline. Emits `declarations`, the single
   serialization the preview injects and every exporter prints.
 - `validateContrast` — APCA judges, WCAG 2 reported alongside. **The shipped preset reports zero
   warnings of any level.**
@@ -31,7 +33,7 @@ with duplicate / new / delete, and an export dialog with a token-budget meter.
 
 **Export** writes `exports/<slug>/`: `skill/SKILL.md`, `skill/references/DESIGN_SYSTEM.md`,
 `tokens.css` (+ Tailwind v4 `@theme`, + `@font-face`), `tokens.json` (DTCG), `brand.json`, and
-`assets/` when the brand carries any. Docs total ~11.3k LLM tokens against an 18k budget. The
+`assets/` when the brand carries any. Docs total ~13.1k LLM tokens against an 18k budget. The
 shipped brand is Hendri's real one — Signal `#574cff`, Ember `#f1760f`, Space Grotesk with Syne
 for display, and the wordmark lifted from hendri.design. No fonts are bundled.
 
@@ -77,8 +79,11 @@ has tried to build from it.
    (~`#e8501a`) is a one-field change if you want it.
 2. **The orange can't be a button colour** and the system now works around that: `--secondary`
    resolves to `#cc6000` so it can carry a label, while the ramp keeps `#f1760f` exactly at its
-   anchor — which is what the wordmark points at. Worth a look to confirm you're happy with the
-   compromise.
+   anchor — which is what the wordmark points at. **You can now see the choice**: the Components
+   preview has a *When a fill can't carry a label* section showing the real seed with a dark label,
+   the real seed with a white label, and the shipped `--secondary`, side by side. Pick whichever you
+   can actually read. Both references treat this as solved by an inverse token rather than by
+   darkening the fill, so switching is a real option now that those tokens exist.
 3. **`--font-display` is Syne**, standing in for Alpha Lyrae — which is licensed and deliberately
    not bundled. Both faces are hosted (Google Fonts), so the export links and ships no font files.
    The four-family model (sans/serif/mono/display) covers the brand; nothing is missing a slot.

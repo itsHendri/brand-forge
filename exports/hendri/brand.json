@@ -214,6 +214,10 @@
             96
         ]
     },
+    "opacity": {
+        "disabled": 0.4,
+        "loading": 0.6
+    },
     "radius": {
         "basePx": 10,
         "concentric": true

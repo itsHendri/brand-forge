@@ -78,26 +78,43 @@ Full token tables, component recipes and wrong/right pairs live in
    \`--state-active\`, and the current item is \`--state-selected\`. Never compute a hover colour
    with \`filter: brightness()\` or an opacity overlay. The \`--state-*\` fills are washes over an
    existing surface, so they have no \`-foreground\` of their own — text keeps the colour it had.
-9. **Focus is never removed.** \`outline: 2px solid var(--ring); outline-offset: 2px\` on
-   \`:focus-visible\` — **except on a coloured fill**, where \`--ring\` is the brand colour itself
-   and therefore invisible. There, the ring takes that fill's \`-foreground\` like everything else
-   inside it.
-10. **Spacing comes from the blessed subset only:**
+9. **Focus is never removed, and there are three rings.** \`outline: 2px solid var(--ring);
+   outline-offset: 2px\` on \`:focus-visible\` for anything on a neutral ground. On a coloured or
+   inverted fill \`--ring\` is the brand colour itself and disappears into its own background —
+   use \`--ring-inverse\` there. When a focusable element can land on either kind of ground, draw
+   both: \`box-shadow: 0 0 0 2px var(--ring-inset), 0 0 0 4px var(--ring)\`, so whichever half
+   matches the ground, the other one is still visible.
+10. **Links in body copy are \`--link\`, underlined.** Not \`--primary\` — that is a fill colour and
+    is unreadable as text in dark mode. Hover is \`--link-hover\`, which gains contrast rather than
+    losing it. The underline is required, not stylistic: \`--link\` sits at the same lightness as
+    \`--foreground\` and is distinguished only by hue, so in greyscale there is no link at all.
+    Inside an inverse region use \`--link-inverse\`.
+11. **An inverse region is opposite to the mode, not fixed dark.** \`--inverse\` is a tooltip, a
+    dark chip, a footer band — dark on a light page and *light* on a dark one. Everything inside it
+    takes \`--inverse-foreground\`, \`--inverse-border\`, \`--link-inverse\`, \`--ring-inverse\`.
+    The page-measured tokens are unreadable in there.
+12. **Overlays and loading.** A modal backdrop is \`--scrim\` — the one translucent token in the
+    system, so do not substitute a hex for it. A loading placeholder is \`--skeleton\` blocks on a
+    \`--skeleton-surface\` container; animate it with a background-position sweep, never with
+    \`opacity\`. The only blessed opacities are \`--opacity-disabled\` and \`--opacity-loading\`,
+    and neither is for live text — fading text defeats the contrast audit, because the result
+    depends on a ground the system cannot see.
+13. **Spacing comes from the blessed subset only:**
     ${config.spacing.blessed.map((px) => `${px}px`).join(", ")}. Nothing between them.
-11. **Breakpoints are mobile-first and closed:**
+14. **Breakpoints are mobile-first and closed:**
     ${config.layout.breakpoints.map((b) => `${b.minPx}px (\`${b.name}\`)`).join(", ")}. Write base
     styles for the narrowest case and add \`min-width\` queries on top. Never a \`max-width\`
     breakpoint, never a number outside this set, and never \`var(--breakpoint-*)\` inside a media
     query — custom properties do not resolve there and the rule is dropped in silence.
-12. **No content spans the viewport.** Every region's content sits in a container, centred with
+15. **No content spans the viewport.** Every region's content sits in a container, centred with
     \`margin-inline: auto\`: ${config.layout.containers.map((c) => `\`--container-${c.name}\` (${c.maxRem}rem)`).join(", ")}.
     Running text takes \`--container-prose\` even inside a wider frame — a full-bleed paragraph is a
     bug, not a stylistic choice. Backgrounds and borders may span the window; a sticky bar is a
     full-bleed background with contained content inside it.
-13. **Radius:** \`--radius-sm\` ${resolved.radius.sm}px, \`--radius-md\` ${resolved.radius.md}px,
+16. **Radius:** \`--radius-sm\` ${resolved.radius.sm}px, \`--radius-md\` ${resolved.radius.md}px,
     \`--radius-lg\` ${resolved.radius.lg}px, \`--radius-xl\` ${resolved.radius.xl}px. A rounded box
     inside another uses \`inner = outer − padding\`, floored at 0.
-14. **Type is role-named.** Use \`--text-body\`, \`--text-heading\`, \`--text-label\` and friends.
+17. **Type is role-named.** Use \`--text-body\`, \`--text-heading\`, \`--text-label\` and friends.
     Heading *level* is about document outline; heading *size* is about the role token. Never size
     text with an arbitrary rem value.${
         config.typography.roles.some((role) => role.minSizeRem !== undefined)
@@ -113,7 +130,7 @@ Full token tables, component recipes and wrong/right pairs live in
     heavier weight of the body font, and not for headings or UI.`
             : ""
     }
-15. **Motion:** \`--duration-fast\` ${config.motion.durations.fast}ms,
+18. **Motion:** \`--duration-fast\` ${config.motion.durations.fast}ms,
     \`--duration-base\` ${config.motion.durations.base}ms, easing \`--ease-out\` for entrances.
     Exits are faster than entrances. Never \`transition: all\` — name the properties.
 

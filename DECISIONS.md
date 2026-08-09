@@ -292,3 +292,47 @@ stored-semantics array.
 
 The logic lives in `scripts/exportFromDisk.ts` rather than `src/`, because it reads the filesystem
 and nothing the browser bundles is allowed to.
+
+### 24. A translucent token restates its colour instead of aliasing it — 2026-08-09
+
+#6 says a semantic aliases its primitive — `--primary: var(--primary-700)` — so each colour appears
+exactly once per mode and the mapping is legible in the stylesheet. `--scrim` cannot: a `var()`
+holding `oklch(L C H)` has no alpha channel to bend, and there is no way to add one at the point of
+use without `color-mix` or relative colour syntax, both of which put a computation in every consumer
+to save one line here.
+
+So `SemanticRef` gained an optional `alpha`, and a ref carrying one emits a literal
+`oklch(L C H / a)`. It is opt-in per ref rather than a separate token type, so the exception stays
+visible in the data instead of becoming a second code path — which is the failure mode the one-rule
+in `CLAUDE.md` exists to prevent.
+
+Two consequences the docs had to absorb, both found by looking at the generated output rather than
+by reasoning: the token table printed `#1f262d` for `--scrim`, which is a lie an agent would build
+an opaque backdrop from, and the shared-value section reported `--scrim` and `--foreground` as the
+same colour. Both now account for alpha.
+
+Scrim is deliberately absent from the contrast audit. Its effective colour depends on whatever is
+behind it, so there is nothing for APCA to measure — reporting a number there would be inventing one.
+
+### 25. The preview's dark mode was broken by the iframe, and nothing caught it — 2026-08-09
+
+`PreviewCanvas` calls `previewCss(resolved, ":root")`, which compiles the dark block to
+`:root[data-theme="dark"]`. The attribute was being set on the `#preview-root` **div**, so the
+selector matched nothing: for a session and a half the canvas rendered light-mode values whenever
+dark was selected, under a UI that said "Dark".
+
+Introduced by 45756c1, the commit that made the canvas an iframe (#19). Before that the selector
+defaulted to `#preview-root`, which did match. Found while checking that this session's new tokens
+inverted correctly in dark — `--inverse` came back dark on a dark page, which is the one thing it is
+defined not to do.
+
+The attribute now goes on the iframe's `documentElement`, which is what `:root` means and what a
+real app does. Keeping `:root` rather than scoping to the div is deliberate: the preview should
+apply the tokens the same way the exported stylesheet does.
+
+Worth naming plainly, because this is the exact failure the project's one rule is written against —
+preview and export disagreeing — and the rule did not prevent it. The declarations were never the
+problem; both consumed the identical array. The *selector* drifted, and there is no test covering
+it, because the test suite has no DOM. The audit, the exports and every unit test stayed green
+throughout. The only thing that caught it was rendering the thing and looking at it, which is why
+`CLAUDE.md` says to verify in the browser rather than reason about it.

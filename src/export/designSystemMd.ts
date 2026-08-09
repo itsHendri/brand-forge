@@ -38,13 +38,15 @@ const SHADCN_NAMES = [
 const GROUP_TITLES: Record<SemanticGroup, string> = {
     surface: "Surfaces",
     text: "Text",
+    link: "Links",
     state: "Interactive states",
     border: "Borders and focus",
     brand: "Brand",
     status: "Status",
+    inverse: "Inverse regions",
 }
 
-const GROUP_ORDER: SemanticGroup[] = ["surface", "text", "state", "border", "brand", "status"]
+const GROUP_ORDER: SemanticGroup[] = ["surface", "text", "link", "state", "border", "brand", "status", "inverse"]
 
 function table(headers: string[], rows: string[][]): string {
     const head = `| ${headers.join(" | ")} |`
@@ -143,13 +145,24 @@ function deviations(resolved: ResolvedTokens): string[] {
     return [...out, ...config.meta.deviations.map((note) => `${note}`)]
 }
 
+/**
+ * A hex is a lie for a translucent token: `--scrim` resolves to a colour at 60%
+ * and printing `#1f262d` invites somebody to build an opaque backdrop out of it.
+ * Alpha tokens therefore print what actually ships.
+ */
+function cellValue(token: ResolvedTokens["semantics"][number], mode: "light" | "dark"): string {
+    const { alpha } = token[mode]
+    if (alpha === undefined) return `\`${token.values[mode]!.hex}\``
+    return `\`${token.values[mode]!.hex}\` at ${Math.round(alpha * 100)}%`
+}
+
 function tokenTable(resolved: ResolvedTokens, group: SemanticGroup): string {
     const rows = resolved.semantics
         .filter((token) => token.group === group)
         .map((token) => [
             `\`--${token.name}\``,
-            `\`${token.values.light!.hex}\``,
-            `\`${token.values.dark!.hex}\``,
+            cellValue(token, "light"),
+            cellValue(token, "dark"),
             token.description,
         ])
     return table(["Token", "Light", "Dark", "Use it for"], rows)
@@ -213,15 +226,22 @@ The same holds for \`--danger\`, \`--success\` and the rest. And do not fade the
 \`opacity\` to soften it: that pair was contrast-checked at full strength, and dimming it is how a
 validated colour quietly stops being valid.
 
-**The focus ring is part of this.** \`--ring\` is the brand colour, so on a \`--primary\` field it is
-invisible — the outline and the background are literally the same value. Focus there takes the
-fill's foreground too:
+**The focus ring is part of this, and it has its own token.** \`--ring\` is the brand colour, so on a
+\`--primary\` field it is invisible — the outline and the background are literally the same value.
+Use \`--ring-inverse\`, which is the neutral extreme for the mode and is measured against exactly
+this case:
 
 \`\`\`css
 /* ✅ on a brand field */
 .brand-band .button:focus-visible {
-    outline: 2px solid var(--primary-foreground);
+    outline: 2px solid var(--ring-inverse);
     outline-offset: 2px;
+}
+
+/* ✅ when the control can land on either kind of ground, draw both rings —
+   whichever half matches the ground, the other stays visible */
+.button:focus-visible {
+    box-shadow: 0 0 0 2px var(--ring-inset), 0 0 0 4px var(--ring);
 }
 
 /* ❌ the default ring, on the one background it cannot be seen against */
@@ -342,8 +362,12 @@ function collisions(resolved: ResolvedTokens): string {
     for (const mode of ["light", "dark"] as const) {
         const byHex = new Map<string, string[]>()
         for (const token of resolved.semantics) {
-            const hex = token.values[mode]!.hex
-            byHex.set(hex, [...(byHex.get(hex) ?? []), token.name])
+            // Keyed with the alpha, so a translucent token never gets reported
+            // as "the same colour as" the opaque one it is derived from —
+            // `--scrim` and `--foreground` share a hex and look nothing alike.
+            const { alpha } = token[mode]
+            const key = alpha === undefined ? token.values[mode]!.hex : `${token.values[mode]!.hex}@${alpha}`
+            byHex.set(key, [...(byHex.get(key) ?? []), token.name])
         }
         for (const [hex, names] of byHex) {
             if (names.length < 2) continue
@@ -368,20 +392,16 @@ part of the system:
 
 - **Icon box size.** The icon *stroke* is specified (see the craft rules); the box is not. The
   stroke rule also covers weight 400 and 600 only, and every button uses \`label\` at weight 500.
-- **Link colour in body copy.** There is no \`--link\`. **Do not reach for \`--primary\`** — it is a
-  fill, and as text on a dark background it is unreadable. \`--primary-subtle-foreground\` is the
-  brand ink that survives both modes; it is off-label but it measures.
 - **App-shell dimensions.** No sidebar or column widths, no header height, no z-index scale, no
   minimum table width. \`--container-*\` bound the page frame, not its interior.
 - **Emphasis on a card.** No token or recipe for marking one of several cards as recommended or
   selected. \`--primary\` as a border is the obvious move and it measures poorly against
   \`--surface\` — if you need it, verify it rather than assuming.
-- **A scrim.** Opacity is not modelled, so a modal backdrop cannot be built from these tokens.
-  A real dialog needs a value you bring yourself.
 - **A wordmark treatment.** Even with a mark defined, nothing says which type role, weight or
   colour the brand name takes when it is set in type.
 - **Font weights as standalone tokens.** Weight arrives with a type role and nothing else.
-- **Opacity and blur.** Not modelled at all.
+- **Blur.** Not modelled. (Opacity is — \`--opacity-disabled\` and \`--opacity-loading\` — but only
+  those two, and neither is for live text.)
 - **Theme persistence.** The attribute is defined; storing the choice, seeding it from the OS
   preference, and avoiding a flash on first paint are all yours.
 - **Touch-target switching.** The craft rules ask for 44px on touch, but the breakpoint set is

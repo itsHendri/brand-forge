@@ -159,8 +159,9 @@ function round(n: number, places: number): number {
     return Math.round(n * f) / f
 }
 
-export function oklchToCss({ l, c, h }: Oklch): string {
-    return `oklch(${round(l * 100, 2)}% ${round(c, 4)} ${round(h, 2)})`
+export function oklchToCss({ l, c, h }: Oklch, alpha?: number): string {
+    const base = `${round(l * 100, 2)}% ${round(c, 4)} ${round(h, 2)}`
+    return alpha === undefined ? `oklch(${base})` : `oklch(${base} / ${round(alpha, 3)})`
 }
 
 export function oklchToHex(color: Oklch): string {

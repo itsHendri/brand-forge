@@ -97,6 +97,25 @@ export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; usage: Usage }> = [
     { fg: "border", bg: "surface", usage: "non-text" },
     { fg: "input", bg: "surface", usage: "non-text" },
     { fg: "ring", bg: "background", usage: "non-text" },
+    // A link is body text on every flat surface it can land on. This is the
+    // check that would have caught `--primary`-as-a-link at Lc −28.7.
+    { fg: "link", bg: "background", usage: "body" },
+    { fg: "link", bg: "surface", usage: "body" },
+    { fg: "link", bg: "muted", usage: "body" },
+    { fg: "link-hover", bg: "background", usage: "body" },
+    { fg: "link-inverse", bg: "inverse", usage: "body" },
+    // The two rings exist because `ring` alone is invisible on a brand fill.
+    // Measuring them against `primary` is measuring the case they were added for.
+    { fg: "ring-inverse", bg: "primary", usage: "non-text" },
+    { fg: "ring-inverse", bg: "inverse", usage: "non-text" },
+    { fg: "ring-inset", bg: "ring", usage: "non-text" },
+    { fg: "inverse-foreground", bg: "inverse", usage: "body" },
+    { fg: "inverse-border", bg: "inverse", usage: "non-text" },
+    // A loading placeholder nobody can see is a blank card. Held to the
+    // boundary bar against the container it actually sits in.
+    { fg: "skeleton", bg: "skeleton-surface", usage: "non-text" },
+    // `scrim` is deliberately absent: it is translucent, so its effective
+    // colour depends on whatever is behind it and APCA has nothing to measure.
     ...(["success", "warning", "danger", "info"] as const).flatMap((status) => [
         { fg: `${status}-foreground`, bg: status, usage: "ui" as Usage },
         { fg: `${status}-foreground`, bg: `${status}-hover`, usage: "ui" as Usage },

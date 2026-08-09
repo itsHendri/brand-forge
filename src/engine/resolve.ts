@@ -155,8 +155,16 @@ function buildDeclarations(
         }
         // Semantics alias their primitive rather than restating the value, so the
         // exported CSS shows the mapping and a colour appears in exactly one place.
+        // A translucent ref is the exception and has to restate it: a `var()`
+        // holding `oklch(L C H)` has no alpha channel to bend. See DECISIONS #24.
         for (const token of semantics) {
-            out.push([`--${token.name}`, `var(${primitiveVar(token[mode].scale, token[mode].step)})`])
+            const ref = token[mode]
+            out.push([
+                `--${token.name}`,
+                ref.alpha === undefined
+                    ? `var(${primitiveVar(ref.scale, ref.step)})`
+                    : oklchToCss(token.values[mode]!.oklch, ref.alpha),
+            ])
         }
         return out
     }
@@ -194,6 +202,9 @@ function buildDeclarations(
     for (const px of config.spacing.blessed) {
         light.push([`--space-${spaceName(px, config.spacing.basePx)}`, `${px / 16}rem`])
     }
+
+    light.push(["--opacity-disabled", String(config.opacity.disabled)])
+    light.push(["--opacity-loading", String(config.opacity.loading)])
 
     // Breakpoints ship as tokens even though CSS can't use a var() inside a
     // media query. They exist so the set is stated once, and so Tailwind's

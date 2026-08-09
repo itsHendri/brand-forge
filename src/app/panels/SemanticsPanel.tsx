@@ -4,13 +4,15 @@ import { useStore } from "../store"
 const GROUP_LABELS: Record<SemanticGroup, string> = {
     surface: "Surfaces",
     text: "Text",
+    link: "Links",
     state: "States",
     border: "Borders",
     brand: "Brand",
     status: "Status",
+    inverse: "Inverse",
 }
 
-const GROUP_ORDER: SemanticGroup[] = ["surface", "text", "state", "border", "brand", "status"]
+const GROUP_ORDER: SemanticGroup[] = ["surface", "text", "link", "state", "border", "brand", "status", "inverse"]
 
 /**
  * The mapping layer, made editable. Each row is a semantic token and the

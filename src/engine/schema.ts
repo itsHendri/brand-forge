@@ -21,6 +21,7 @@ const BLOCKS = [
     "typography",
     "layout",
     "spacing",
+    "opacity",
     "radius",
     "shadows",
     "motion",

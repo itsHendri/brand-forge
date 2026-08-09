@@ -29,7 +29,7 @@ Two layers, and only one of them is yours to use.
 (`primary`, `secondary`, `neutral`, `success`, `warning`, `danger`, `info`), 11 steps each, generated in OKLCH. They exist so a human can tune colour.
 **Do not reference them in code.**
 
-**Semantics** — the 57 tokens below. Every one aliases a primitive, and
+**Semantics** — the 68 tokens below. Every one aliases a primitive, and
 re-points itself in dark mode. This is the whole API.
 
 ### Surfaces
@@ -40,6 +40,9 @@ re-points itself in dark mode. This is the whole API.
 | `--surface` | `#f7f9fb` | `#2c353f` | Cards, panels and anything sitting one level above the page. |
 | `--surface-raised` | `#f7f9fb` | `#556575` | Popovers, dropdowns, dialogs — one level above `surface`. In light mode this equals `surface`: elevation there is `--shadow-lg`, not a lighter fill. |
 | `--muted` | `#dce3eb` | `#3e4b58` | Quiet neutral fill — table headers, inactive tabs, code blocks. |
+| `--scrim` | `#1f262d` at 60% | `#1b2127` at 70% | The backdrop behind a modal or drawer. Translucent on purpose, so the page stays legible underneath — it is the one token in this system that is not a solid colour. Dark mode carries more of it, because a dim scrim over an already-dark page does not read as a layer. |
+| `--skeleton-surface` | `#dce3eb` | `#3e4b58` | The container of a loading placeholder — the card shape that holds the blocks. |
+| `--skeleton` | `#92a2b3` | `#8697a8` | The blocks standing in for text and UI while content loads. Put them on `skeleton-surface`. Never animate them with `opacity` — use a background-position sweep, so the contrast the audit measured is the contrast that ships. |
 
 ### Text
 
@@ -49,6 +52,14 @@ re-points itself in dark mode. This is the whole API.
 | `--foreground-secondary` | `#475664` | `#d3dae1` | Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is the only supporting text colour verified against `surface-raised`, so use it inside dialogs and popovers. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it. |
 | `--muted-foreground` | `#36414d` | `#e7ebef` | Small supporting text — captions, helper text, metadata — on `background`, `surface` or `muted`. Verified against those three only; on `surface-raised` use `foreground-secondary`. |
 | `--foreground-tertiary` | `#92a2b3` | `#8697a8` | Deliberately faint text: placeholders, disabled labels, watermarks. NEVER body copy — it does not meet contrast for reading. |
+
+### Links
+
+| Token | Light | Dark | Use it for |
+| --- | --- | --- | --- |
+| `--link` | `#323397` | `#e6e9ff` | Links in running text, on `background`, `surface` or `muted`. **Underline them** — this colour sits at the same lightness as `foreground` and differs only in hue, so colour alone does not mark a link (see the polish rules). Never use `primary` for a link: it is a fill colour and is unreadable as text in dark mode. |
+| `--link-hover` | `#1c1f5c` | `#f4f5ff` | Hover state of a link in running text. |
+| `--link-inverse` | `#dce0ff` | `#3734a6` | A link inside an `inverse` region. `link` is measured against the page and goes unreadable there, which is why this exists as its own token. |
 
 ### Interactive states
 
@@ -79,7 +90,9 @@ re-points itself in dark mode. This is the whole API.
 | `--border-subtle` | `#dce3eb` | `#3e4b58` | Barely-there separator inside an already-bounded area. Deliberately below the visible-boundary threshold — never use it as the only thing dividing two regions. |
 | `--border-strong` | `#92a2b3` | `#8697a8` | Emphasised border — hovered fields, pulled-out quotes. |
 | `--input` | `#acbccd` | `#6d7e90` | Border of a form control at rest. |
-| `--ring` | `#574cff` | `#7e85ff` | Focus ring. Always visible on keyboard focus — never remove it. |
+| `--ring` | `#574cff` | `#7e85ff` | Focus ring on a neutral ground — a page, a card, an input. On a `primary` or otherwise coloured fill it disappears into its own background: use `ring-inverse` there. |
+| `--ring-inverse` | `#f7f9fb` | `#1b2127` | Focus ring for a control sitting on a coloured or inverted ground — a button already filled with `primary`, anything on `inverse`. The neutral extreme for the mode, so it reads against a brand colour rather than blending into it. |
+| `--ring-inset` | `#f7f9fb` | `#f4f6f8` | Drawn immediately inside `ring` as a second hairline, so a focus indicator survives on a ground the system cannot predict — one of the two always contrasts. Not a substitute for `ring`. |
 
 ### Brand
 
@@ -118,6 +131,14 @@ re-points itself in dark mode. This is the whole API.
 | `--info-subtle` | `#e4f2fe` | `#033855` | Background of a info banner, alert or inline message. |
 | `--info-subtle-foreground` | `#005783` | `#c2ddf4` | Text on `info-subtle`. This is the info text colour — not `info`. |
 | `--info-border` | `#77bdf3` | `#3083ba` | Border of a info banner or field. |
+
+### Inverse regions
+
+| Token | Light | Dark | Use it for |
+| --- | --- | --- | --- |
+| `--inverse` | `#36414d` | `#e7ebef` | A region deliberately inverted against the current mode — tooltips, dark chips, a footer band. On a light page this is dark; on a dark page it is light. Everything placed on it takes an `inverse-*` or `-inverse` token. |
+| `--inverse-foreground` | `#dce3eb` | `#3e4b58` | Text and icons on `inverse`. |
+| `--inverse-border` | `#c7d2df` | `#6d7e90` | Hairline or divider inside an `inverse` region. |
 
 ## Type
 
@@ -357,15 +378,22 @@ The same holds for `--danger`, `--success` and the rest. And do not fade the res
 `opacity` to soften it: that pair was contrast-checked at full strength, and dimming it is how a
 validated colour quietly stops being valid.
 
-**The focus ring is part of this.** `--ring` is the brand colour, so on a `--primary` field it is
-invisible — the outline and the background are literally the same value. Focus there takes the
-fill's foreground too:
+**The focus ring is part of this, and it has its own token.** `--ring` is the brand colour, so on a
+`--primary` field it is invisible — the outline and the background are literally the same value.
+Use `--ring-inverse`, which is the neutral extreme for the mode and is measured against exactly
+this case:
 
 ```css
 /* ✅ on a brand field */
 .brand-band .button:focus-visible {
-    outline: 2px solid var(--primary-foreground);
+    outline: 2px solid var(--ring-inverse);
     outline-offset: 2px;
+}
+
+/* ✅ when the control can land on either kind of ground, draw both rings —
+   whichever half matches the ground, the other stays visible */
+.button:focus-visible {
+    box-shadow: 0 0 0 2px var(--ring-inset), 0 0 0 4px var(--ring);
 }
 
 /* ❌ the default ring, on the one background it cannot be seen against */
@@ -480,24 +508,29 @@ use the one that describes your intent, because the values diverge the moment th
 
 | Mode | Value | Tokens |
 | --- | --- | --- |
-| light | `#f7f9fb` | `--surface`, `--surface-raised`, `--primary-foreground`, `--secondary-foreground`, `--success-foreground`, `--warning-foreground`, `--danger-foreground`, `--info-foreground` |
-| light | `#dce3eb` | `--muted`, `--state-hover`, `--state-disabled`, `--border-subtle` |
-| light | `#92a2b3` | `--foreground-tertiary`, `--border-strong` |
+| light | `#f7f9fb` | `--surface`, `--surface-raised`, `--ring-inverse`, `--ring-inset`, `--primary-foreground`, `--secondary-foreground`, `--success-foreground`, `--warning-foreground`, `--danger-foreground`, `--info-foreground` |
+| light | `#dce3eb` | `--muted`, `--state-hover`, `--state-disabled`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
+| light | `#36414d` | `--muted-foreground`, `--inverse` |
+| light | `#92a2b3` | `--foreground-tertiary`, `--border-strong`, `--skeleton` |
+| light | `#c7d2df` | `--state-active`, `--inverse-border` |
 | light | `#edefff` | `--state-selected`, `--primary-subtle` |
 | light | `#acbccd` | `--border`, `--input` |
 | light | `#574cff` | `--ring`, `--primary` |
+| light | `#323397` | `--link`, `--primary-active` |
 | light | `#423dc9` | `--primary-hover`, `--primary-subtle-foreground` |
 | light | `#883c00` | `--secondary-active`, `--secondary-subtle-foreground` |
 | light | `#7e4000` | `--warning-active`, `--warning-subtle-foreground` |
 | light | `#970d16` | `--danger-active`, `--danger-subtle-foreground` |
 | light | `#005783` | `--info-active`, `--info-subtle-foreground` |
-| dark | `#1b2127` | `--background`, `--secondary-foreground`, `--warning-foreground` |
+| dark | `#1b2127` | `--background`, `--ring-inverse`, `--secondary-foreground`, `--warning-foreground` |
 | dark | `#556575` | `--surface-raised`, `--state-active` |
-| dark | `#3e4b58` | `--muted`, `--state-hover`, `--state-disabled`, `--border-subtle` |
-| dark | `#f4f6f8` | `--foreground`, `--primary-foreground`, `--success-foreground`, `--danger-foreground`, `--info-foreground` |
-| dark | `#8697a8` | `--foreground-tertiary`, `--border-strong` |
+| dark | `#3e4b58` | `--muted`, `--state-hover`, `--state-disabled`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
+| dark | `#f4f6f8` | `--foreground`, `--ring-inset`, `--primary-foreground`, `--success-foreground`, `--danger-foreground`, `--info-foreground` |
+| dark | `#e7ebef` | `--muted-foreground`, `--inverse` |
+| dark | `#8697a8` | `--foreground-tertiary`, `--border-strong`, `--skeleton` |
 | dark | `#252579` | `--state-selected`, `--primary-subtle` |
-| dark | `#6d7e90` | `--border`, `--input` |
+| dark | `#6d7e90` | `--border`, `--input`, `--inverse-border` |
+| dark | `#3734a6` | `--link-inverse`, `--primary-active` |
 | dark | `#f9cfb7` | `--secondary-hover`, `--secondary-subtle-foreground` |
 | dark | `#2e924b` | `--success`, `--success-border` |
 | dark | `#f3d2b8` | `--warning-hover`, `--warning-subtle-foreground` |
@@ -511,20 +544,16 @@ part of the system:
 
 - **Icon box size.** The icon *stroke* is specified (see the craft rules); the box is not. The
   stroke rule also covers weight 400 and 600 only, and every button uses `label` at weight 500.
-- **Link colour in body copy.** There is no `--link`. **Do not reach for `--primary`** — it is a
-  fill, and as text on a dark background it is unreadable. `--primary-subtle-foreground` is the
-  brand ink that survives both modes; it is off-label but it measures.
 - **App-shell dimensions.** No sidebar or column widths, no header height, no z-index scale, no
   minimum table width. `--container-*` bound the page frame, not its interior.
 - **Emphasis on a card.** No token or recipe for marking one of several cards as recommended or
   selected. `--primary` as a border is the obvious move and it measures poorly against
   `--surface` — if you need it, verify it rather than assuming.
-- **A scrim.** Opacity is not modelled, so a modal backdrop cannot be built from these tokens.
-  A real dialog needs a value you bring yourself.
 - **A wordmark treatment.** Even with a mark defined, nothing says which type role, weight or
   colour the brand name takes when it is set in type.
 - **Font weights as standalone tokens.** Weight arrives with a type role and nothing else.
-- **Opacity and blur.** Not modelled at all.
+- **Blur.** Not modelled. (Opacity is — `--opacity-disabled` and `--opacity-loading` — but only
+  those two, and neither is for live text.)
 - **Theme persistence.** The attribute is defined; storing the choice, seeding it from the OS
   preference, and avoiding a flash on first paint are all yours.
 - **Touch-target switching.** The craft rules ask for 44px on touch, but the breakpoint set is

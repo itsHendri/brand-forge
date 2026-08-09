@@ -415,6 +415,69 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
         dark: neutral.dark[surfaces.muted.dark.step]!,
     }
 
+    /**
+     * An inverted neutral region — a tooltip, a dark chip, a footer band.
+     * Carbon's `$background-inverse` family; Atlassian's `inverse` colour role.
+     *
+     * "Inverse" means opposite to the current mode, not a fixed dark: on a dark
+     * page an inverted chip is *light*. Anything sitting on it therefore has to
+     * be measured against it rather than against the page, which is the whole
+     * reason these are tokens and not a note telling people to use `--surface`.
+     */
+    const inverseSurface: Record<Mode, Step> = { light: 900, dark: 100 }
+    const inverseHex: Record<Mode, string> = {
+        light: neutral.light[inverseSurface.light]!,
+        dark: neutral.dark[inverseSurface.dark]!,
+    }
+    // Light mode inverts to a dark ground, so its text comes off the paper end.
+    const onInverse = (
+        ramp: Record<Mode, Record<Step, string>>,
+        required: number,
+        prefer: "quietest" | "strongest" = "quietest",
+    ) => ({
+        light: {
+            scale: "neutral" as const,
+            step: pickAgainst(ramp.light, inverseHex.light, PAPER_CANDIDATES, required, prefer),
+        },
+        dark: {
+            scale: "neutral" as const,
+            step: pickAgainst(ramp.dark, inverseHex.dark, INK_CANDIDATES, required, prefer),
+        },
+    })
+
+    /**
+     * The focus ring is `--primary`, which is invisible the moment the thing
+     * being focused is itself `--primary` — a brand button, a brand field. That
+     * shipped, and acceptance run 4 found it. Carbon's answer is two more
+     * tokens, and both are neutral extremes chosen by measurement.
+     */
+    const ringFill: Record<Mode, string> = {
+        light: ramps.primary.light[anchors.primary]!,
+        dark: ramps.primary.dark[shift(anchors.primary, -DARK_LIFT)]!,
+    }
+    const strongestNeutralAgainst = (hex: Record<Mode, string>) => ({
+        light: {
+            scale: "neutral" as const,
+            step: pickAgainst(
+                neutral.light,
+                hex.light,
+                [...PAPER_CANDIDATES, ...INK_CANDIDATES],
+                LC_THRESHOLD["non-text"],
+                "strongest",
+            ),
+        },
+        dark: {
+            scale: "neutral" as const,
+            step: pickAgainst(
+                neutral.dark,
+                hex.dark,
+                [...PAPER_CANDIDATES, ...INK_CANDIDATES],
+                LC_THRESHOLD["non-text"],
+                "strongest",
+            ),
+        },
+    })
+
     const textAgainst = (ground: Record<Mode, string>, required: number) => ({
         light: {
             scale: "neutral" as const,
@@ -559,7 +622,147 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             group: "border",
             light: { scale: "primary", step: anchors.primary },
             dark: { scale: "primary", step: shift(anchors.primary, -DARK_LIFT) },
-            description: "Focus ring. Always visible on keyboard focus — never remove it.",
+            description:
+                "Focus ring on a neutral ground — a page, a card, an input. On a `primary` or otherwise coloured fill it disappears into its own background: use `ring-inverse` there.",
+        },
+        {
+            name: "ring-inverse",
+            group: "border",
+            // Measured against `inverse`, not against the brand fill. Those are
+            // the same polarity in each mode — a bold fill and an inverted
+            // region are both "the opposite of the page" — so one token serves
+            // both, and measuring against the fill instead put this at Lc 0 on
+            // `inverse` in dark mode, which the audit caught.
+            ...onInverse(neutral, LC_THRESHOLD["non-text"], "strongest"),
+            description:
+                "Focus ring for a control sitting on a coloured or inverted ground — a button already filled with `primary`, anything on `inverse`. The neutral extreme for the mode, so it reads against a brand colour rather than blending into it.",
+        },
+        {
+            name: "ring-inset",
+            group: "border",
+            // The companion, not an alternative: it has to contrast with `ring`
+            // itself, because the two are drawn as concentric hairlines.
+            ...strongestNeutralAgainst(ringFill),
+            description:
+                "Drawn immediately inside `ring` as a second hairline, so a focus indicator survives on a ground the system cannot predict — one of the two always contrasts. Not a substitute for `ring`.",
+        },
+
+        // ── Links ───────────────────────────────────────────────────────────
+        /**
+         * A link is body text, so it is held to the body bar against the
+         * hardest flat surface — not to `--primary`, which is a *fill* colour
+         * and measured only as a background. Pointing a link at `--primary` is
+         * the single most tempting substitution in this system and it fails:
+         * on Hendri's palette it lands at Lc −28.7 in dark mode, which is
+         * unreadable. That trap was documented for two sessions; this is the
+         * token that removes it.
+         */
+        {
+            name: "link",
+            group: "link",
+            light: {
+                scale: "primary",
+                step: pickAgainst(ramps.primary.light, flatGround.light, INK_CANDIDATES, LC_THRESHOLD.body),
+            },
+            dark: {
+                scale: "primary",
+                step: pickAgainst(ramps.primary.dark, flatGround.dark, PAPER_CANDIDATES, LC_THRESHOLD.body),
+            },
+            description:
+                "Links in running text, on `background`, `surface` or `muted`. **Underline them** — this colour sits at the same lightness as `foreground` and differs only in hue, so colour alone does not mark a link (see the polish rules). Never use `primary` for a link: it is a fill colour and is unreadable as text in dark mode.",
+        },
+        {
+            name: "link-hover",
+            group: "link",
+            // Toward the ink/paper end: a hovered link gains contrast rather
+            // than losing it, the same rule the fills follow.
+            light: {
+                scale: "primary",
+                step: shift(
+                    pickAgainst(ramps.primary.light, flatGround.light, INK_CANDIDATES, LC_THRESHOLD.body),
+                    1,
+                ),
+            },
+            dark: {
+                scale: "primary",
+                step: shift(
+                    pickAgainst(ramps.primary.dark, flatGround.dark, PAPER_CANDIDATES, LC_THRESHOLD.body),
+                    -1,
+                ),
+            },
+            description: "Hover state of a link in running text.",
+        },
+        {
+            name: "link-inverse",
+            group: "link",
+            light: {
+                scale: "primary",
+                step: pickAgainst(ramps.primary.light, inverseHex.light, PAPER_CANDIDATES, LC_THRESHOLD.body),
+            },
+            dark: {
+                scale: "primary",
+                step: pickAgainst(ramps.primary.dark, inverseHex.dark, INK_CANDIDATES, LC_THRESHOLD.body),
+            },
+            description:
+                "A link inside an `inverse` region. `link` is measured against the page and goes unreadable there, which is why this exists as its own token.",
+        },
+
+        // ── Inverse region ──────────────────────────────────────────────────
+        {
+            name: "inverse",
+            group: "inverse",
+            light: { scale: "neutral", step: inverseSurface.light },
+            dark: { scale: "neutral", step: inverseSurface.dark },
+            description:
+                "A region deliberately inverted against the current mode — tooltips, dark chips, a footer band. On a light page this is dark; on a dark page it is light. Everything placed on it takes an `inverse-*` or `-inverse` token.",
+        },
+        {
+            name: "inverse-foreground",
+            group: "inverse",
+            ...onInverse(neutral, LC_THRESHOLD.body),
+            description: "Text and icons on `inverse`.",
+        },
+        {
+            name: "inverse-border",
+            group: "inverse",
+            ...onInverse(neutral, LC_THRESHOLD["non-text"]),
+            description: "Hairline or divider inside an `inverse` region.",
+        },
+
+        // ── Scrim and skeleton ──────────────────────────────────────────────
+        {
+            name: "scrim",
+            group: "surface",
+            // The one translucent token in the system. It cannot alias a
+            // primitive — `var(--neutral-950)` carries no opacity — so it emits
+            // a literal. See DECISIONS #24.
+            light: { scale: "neutral", step: 950, alpha: 0.6 },
+            dark: { scale: "neutral", step: 950, alpha: 0.7 },
+            description:
+                "The backdrop behind a modal or drawer. Translucent on purpose, so the page stays legible underneath — it is the one token in this system that is not a solid colour. Dark mode carries more of it, because a dim scrim over an already-dark page does not read as a layer.",
+        },
+        {
+            name: "skeleton-surface",
+            group: "surface",
+            ...n(200, 800),
+            description: "The container of a loading placeholder — the card shape that holds the blocks.",
+        },
+        {
+            name: "skeleton",
+            group: "surface",
+            // Measured against `skeleton-surface`, not the page: a skeleton
+            // block sits inside its own container, and picking against the page
+            // is how the blocks end up invisible in the only place they appear.
+            light: {
+                scale: "neutral",
+                step: pickAgainst(neutral.light, neutral.light[200]!, [300, 400, 500], LC_THRESHOLD["non-text"]),
+            },
+            dark: {
+                scale: "neutral",
+                step: pickAgainst(neutral.dark, neutral.dark[800]!, [700, 600, 500], LC_THRESHOLD["non-text"]),
+            },
+            description:
+                "The blocks standing in for text and UI while content loads. Put them on `skeleton-surface`. Never animate them with `opacity` — use a background-position sweep, so the contrast the audit measured is the contrast that ships.",
         },
 
         // ── Brand + status ──────────────────────────────────────────────────

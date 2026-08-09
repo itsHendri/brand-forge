@@ -228,7 +228,9 @@ export function App() {
 
             <main className="min-h-0 overflow-auto">
                 <PreviewCanvas resolved={resolved} mode={mode} width={previewWidth}>
-                    {context === "components" && <ComponentsSheet />}
+                    {context === "components" && (
+                        <ComponentsSheet secondaryAnchor={resolved.scales.secondary!.anchorStep} />
+                    )}
                     {context === "surfaces" && <SurfacesSheet />}
                     {context === "marketing" && <Marketing />}
                     {context === "dashboard" && <Dashboard />}

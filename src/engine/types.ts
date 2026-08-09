@@ -53,6 +53,16 @@ export interface ScaleConfig {
 export interface SemanticRef {
     scale: ScaleRole
     step: Step
+    /**
+     * 0..1. Present only where the token is genuinely translucent — a scrim, a
+     * wash that has to work on a surface the system doesn't know in advance.
+     *
+     * A ref with an alpha cannot alias its primitive (`var(--neutral-950)` has
+     * no opacity to bend), so it emits a literal `oklch(… / a)` instead. That is
+     * the one documented exception to DECISIONS #6, and the reason it is opt-in
+     * per ref rather than a separate token type. See DECISIONS #24.
+     */
+    alpha?: number
 }
 
 /**
@@ -71,7 +81,15 @@ export interface SemanticOverride {
     dark?: SemanticRef
 }
 
-export type SemanticGroup = "surface" | "text" | "brand" | "state" | "border" | "status"
+export type SemanticGroup =
+    | "surface"
+    | "text"
+    | "link"
+    | "brand"
+    | "state"
+    | "border"
+    | "status"
+    | "inverse"
 
 export interface SemanticTokenDef {
     /** CSS var name without the `--`, e.g. "primary-foreground". */
@@ -200,6 +218,13 @@ export interface BrandConfig {
     }
     layout: { breakpoints: Breakpoint[]; containers: Container[] }
     spacing: { basePx: number; blessed: number[] }
+    /**
+     * The only two opacities the system blesses. Deliberately not a ramp:
+     * Atlassian ships exactly these two, and an opacity scale invites people to
+     * fade text — which is how contrast is lost silently, since no audit can
+     * measure a colour whose ground it doesn't know.
+     */
+    opacity: { disabled: number; loading: number }
     radius: { basePx: number; concentric: boolean; steps?: Partial<Record<RadiusStep, number>> }
     shadows: { levels: ShadowLevel[] }
     motion: {

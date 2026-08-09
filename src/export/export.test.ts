@@ -220,10 +220,13 @@ describe("findings from acceptance run 4", () => {
 
     it("says the focus ring is invisible on a brand fill and what to use instead", () => {
         // --ring IS --primary, so the mandated focus treatment was Lc 0 on
-        // exactly the section the docs single out as dangerous.
-        expect(md).toContain("outline: 2px solid var(--primary-foreground)")
+        // exactly the section the docs single out as dangerous. The answer used
+        // to be a rule — borrow the fill's `-foreground` — and is now a token.
+        expect(md).toContain("outline: 2px solid var(--ring-inverse)")
         expect(md).toContain("The focus ring is part of this")
-        expect(skill).toContain("except on a coloured fill")
+        expect(skill).toContain("--ring-inverse")
+        // The pair, for a control that can land on either polarity of ground.
+        expect(md).toContain("var(--ring-inset)")
     })
 
     it("does not claim tokens defined as invisible are validated", () => {
