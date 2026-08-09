@@ -4,6 +4,10 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- Docs gained a **Brand assets** section (the mark and the typefaces, including the family-name trap
+  and the keep-assets-beside-the-stylesheet warning) and the **on-brand rule** — a control on a
+  coloured fill takes that fill's own `-foreground` for text and border. The outline recipe is now
+  marked as assuming a neutral ground.
 - **Marketing context** — hero at display scale, feature grid, stat row, long-form copy at the prose
   measure, a full-width brand band, and logo lockups in the header and footer. The context that
   tests whether the display role and the brand colour carry a page rather than a component sheet.

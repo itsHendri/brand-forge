@@ -4,29 +4,18 @@ Start here next session. Read `STATUS.md` first for where things actually stand.
 
 ## Immediate next step
 
-**Surface assets and the on-brand rule in the docs.** `DESIGN_SYSTEM.md` documents type roles in
-detail and says nothing about the mark; the exported `@font-face` rules are not explained anywhere;
-and the "control on a brand field" rule below exists only in the preview kit. An agent handed the
-export today would not know a logo exists. This is the cheapest remaining win and the next
-acceptance run would find all three.
+**The static guideline page** (Phase 6). With assets and their documentation in place, a generated
+page can show the real mark in the real typeface — the artifact a client actually wants, and the
+one output the tool still doesn't produce. A second Vite entry SSG-rendering the preview contexts
+plus the token tables into `exports/<slug>/guidelines/index.html`.
 
-Then the **static guideline page** (Phase 6), which is worth more than it was: with assets in place
-a generated page can show the real mark in the real typeface, which is the artifact a client
-actually wants.
+Worth running before or after: **another acceptance test**. The docs have gained a Brand assets
+section, the on-brand rule, and status hover states since the last run, and none of that has been
+tested on an agent. Use the `doc-acceptance-test` skill; brief it on something with a full-bleed
+brand band, since that is the newest rule.
 
-The canvas now has four contexts — Components, Surfaces, Marketing, Dashboard — sharing
+The canvas has four contexts — Components, Surfaces, Marketing, Dashboard — sharing
 `preview/kit.tsx`, and the width selector covers the base (390px) case as well as every breakpoint.
-
-The canvas now has three contexts (Components, Surfaces, Dashboard) sharing `preview/kit.tsx`.
-Add new ones there; every kit component is the exported recipe rendered literally, which is what
-keeps the canvas honest about the docs. Panels are all built — `ColorPanel.tsx` and
-`ShapePanel.tsx` are the patterns to copy. Everything mutates through `useStore().patch()`, which
-keeps undo and autosave automatic.
-
-**Open question for Hendri:** he offered to find Figma design-system references. Figma files won't
-transfer directly (this tool isn't in Figma). What would help is published *token documentation*
-with strong surface and elevation taxonomies — examples of how other systems name and demonstrate
-their surface ladder, not component libraries.
 
 ## Two decisions the marketing context surfaced
 
