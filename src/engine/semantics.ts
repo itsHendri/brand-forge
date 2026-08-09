@@ -13,7 +13,7 @@
  * passes its own audit out.
  */
 
-import { apca, LC_THRESHOLD } from "./contrast"
+import { apca, channelShift, composite, LC_THRESHOLD } from "./contrast"
 import { generateScale, oklchToHex } from "./scale"
 import {
     STEPS,
@@ -144,6 +144,58 @@ function pickFill(
         if (!strongest || best > strongest.lc) strongest = { step, lc: best }
     }
     return strongest!.step
+}
+
+/** Strongest first: the search wants the most visible wash that still reads. */
+const WASH_ALPHAS = [0.28, 0.24, 0.2, 0.18, 0.16, 0.14, 0.12, 0.1, 0.08, 0.06] as const
+
+/**
+ * How much wash this palette can carry before text stops being readable on it.
+ *
+ * A translucent state has to work on every surface it is allowed on, and the
+ * binding constraint is whichever surface has least headroom — in dark mode
+ * that is `surface-raised`, which is already the lightest ground, so a
+ * lightening wash pushes it toward the near-white foreground. Solving for the
+ * largest passing alpha rather than picking one by hand means a brand with a
+ * tighter ramp automatically gets a gentler wash instead of an unreadable row.
+ *
+ * Returns the weakest candidate if nothing passes, so the system degrades to
+ * "as subtle as this palette demands" and the audit reports the rest.
+ */
+function maxWashAlpha(
+    washHex: string,
+    groundHexes: string[],
+    textHex: string,
+    required: number,
+): number {
+    for (const alpha of WASH_ALPHAS) {
+        const readable = groundHexes.every(
+            (ground) => Math.abs(apca(textHex, composite(washHex, alpha, ground))) >= required,
+        )
+        if (readable) return alpha
+    }
+    return WASH_ALPHAS[WASH_ALPHAS.length - 1]!
+}
+
+/**
+ * A wash nobody can see is not a subtle wash, it is a bug — which is exactly
+ * what the old opaque `--state-hover` was on `--muted`. So hover is not "half of
+ * pressed"; it is the *gentlest* wash that still visibly moves every surface.
+ *
+ * The binding ground here is the opposite one from `maxWashAlpha`: the wash is a
+ * mid grey, so it shifts the surface nearest it least — dark `surface-raised`,
+ * which sits closest to the wash on the ramp.
+ */
+export const MIN_WASH_SHIFT = 6
+
+function minVisibleAlpha(washHex: string, groundHexes: string[]): number {
+    for (const alpha of [...WASH_ALPHAS].reverse()) {
+        const visible = groundHexes.every(
+            (ground) => channelShift(composite(washHex, alpha, ground), ground) >= MIN_WASH_SHIFT,
+        )
+        if (visible) return alpha
+    }
+    return WASH_ALPHAS[0]!
 }
 
 /**
@@ -478,6 +530,55 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
         },
     })
 
+    /**
+     * Every surface a neutral wash is allowed to land on. `surface-raised` is in
+     * here deliberately: a hovered menu item inside a popover is the single most
+     * common place a hover state appears, so excluding the hard case would be
+     * excluding the real one.
+     */
+    const washGrounds: Record<Mode, string[]> = {
+        light: [surfaces.background, surfaces.surface, surfaces.raised, surfaces.muted].map(
+            (surface) => neutral.light[surface.light.step]!,
+        ),
+        dark: [surfaces.background, surfaces.surface, surfaces.raised, surfaces.muted].map(
+            (surface) => neutral.dark[surface.dark.step]!,
+        ),
+    }
+    const bodyInk: Record<Mode, string> = { light: neutral.light[950]!, dark: neutral.dark[50]! }
+
+    // Two ends, both solved: `active` takes the strongest wash the palette can
+    // carry with body text still on it, `hover` the gentlest one that is still
+    // visible everywhere. On a tight ramp those converge, which is the palette
+    // telling you the truth rather than the tokens hiding it.
+    const washHex: Record<Mode, string> = { light: neutral.light[500]!, dark: neutral.dark[500]! }
+    const activeAlpha: Record<Mode, number> = {
+        light: maxWashAlpha(washHex.light, washGrounds.light, bodyInk.light, LC_THRESHOLD.body),
+        dark: maxWashAlpha(washHex.dark, washGrounds.dark, bodyInk.dark, LC_THRESHOLD.body),
+    }
+    const selectedHex: Record<Mode, string> = { light: ramps.primary.light[500]!, dark: ramps.primary.dark[500]! }
+    const selectedAlpha: Record<Mode, number> = {
+        light: maxWashAlpha(selectedHex.light, washGrounds.light, bodyInk.light, LC_THRESHOLD.body),
+        dark: maxWashAlpha(selectedHex.dark, washGrounds.dark, bodyInk.dark, LC_THRESHOLD.body),
+    }
+    /**
+     * Disabled sits between hover and pressed: more present than a transient
+     * hover, because it is permanent, and never as strong as a press, which
+     * would read as the control being held down rather than switched off.
+     *
+     * It is not solved against its own label the way the others are. That label
+     * is `--foreground-tertiary`, which this system documents as exempt from
+     * contrast and which WCAG 1.4.3 also exempts for inactive controls — so
+     * there is no threshold to solve against without contradicting the docs.
+     */
+    const hoverAlpha: Record<Mode, number> = {
+        light: Math.min(minVisibleAlpha(washHex.light, washGrounds.light), activeAlpha.light),
+        dark: Math.min(minVisibleAlpha(washHex.dark, washGrounds.dark), activeAlpha.dark),
+    }
+    const disabledAlpha: Record<Mode, number> = {
+        light: Math.round((hoverAlpha.light + activeAlpha.light) * 50) / 100,
+        dark: Math.round((hoverAlpha.dark + activeAlpha.dark) * 50) / 100,
+    }
+
     const textAgainst = (ground: Record<Mode, string>, required: number) => ({
         light: {
             scale: "neutral" as const,
@@ -557,31 +658,57 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
         },
 
         // ── Neutral interactive states ──────────────────────────────────────
+        /**
+         * The four states are translucent, and all four are the *same* mid step
+         * at different strengths.
+         *
+         * An opaque wash is only ever calibrated for one surface. The previous
+         * `--state-hover` was `neutral-200`, which is a three-step grey slab on
+         * `--surface` and — since `--muted` is also `neutral-200` — literally
+         * invisible on a muted row. A clickable card was not buildable from this
+         * system, and nothing caught it because each token measured fine against
+         * the one ground it was chosen for.
+         *
+         * A mid-grey at low alpha solves it without a token per surface: it is
+         * darker than every light surface and lighter than every dark one, so it
+         * always moves *away* from whatever it lands on. That is why Carbon's
+         * `$background-hover` is Gray 50 at 12% rather than a solid step.
+         *
+         * The cost is that these have no colour of their own, so the audit has
+         * to composite them over each ground — see `composite()` in contrast.ts.
+         */
         {
             name: "state-hover",
             group: "state",
-            ...n(200, 800),
+            light: { scale: "neutral", step: 500, alpha: hoverAlpha.light },
+            dark: { scale: "neutral", step: 500, alpha: hoverAlpha.dark },
             description:
-                "Hover wash on a neutral interactive surface — menu items, table rows, ghost buttons. It lightens in dark mode against `background` and `surface`, but `surface-raised` is lighter still, so on a popover the same wash reads as a darkening. That is the wash working, not a bug — it moves away from the surface either way.",
+                "Hover wash for a neutral interactive surface — menu items, table rows, ghost buttons, a clickable card. Translucent, so it works on `background`, `surface`, `surface-raised` and `muted` alike rather than being calibrated for one of them. Layer it over the surface; do not replace the surface with it.",
         },
         {
             name: "state-active",
             group: "state",
-            ...n(300, 700),
-            description: "Pressed state of a neutral interactive surface.",
+            light: { scale: "neutral", step: 500, alpha: activeAlpha.light },
+            dark: { scale: "neutral", step: 500, alpha: activeAlpha.dark },
+            description: "Pressed state of a neutral interactive surface. The same wash as `state-hover`, roughly twice as strong.",
         },
         {
             name: "state-selected",
             group: "state",
-            light: { scale: "primary", step: 100 },
-            dark: { scale: "primary", step: 900 },
-            description: "Selected/current state — brand-tinted so selection reads as intent, not hover.",
+            // Brand-tinted on purpose: selection should read as intent, not as a
+            // stronger hover. Translucent for the same reason as the others.
+            light: { scale: "primary", step: 500, alpha: selectedAlpha.light },
+            dark: { scale: "primary", step: 500, alpha: selectedAlpha.dark },
+            description:
+                "Selected or current state — brand-tinted so selection reads as intent rather than as a heavier hover. Translucent, so a selected row keeps whatever surface it is on.",
         },
         {
             name: "state-disabled",
             group: "state",
-            ...n(200, 800),
-            description: "Fill of a disabled control. Pair with `foreground-tertiary`.",
+            light: { scale: "neutral", step: 500, alpha: disabledAlpha.light },
+            dark: { scale: "neutral", step: 500, alpha: disabledAlpha.dark },
+            description:
+                "Fill of a disabled control. Pair with `foreground-tertiary`. Translucent like the other states — an opaque disabled fill vanishes on any surface that happens to match it, which is what the old one did on `muted`.",
         },
 
         // ── Borders ─────────────────────────────────────────────────────────

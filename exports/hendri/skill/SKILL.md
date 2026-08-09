@@ -48,8 +48,15 @@ Full token tables, component recipes and wrong/right pairs live in
    `--primary-hover`/`--primary-active`, `--secondary-*`, and one per status
    (`--danger-hover` for a destructive button). Neutral surfaces use `--state-hover` /
    `--state-active`, and the current item is `--state-selected`. Never compute a hover colour
-   with `filter: brightness()` or an opacity overlay. The `--state-*` fills are washes over an
-   existing surface, so they have no `-foreground` of their own — text keeps the colour it had.
+   with `filter: brightness()` or an opacity overlay.
+   **The four `--state-*` tokens are translucent washes, not fills.** Layer one over the surface
+   the element already has — `background: var(--surface)` then `background: var(--state-hover)`
+   on `:hover` works because the wash composites over whatever is behind it. That is why one token
+   covers `--background`, `--surface`, `--surface-raised` and `--muted` instead of needing four:
+   it is a mid grey, so it darkens every light surface and lightens every dark one. Do not put one
+   on a coloured fill — they are calibrated against the neutral surfaces only, and a brand fill has
+   its own `-hover` and `-active`. They have no `-foreground` of their own either: text keeps
+   the colour it had.
 9. **Focus is never removed, and there are three rings.** `outline: 2px solid var(--ring);
    outline-offset: 2px` on `:focus-visible` for anything on a neutral ground. On a coloured or
    inverted fill `--ring` is the brand colour itself and disappears into its own background —

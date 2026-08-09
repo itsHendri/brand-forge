@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { hendriPreset } from "../presets/hendri"
-import { apca, LC_THRESHOLD } from "./contrast"
+import { apca, composite, LC_THRESHOLD } from "./contrast"
 import { DEFAULT_POLISH } from "./defaults"
 import { primitiveVar, resolveTokens, semanticByName } from "./resolve"
 import { defaultSemanticMapping } from "./semantics"
@@ -306,5 +306,109 @@ describe("the inverse, link, focus, scrim and skeleton tokens", () => {
     it("ships exactly two opacities, and neither is for live text", () => {
         const names = resolved.declarations.light.filter(([n]) => n.startsWith("--opacity")).map(([n]) => n)
         expect(names).toEqual(["--opacity-disabled", "--opacity-loading"])
+    })
+})
+
+/**
+ * Step 2 of the Carbon/Atlassian pass. The old `--state-*` tokens were opaque
+ * aliases calibrated for one surface each, which made `--state-hover` literally
+ * the same colour as `--muted` — a hover that did nothing.
+ */
+describe("the state washes", () => {
+    const WASHES = ["state-hover", "state-active", "state-selected", "state-disabled"] as const
+    const GROUNDS = ["background", "surface", "surface-raised", "muted"] as const
+    const value = (name: string, mode: "light" | "dark") => semanticByName(resolved, name)!.values[mode]!
+
+    it("is translucent, every one of them", () => {
+        for (const name of WASHES) {
+            for (const mode of ["light", "dark"] as const) {
+                const token = semanticByName(resolved, name)!
+                expect(token[mode].alpha, `${name} (${mode})`).toBeGreaterThan(0)
+                expect(token[mode].alpha, `${name} (${mode})`).toBeLessThan(1)
+            }
+        }
+    })
+
+    it("is visible on every surface it is allowed on — the bug this replaced", () => {
+        // The old `--state-hover` was `neutral-200`, and so was `--muted`, so a
+        // hovered row on a muted surface was indistinguishable from an unhovered
+        // one. Each wash must now shift every ground perceptibly.
+        for (const name of WASHES) {
+            const token = semanticByName(resolved, name)!
+            for (const mode of ["light", "dark"] as const) {
+                for (const ground of GROUNDS) {
+                    const groundHex = value(ground, mode).hex
+                    const washed = composite(value(name, mode).hex, token[mode].alpha!, groundHex)
+                    expect(washed, `${name} on ${ground} (${mode}) does not change the surface`).not.toBe(
+                        groundHex,
+                    )
+                    // Perceptible, not merely different: a one-bit change passes
+                    // an inequality check and is invisible to a person.
+                    const shift = Math.abs(
+                        parseInt(washed.slice(1, 3), 16) - parseInt(groundHex.slice(1, 3), 16),
+                    )
+                    expect(shift, `${name} on ${ground} (${mode}) shifts by only ${shift}/255`).toBeGreaterThan(4)
+                }
+            }
+        }
+    })
+
+    it("moves away from the surface whichever direction that is", () => {
+        // One mid-grey darkens every light surface and lightens every dark one.
+        // That is the whole reason a single token can serve all four grounds.
+        for (const mode of ["light", "dark"] as const) {
+            for (const ground of GROUNDS) {
+                const token = semanticByName(resolved, "state-hover")!
+                const groundHex = value(ground, mode).hex
+                const washed = composite(value("state-hover", mode).hex, token[mode].alpha!, groundHex)
+                const lift = parseInt(washed.slice(1, 3), 16) - parseInt(groundHex.slice(1, 3), 16)
+                if (mode === "light") expect(lift, `${ground} should darken`).toBeLessThan(0)
+                else expect(lift, `${ground} should lighten`).toBeGreaterThan(0)
+            }
+        }
+    })
+
+    it("gets stronger from hover to disabled to active, never weaker", () => {
+        for (const mode of ["light", "dark"] as const) {
+            const alpha = (name: string) => semanticByName(resolved, name)![mode].alpha!
+            expect(alpha("state-hover")).toBeLessThan(alpha("state-disabled"))
+            expect(alpha("state-disabled")).toBeLessThan(alpha("state-active"))
+        }
+    })
+
+    it("is squeezed from both sides in dark mode, and the solver feels it", () => {
+        // Dark `surface-raised` is simultaneously the ground with the least
+        // contrast headroom (a lightening wash pushes it toward the near-white
+        // foreground) and the ground nearest the wash on the ramp, so the wash
+        // shifts it least. Dark therefore tolerates *less* wash at the top and
+        // needs *more* at the bottom — the two ends move in opposite directions,
+        // which is not something you would guess by picking alphas by hand.
+        const alpha = (name: string, mode: "light" | "dark") => semanticByName(resolved, name)![mode].alpha!
+
+        expect(alpha("state-active", "dark")).toBeLessThan(alpha("state-active", "light"))
+        expect(alpha("state-hover", "dark")).toBeGreaterThan(alpha("state-hover", "light"))
+        // And the two still have not crossed, in either mode.
+        for (const mode of ["light", "dark"] as const) {
+            expect(alpha("state-hover", mode)).toBeLessThan(alpha("state-active", mode))
+        }
+    })
+
+    it("keeps body text readable on every washed surface", () => {
+        for (const name of ["state-hover", "state-active", "state-selected"] as const) {
+            const token = semanticByName(resolved, name)!
+            for (const mode of ["light", "dark"] as const) {
+                for (const ground of GROUNDS) {
+                    const washed = composite(
+                        value(name, mode).hex,
+                        token[mode].alpha!,
+                        value(ground, mode).hex,
+                    )
+                    const lc = Math.abs(apca(value("foreground", mode).hex, washed))
+                    expect(lc, `foreground on ${name} over ${ground} (${mode})`).toBeGreaterThanOrEqual(
+                        LC_THRESHOLD.body,
+                    )
+                }
+            }
+        }
     })
 })

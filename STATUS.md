@@ -1,7 +1,7 @@
 # Status — 2026-08-09
 
 **Phases 0–5 done, plus assets. The tool does the whole loop it was built for.**
-Three sessions. 125 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
+Three sessions. 131 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
 
 Type a seed colour → get a complete system → see it on realistic UI → export it as something an AI
 agent can actually build from. That runs end to end today.
@@ -15,7 +15,8 @@ agent can actually build from. That runs end to end today.
 - `defaultSemanticMapping` — 7 seeds → **68 semantic tokens**, every text and border colour chosen
   by *measuring* APCA against the surface it actually sits on, not by picking a step number.
   Includes links, an inverse region, three focus rings, a translucent scrim and skeletons — the
-  batch taken from Carbon and Atlassian on 2026-08-09.
+  batch taken from Carbon and Atlassian on 2026-08-09. The four interactive states are translucent
+  washes whose alphas are solved against the palette, so one of each works on every surface.
 - `resolveTokens` — the one pipeline. Emits `declarations`, the single
   serialization the preview injects and every exporter prints.
 - `validateContrast` — APCA judges, WCAG 2 reported alongside. **The shipped preset reports zero
@@ -33,7 +34,7 @@ with duplicate / new / delete, and an export dialog with a token-budget meter.
 
 **Export** writes `exports/<slug>/`: `skill/SKILL.md`, `skill/references/DESIGN_SYSTEM.md`,
 `tokens.css` (+ Tailwind v4 `@theme`, + `@font-face`), `tokens.json` (DTCG), `brand.json`, and
-`assets/` when the brand carries any. Docs total ~13.1k LLM tokens against an 18k budget. The
+`assets/` when the brand carries any. Docs total ~13.7k LLM tokens against an 18k budget. The
 shipped brand is Hendri's real one — Signal `#574cff`, Ember `#f1760f`, Space Grotesk with Syne
 for display, and the wordmark lifted from hendri.design. No fonts are bundled.
 

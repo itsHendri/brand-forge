@@ -265,6 +265,75 @@ export function ComponentsSheet({ secondaryAnchor }: { secondaryAnchor: number }
             </Section>
 
             <Section
+                title="Interactive states"
+                lead="The four state tokens are translucent washes, so one of each covers every surface. Layer them over the surface an element already has — a mid grey darkens a light ground and lightens a dark one, so it always moves away from whatever it lands on."
+            >
+                <Grid min="200px">
+                    {(
+                        [
+                            ["background", "var(--background)"],
+                            ["surface", "var(--surface)"],
+                            ["surface-raised", "var(--surface-raised)"],
+                            ["muted", "var(--muted)"],
+                        ] as const
+                    ).map(([name, surface]) => (
+                        <div
+                            key={name}
+                            style={{
+                                background: surface,
+                                border: "1px solid var(--border)",
+                                borderRadius: "var(--radius-md)",
+                                overflow: "hidden",
+                            }}
+                        >
+                            <code
+                                style={{
+                                    display: "block",
+                                    fontFamily: "var(--font-mono)",
+                                    fontSize: "var(--text-code)",
+                                    color: "var(--muted-foreground)",
+                                    padding: "var(--space-2) var(--space-3)",
+                                }}
+                            >
+                                on --{name}
+                            </code>
+                            {(
+                                [
+                                    ["rest", "transparent"],
+                                    ["hover", "var(--state-hover)"],
+                                    ["active", "var(--state-active)"],
+                                    ["selected", "var(--state-selected)"],
+                                ] as const
+                            ).map(([label, wash]) => (
+                                <div
+                                    key={label}
+                                    style={{
+                                        ...typeRole("body-sm"),
+                                        background: wash,
+                                        color: "var(--foreground)",
+                                        padding: "var(--space-2) var(--space-3)",
+                                    }}
+                                >
+                                    {label}
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </Grid>
+                <p
+                    style={{
+                        ...typeRole("body-sm"),
+                        color: "var(--muted-foreground)",
+                        margin: "var(--space-3) 0 0",
+                        maxWidth: "var(--container-prose)",
+                    }}
+                >
+                    The --muted column is the one that used to fail: the old --state-hover was the same
+                    opaque step as --muted, so a hovered row there was identical to a resting one.
+                </p>
+            </Section>
+
+            <Section
                 title="Links"
                 lead="A link is body text, so it is measured as body text. --primary is a fill colour and fails here — in dark mode it lands at Lc −28.7."
             >

@@ -51,11 +51,25 @@ export function toDtcgJson(resolved: ResolvedTokens): string {
         }
 
         const semantics: TokenNode = {
-            $description: "The consumable layer. Everything here aliases a primitive.",
+            $description:
+                "The consumable layer. Almost everything here aliases a primitive; the translucent tokens state a value, because a DTCG alias cannot carry an alpha.",
         }
         for (const token of resolved.semantics) {
+            const { alpha } = token[mode]
+            const swatch = token.values[mode]!
             semantics[token.name] = {
-                $value: `{color.${mode}.primitive.${token[mode].scale}.${token[mode].step}}`,
+                // An alias would drop the alpha and hand every consumer an opaque
+                // colour — Figma and Style Dictionary included. A translucent
+                // token therefore states its own value, with the alpha in it.
+                $value:
+                    alpha === undefined
+                        ? `{color.${mode}.primitive.${token[mode].scale}.${token[mode].step}}`
+                        : {
+                              colorSpace: "oklch",
+                              components: [swatch.oklch.l, swatch.oklch.c, swatch.oklch.h],
+                              alpha,
+                              hex: swatch.hex,
+                          },
                 $description: token.description,
             }
         }

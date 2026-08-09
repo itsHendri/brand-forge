@@ -37,6 +37,42 @@ function hexToRgb(hex: string): [number, number, number] {
     ]
 }
 
+/**
+ * What a translucent colour actually looks like once it is over something.
+ *
+ * A wash has no colour of its own to measure — `--state-hover` at 12% is a
+ * different colour on every surface it lands on, which is the entire reason it
+ * is translucent. So the audit composites it over each ground it is allowed on
+ * and measures *that*, rather than measuring the opaque primitive underneath
+ * and reporting a number no user will ever see.
+ *
+ * Source-over in sRGB, which is what the browser does when the backdrop is
+ * opaque — and every ground in this system is.
+ */
+export function composite(overHex: string, alpha: number, groundHex: string): string {
+    const [r1, g1, b1] = hexToRgb(overHex)
+    const [r2, g2, b2] = hexToRgb(groundHex)
+    const mix = (top: number, bottom: number): string =>
+        Math.round(top * alpha + bottom * (1 - alpha))
+            .toString(16)
+            .padStart(2, "0")
+    return `#${mix(r1, r2)}${mix(g1, g2)}${mix(b1, b2)}`
+}
+
+/**
+ * How far apart two near-neutral colours are, 0–255, as a mean channel delta.
+ *
+ * Deliberately not APCA: APCA clamps everything below its noise floor to 0, so
+ * it cannot tell "invisible" from "subtle" — and a hover wash lives entirely in
+ * that range. This is a crude proxy for lightness difference and is only used
+ * for the one question APCA cannot answer: can you see that anything happened?
+ */
+export function channelShift(aHex: string, bHex: string): number {
+    const a = hexToRgb(aHex)
+    const b = hexToRgb(bHex)
+    return (Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2])) / 3
+}
+
 /** Signed Lc. Positive = dark text on light ground; negative = the reverse. */
 export function apca(textHex: string, backgroundHex: string): number {
     const lc = APCAcontrast(sRGBtoY(hexToRgb(textHex)), sRGBtoY(hexToRgb(backgroundHex)))
@@ -62,7 +98,17 @@ export function wcag(aHex: string, bHex: string): number {
  * The pairs that must hold for the system to be usable. Everything a person
  * actually reads, plus the boundaries they need to see.
  */
-export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; usage: Usage }> = [
+export const CONTRAST_PAIRS: Array<{
+    fg: string
+    bg: string
+    usage: Usage
+    /**
+     * The opaque ground a translucent `bg` is sitting on for this check. A wash
+     * needs one pair per surface it is allowed on, because it is a different
+     * colour on each — that is the point of it being a wash.
+     */
+    over?: string
+}> = [
     { fg: "foreground", bg: "background", usage: "body" },
     { fg: "foreground", bg: "surface", usage: "body" },
     // `foreground-secondary` is defined as a large-text colour (body-lg and up);
@@ -91,8 +137,21 @@ export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; usage: Usage }> = [
     { fg: "secondary-foreground", bg: "secondary-hover", usage: "ui" },
     { fg: "secondary-foreground", bg: "secondary-active", usage: "ui" },
     { fg: "secondary-subtle-foreground", bg: "secondary-subtle", usage: "body" },
-    { fg: "foreground", bg: "state-hover", usage: "body" },
-    { fg: "foreground", bg: "state-selected", usage: "body" },
+    // The washes are translucent, so each is checked over every surface it is
+    // allowed on — one pair per ground, because it is a different colour on
+    // each. Checking a wash against nothing is how the old opaque `state-hover`
+    // passed while being invisible on `muted`.
+    ...(["background", "surface", "surface-raised", "muted"] as const).flatMap((ground) => [
+        { fg: "foreground", bg: "state-hover", over: ground, usage: "body" as Usage },
+        { fg: "foreground", bg: "state-active", over: ground, usage: "body" as Usage },
+        { fg: "foreground", bg: "state-selected", over: ground, usage: "body" as Usage },
+    ]),
+    // `state-disabled` is deliberately absent. Its label is
+    // `--foreground-tertiary`, which this system documents as exempt and "never
+    // will be" validated — and WCAG 1.4.3 exempts inactive controls too. Adding
+    // the pair would have the audit contradict the docs, which is worse than
+    // the pair being missing. That it stays *visible* against its surface is
+    // covered by a test instead, along with the other three washes.
     { fg: "border", bg: "background", usage: "non-text" },
     { fg: "border", bg: "surface", usage: "non-text" },
     { fg: "input", bg: "surface", usage: "non-text" },
@@ -159,9 +218,22 @@ export function validateContrast(resolved: ResolvedTokens): Warning[] {
         const background = byName.get(pair.bg)
         if (!foreground || !background) continue
 
+        const ground = pair.over ? byName.get(pair.over) : undefined
+        if (pair.over && !ground) continue
+
         for (const mode of MODES) {
             const fgHex = oklchToHex(foreground.values[mode]!.oklch)
-            const bgHex = oklchToHex(background.values[mode]!.oklch)
+            const { alpha } = background[mode]
+            // A translucent background is measured as what it becomes over its
+            // ground, not as the primitive hiding underneath it.
+            const bgHex =
+                alpha !== undefined && ground
+                    ? composite(
+                          oklchToHex(background.values[mode]!.oklch),
+                          alpha,
+                          oklchToHex(ground.values[mode]!.oklch),
+                      )
+                    : oklchToHex(background.values[mode]!.oklch)
             const lc = Math.abs(apca(fgHex, bgHex))
             const required = LC_THRESHOLD[pair.usage]
             if (lc >= required) continue
@@ -172,8 +244,10 @@ export function validateContrast(resolved: ResolvedTokens): Warning[] {
                 level: pair.usage === "non-text" ? "warn" : "fail",
                 kind: "contrast",
                 mode,
-                message: `\`${pair.fg}\` on \`${pair.bg}\` (${mode}) reads at Lc ${lc}, under the Lc ${required} needed for ${pair.usage === "non-text" ? "a visible boundary" : `${pair.usage} text`}.`,
-                tokens: [pair.fg, pair.bg],
+                // Naming the ground matters for a wash: "on state-hover" alone
+                // is unactionable when the answer differs per surface.
+                message: `\`${pair.fg}\` on \`${pair.bg}\`${pair.over ? ` over \`${pair.over}\`` : ""} (${mode}) reads at Lc ${lc}, under the Lc ${required} needed for ${pair.usage === "non-text" ? "a visible boundary" : `${pair.usage} text`}.`,
+                tokens: pair.over ? [pair.fg, pair.bg, pair.over] : [pair.fg, pair.bg],
                 apcaLc: lc,
                 wcagRatio: wcag(fgHex, bgHex),
                 requiredLc: required,

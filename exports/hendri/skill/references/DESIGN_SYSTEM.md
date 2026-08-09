@@ -65,10 +65,10 @@ re-points itself in dark mode. This is the whole API.
 
 | Token | Light | Dark | Use it for |
 | --- | --- | --- | --- |
-| `--state-hover` | `#dce3eb` | `#3e4b58` | Hover wash on a neutral interactive surface — menu items, table rows, ghost buttons. It lightens in dark mode against `background` and `surface`, but `surface-raised` is lighter still, so on a popover the same wash reads as a darkening. That is the wash working, not a bug — it moves away from the surface either way. |
-| `--state-active` | `#c7d2df` | `#556575` | Pressed state of a neutral interactive surface. |
-| `--state-selected` | `#edefff` | `#252579` | Selected/current state — brand-tinted so selection reads as intent, not hover. |
-| `--state-disabled` | `#dce3eb` | `#3e4b58` | Fill of a disabled control. Pair with `foreground-tertiary`. |
+| `--state-hover` | `#92a2b3` at 10% | `#8697a8` at 12% | Hover wash for a neutral interactive surface — menu items, table rows, ghost buttons, a clickable card. Translucent, so it works on `background`, `surface`, `surface-raised` and `muted` alike rather than being calibrated for one of them. Layer it over the surface; do not replace the surface with it. |
+| `--state-active` | `#92a2b3` at 24% | `#8697a8` at 18% | Pressed state of a neutral interactive surface. The same wash as `state-hover`, roughly twice as strong. |
+| `--state-selected` | `#8e97ff` at 24% | `#7e85ff` at 20% | Selected or current state — brand-tinted so selection reads as intent rather than as a heavier hover. Translucent, so a selected row keeps whatever surface it is on. |
+| `--state-disabled` | `#92a2b3` at 17% | `#8697a8` at 15% | Fill of a disabled control. Pair with `foreground-tertiary`. Translucent like the other states — an opaque disabled fill vanishes on any surface that happens to match it, which is what the old one did on `muted`. |
 | `--primary-hover` | `#423dc9` | `#4c48d7` | Hover state of a solid `primary` fill. |
 | `--primary-active` | `#323397` | `#3734a6` | Pressed/active state of a solid `primary` fill. |
 | `--secondary-hover` | `#a84d00` | `#f9cfb7` | Hover state of a solid `secondary` fill. |
@@ -509,11 +509,9 @@ use the one that describes your intent, because the values diverge the moment th
 | Mode | Value | Tokens |
 | --- | --- | --- |
 | light | `#f7f9fb` | `--surface`, `--surface-raised`, `--ring-inverse`, `--ring-inset`, `--primary-foreground`, `--secondary-foreground`, `--success-foreground`, `--warning-foreground`, `--danger-foreground`, `--info-foreground` |
-| light | `#dce3eb` | `--muted`, `--state-hover`, `--state-disabled`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
+| light | `#dce3eb` | `--muted`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
 | light | `#36414d` | `--muted-foreground`, `--inverse` |
 | light | `#92a2b3` | `--foreground-tertiary`, `--border-strong`, `--skeleton` |
-| light | `#c7d2df` | `--state-active`, `--inverse-border` |
-| light | `#edefff` | `--state-selected`, `--primary-subtle` |
 | light | `#acbccd` | `--border`, `--input` |
 | light | `#574cff` | `--ring`, `--primary` |
 | light | `#323397` | `--link`, `--primary-active` |
@@ -523,12 +521,10 @@ use the one that describes your intent, because the values diverge the moment th
 | light | `#970d16` | `--danger-active`, `--danger-subtle-foreground` |
 | light | `#005783` | `--info-active`, `--info-subtle-foreground` |
 | dark | `#1b2127` | `--background`, `--ring-inverse`, `--secondary-foreground`, `--warning-foreground` |
-| dark | `#556575` | `--surface-raised`, `--state-active` |
-| dark | `#3e4b58` | `--muted`, `--state-hover`, `--state-disabled`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
+| dark | `#3e4b58` | `--muted`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
 | dark | `#f4f6f8` | `--foreground`, `--ring-inset`, `--primary-foreground`, `--success-foreground`, `--danger-foreground`, `--info-foreground` |
 | dark | `#e7ebef` | `--muted-foreground`, `--inverse` |
 | dark | `#8697a8` | `--foreground-tertiary`, `--border-strong`, `--skeleton` |
-| dark | `#252579` | `--state-selected`, `--primary-subtle` |
 | dark | `#6d7e90` | `--border`, `--input`, `--inverse-border` |
 | dark | `#3734a6` | `--link-inverse`, `--primary-active` |
 | dark | `#f9cfb7` | `--secondary-hover`, `--secondary-subtle-foreground` |

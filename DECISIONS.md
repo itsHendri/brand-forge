@@ -336,3 +336,48 @@ problem; both consumed the identical array. The *selector* drifted, and there is
 it, because the test suite has no DOM. The audit, the exports and every unit test stayed green
 throughout. The only thing that caught it was rendering the thing and looking at it, which is why
 `CLAUDE.md` says to verify in the browser rather than reason about it.
+
+### 26. The interactive states are translucent, and their alphas are solved — 2026-08-09
+
+The four `--state-*` tokens were opaque aliases, each calibrated against one surface. `--state-hover`
+was `neutral-200`; so is `--muted`. A hovered row on a muted surface was therefore *the same colour
+as a resting one* — a hover that did nothing — and a clickable card was not buildable from this
+system at all. Nothing caught it, because each token measured fine against the single ground it had
+been chosen for, and no pair asked what it looked like on the others.
+
+Carbon's answer is the fix: `$background-hover` is Gray 50 at 12%, transparent. A mid grey is darker
+than every light surface and lighter than every dark one, so at low alpha it always moves *away* from
+whatever it lands on. One token covers four surfaces instead of needing four tokens, and there is no
+"which hover do I use here" question to get wrong.
+
+**The alphas are measured, not chosen.** Two ends, each solved against the palette:
+
+- `active` is the **strongest** wash that keeps body text at Lc 75 on every surface it can land on.
+- `hover` is the **gentlest** wash that still visibly shifts every surface.
+- `disabled` is their midpoint; `selected` runs the same solve on the primary ramp.
+
+Hand-picked alphas would have been wrong here in a way that is genuinely hard to see coming. Dark
+mode is squeezed from *both* directions by the same surface: `surface-raised` is the lightest ground,
+so a lightening wash eats into the near-white foreground fastest — and it is also the ground nearest
+the wash on the ramp, so it shifts least. Dark therefore tolerates less wash at the top (0.18 vs
+0.24) and needs *more* at the bottom (0.12 vs 0.10) than light does. The two ends move in opposite
+directions between modes. My first attempt set hover to half of active, and that produced a dark
+hover that shifted `surface-raised` by 4/255 — invisible, and exactly the bug being fixed.
+
+Corroboration worth recording: solved independently, light hover lands on 0.10 against Carbon's
+hand-tuned 0.12.
+
+**A wash cannot be audited on its own.** It has no colour until it is over something, so
+`CONTRAST_PAIRS` gained an optional `over`, and `composite()` blends the wash onto that ground before
+measuring. Every wash is checked against all four surfaces — sixteen pairs where there used to be
+two, which is the honest cost of a token that behaves differently everywhere.
+
+`state-disabled` is deliberately not in the audit. Its label is `--foreground-tertiary`, which this
+system already documents as exempt and "never will be" validated, and WCAG 1.4.3 exempts inactive
+controls too. Adding the pair would have the audit contradict the docs, which is worse than the pair
+being absent. That the disabled fill stays *visible* is covered by a test instead.
+
+**Visibility needed its own measure.** APCA clamps everything below its noise floor to 0, so it
+cannot distinguish "subtle" from "invisible" — and a hover wash lives entirely in that range. So
+`channelShift()` exists purely for the question APCA cannot answer: did anything happen? It is a
+crude mean-channel delta and is used for nothing else.

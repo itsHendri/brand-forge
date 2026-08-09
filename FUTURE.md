@@ -50,24 +50,21 @@ the token is documented.
 canvas rendered light values under a dark label for a session and a half, and every test stayed
 green. Fixed.
 
-### 2. Make the state tokens transparent — next
+### 2. ~~Make the state tokens transparent~~ — done 2026-08-09
 
-Carbon's `$background-hover` is **Gray 50 at 12%, transparent**, so it works on any surface. Ours
-are opaque aliases to neutral steps:
+All four `--state-*` tokens are translucent washes now, and their alphas are **solved against the
+palette** rather than picked: `active` is the strongest wash that keeps body text at Lc 75 on every
+surface, `hover` the gentlest that still visibly shifts every surface, `disabled` their midpoint,
+`selected` the same solve on the primary ramp. See `DECISIONS.md` #26.
 
-```
---background: var(--neutral-100);  --surface: var(--neutral-50);  --muted: var(--neutral-200);
---state-hover: var(--neutral-200);
-```
+Worth knowing before step 3 touches the surfaces: **dark mode is squeezed from both directions by
+`surface-raised`.** It is the lightest ground, so a lightening wash eats the foreground's contrast
+fastest — and it is nearest the wash on the ramp, so it shifts least. Dark tolerates less wash at
+the top (0.18 vs 0.24) and needs more at the bottom (0.12 vs 0.10). Renaming or re-pointing the
+surface ladder will move both numbers; the solver will follow, but look at the result.
 
-`--state-hover` is calibrated for exactly one surface. On `--surface` it is a three-step grey slab,
-and on `--muted` it is **the same colour** — a hover that does nothing. Atlassian states the
-principle directly in its `elevation.surface.sunken` vs `color.background.neutral` note: opaque
-tokens darken in both modes, transparent ones adapt to whatever they sit on.
-
-Switching the four `--state-*` tokens to alpha fixes hover on every surface without a hover token
-per layer, and it is why "a clickable card" is not currently buildable from this system. The
-mechanism now exists — `SemanticRef.alpha`, added for the scrim — so this is a small change.
+The audit grew to match: `CONTRAST_PAIRS` gained an `over`, and a wash is composited onto each
+ground before being measured. Sixteen pairs where there were two.
 
 ### 3. Rename the elevation model on Atlassian's scheme
 

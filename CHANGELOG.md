@@ -4,6 +4,21 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- **The interactive states are translucent washes**, and their alphas are solved rather than chosen.
+  The four `--state-*` tokens were opaque aliases calibrated for one surface each — `--state-hover`
+  and `--muted` were *the same colour*, so a hovered row on a muted surface was identical to a
+  resting one, and a clickable card was not buildable from this system. A mid grey at low alpha
+  darkens every light surface and lightens every dark one, so one token now covers all four grounds.
+  `active` is solved as the strongest wash that keeps body text readable everywhere, `hover` as the
+  gentlest that is still visible everywhere; light hover lands on 0.10 against Carbon's hand-tuned
+  0.12. `DECISIONS.md` #26.
+- **The contrast audit can measure a translucent token.** `CONTRAST_PAIRS` gained an optional `over`,
+  and `composite()` blends a wash onto its ground before measuring — sixteen state pairs where there
+  used to be two. A new `channelShift()` covers the one question APCA cannot answer, since it clamps
+  everything below its noise floor to zero and so cannot tell "subtle" from "invisible".
+- **Fixed: DTCG dropped the alpha.** Translucent tokens were exported as plain aliases, handing
+  Figma and Style Dictionary an opaque colour. They now state their own value with the alpha in it.
+
 - **Eleven tokens taken from Carbon and Atlassian**, 57 → 68. An inverse region (`--inverse`,
   `--inverse-foreground`, `--inverse-border`) that means *opposite to the current mode*, so on a
   dark page the chip is light. Links (`--link`, `--link-hover`, `--link-inverse`) measured as body
