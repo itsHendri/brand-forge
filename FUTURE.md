@@ -105,30 +105,73 @@ site with a hero, an article, and an embedded media block. That shape has never 
 current type scale, and it is the one that would exercise `--container-prose` nesting and the display
 face, which the app shell never touched.
 
-## The immediate next step is now the budget
+## Immediate: cut the duplication (option C)
 
-**The docs are at ~17.0k against an 18k budget — 94%, about a thousand tokens of headroom.** Run 5's
-fixes alone took it from 84% to 94%, because most of them were "state the thing that was missing".
-The next token family, or the next acceptance run's fixes, will blow it.
+Decided 2026-08-09, after laying out the alternatives.
 
-The budget is not arbitrary: `references/DESIGN_SYSTEM.md` has to stay loadable in one go by the
-agent that `SKILL.md` points at. Raising the number is not the fix.
+**First, a correction that matters.** The 18k doc budget is something *this tool invented*, not a
+measured limit and not Hendri's. It was then treated as a discovered constraint, and it drove a
+proposal — splitting `DESIGN_SYSTEM.md` in two — that would have reduced nothing while doubling the
+number of places a rule can be restated and drift. Five acceptance runs, none has ever complained
+about length; run 5 read all 17k and produced the best build and the sharpest critique of the five.
 
-The fix is a **split**. `SKILL.md` (~3.3k) is the procedural half and is fine. `DESIGN_SYSTEM.md`
-(~13.7k) is carrying four different jobs at once — token tables, component recipes, craft rules, and
-the gap list. Two reference files, each pointed at from `SKILL.md` for a stated reason, would load
-half as much per question.
+So the reason to trim is **not** size. It is that the same rule stated in three places is three
+places to disagree, and disagreement is the defect class every run keeps finding. Size is a proxy;
+contradiction is the disease.
 
-Two things to be careful about, both learned the hard way:
+Where the duplication actually is — the same rule appears in `SKILL.md`, in the token's `description`
+(which is also the DTCG `$description`), and again in a Component recipe. Surfaces, the state washes
+and links are the clearest cases. The reference is ~5k of generated table and ~8k of prose; the
+tables have been exact in all five runs, so **whatever gets cut, it is not those.**
 
-- **The generated tables are the part that has never been wrong** (five runs, every number exact).
-  Whatever gets trimmed, it is not those.
-- **Splitting is exactly how contradictions get introduced** — run 5 found four, and every one was a
-  statement that was true when written and stale by the time it shipped. The split needs its own
-  acceptance run afterwards, briefed to look for two sections disagreeing.
+The honest counter, worth holding on to: run 5 called the three silent-failure warnings "the single
+highest-value sentence in the documentation", and those are prose stated up front *and* repeated
+where relevant. Repetition in agent-facing docs is not automatically waste. Cut what *restates*, keep
+what *warns*.
 
-An untested guess about what to cut is worth less than the meter. Measure first: the budget helper is
-`exportBudget()` in `src/export/bundle.ts`.
+Rejected, with reasons: splitting the reference (moves tokens, adds contradiction surface); moving
+the gap list out (it is what stops agents inventing silently); shortening token descriptions (they
+carry the "when to use it" teaching that `DECISIONS.md` #3 relies on instead of a numbering legend).
+
+## Open, and deliberately not being built yet: a CLI and/or an MCP
+
+Raised by Hendri 2026-08-09 as a direction to plan for, not to build.
+
+The observation that reframes it: **a consumer-side MCP would largely dissolve the doc-budget
+question.** An agent currently loads 13k of reference *in case*; one that can ask loads what it
+needs. It also attacks the real defect class, because a tool answering from `resolveTokens()` cannot
+go stale — the same argument that made `exports/` generated rather than maintained.
+
+Consequence for sequencing: a heroic doc restructure now would be partly wasted work. The modest
+duplication pass above is not, because it is a correctness fix either way.
+
+Three shapes, frequently conflated:
+
+1. **A CLI.** `export` (exists as `npm run export`), `init` to wire `tokens.css` into a consuming
+   project, and `check` to fail a build on colour literals, primitives and unknown token names —
+   the hard rules turned into enforcement. Deterministic, CI-friendly, needs no server, works for
+   any consumer. Does nothing for an agent mid-build.
+2. **A consumer MCP.** `find_token("hovered row on a card")`, `check_contrast`, `recipe("button")`.
+   Kills the budget question and cannot go stale. But it needs a server running, which is a
+   liability precisely where the product is strongest — handing a folder to a client — and it only
+   serves MCP clients, where the export serves Cursor, Copilot, CI and a human. The docs do not
+   disappear either: an agent must know an inverse region *exists* before it can ask about one.
+3. **An authoring MCP** — an agent drives Brand Forge itself: create a brand, set a seed, read the
+   audit, export. A different product surface, and arguably the more interesting one. Check it
+   against `DECISIONS.md` #20 (hosting/auth refused) rather than sliding past that entry.
+
+1 and 2 are not alternatives; the CLI is the deterministic path and the MCP the conversational one,
+over the same engine.
+
+**The constraint on any of them:** every tool must be a thin wrapper over `resolveTokens()` /
+`validateContrast()` / `buildExport()`. The moment one computes its own answer it is a second path
+from config to output, which is the one thing `CLAUDE.md` forbids — and it would drift exactly the
+way the prose did.
+
+**The question that decides which to build:** who is the consumer? Hendri on his own machine (MCP is
+ideal), a client receiving a brand (the folder is the deliverable, a server is a liability), or an
+agent in someone else's repo (the folder, committed). The tool is currently built around handing
+over an export; an MCP makes it a service. That is a product decision, not a technical one.
 
 ## After that — Phase 6
 
