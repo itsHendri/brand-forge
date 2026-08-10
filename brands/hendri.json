@@ -13,8 +13,8 @@
             "unfussy"
         ],
         "deviations": [
-            "`--text-display` and `--text-heading-lg` are fluid — they scale with the viewport between 390px and 1280px rather than holding one size. Never override them with a fixed rem value.",
-            "`--font-display` is Syne, a different typeface from the body sans — it belongs on the `display` role only, never on headings, buttons or UI. Hendri's own site uses Alpha Lyrae here; that face is licensed and deliberately not bundled, so Syne stands in as the open equivalent.",
+            "`--text-display` and `--text-heading-lg` are fluid \u2014 they scale with the viewport between 390px and 1280px rather than holding one size. Never override them with a fixed rem value.",
+            "`--font-display` is Syne, a different typeface from the body sans \u2014 it belongs on the `display` role only, never on headings, buttons or UI. Hendri's own site uses Alpha Lyrae here; that face is licensed and deliberately not bundled, so Syne stands in as the open equivalent.",
             "No mono face is declared on the live site; `--font-mono` is a neutral system stack until one is chosen."
         ]
     },
@@ -23,7 +23,7 @@
             {
                 "role": "primary",
                 "name": "Signal",
-                "seed": "#47abe1"
+                "seed": "#574cff"
             },
             {
                 "role": "secondary",
@@ -174,19 +174,19 @@
             {
                 "name": "xl",
                 "minPx": 1280,
-                "note": "Desktop. Wider gutters, more columns — rarely bigger type."
+                "note": "Desktop. Wider gutters, more columns \u2014 rarely bigger type."
             }
         ],
         "containers": [
             {
                 "name": "prose",
                 "maxRem": 42,
-                "note": "Running text. ~70 characters at body size — the readable measure."
+                "note": "Running text. ~70 characters at body size \u2014 the readable measure."
             },
             {
                 "name": "narrow",
                 "maxRem": 30,
-                "note": "Forms, dialogs, sign-in — anything with one column of controls."
+                "note": "Forms, dialogs, sign-in \u2014 anything with one column of controls."
             },
             {
                 "name": "page",
@@ -208,7 +208,7 @@
             {
                 "name": "nav",
                 "value": 200,
-                "note": "The app header and side nav — persistent chrome."
+                "note": "The app header and side nav \u2014 persistent chrome."
             },
             {
                 "name": "dropdown",
@@ -223,7 +223,7 @@
             {
                 "name": "modal",
                 "value": 410,
-                "note": "Dialogs and drawers — ten above their own scrim, never a hundred."
+                "note": "Dialogs and drawers \u2014 ten above their own scrim, never a hundred."
             },
             {
                 "name": "toast",
@@ -240,7 +240,7 @@
             {
                 "name": "header",
                 "rem": 3.5,
-                "note": "App header / top bar height. 56px — two 44px touch targets do not fit, one does with room."
+                "note": "App header / top bar height. 56px \u2014 two 44px touch targets do not fit, one does with room."
             },
             {
                 "name": "sidebar",
@@ -255,7 +255,7 @@
             {
                 "name": "aside",
                 "rem": 20,
-                "note": "Secondary panel — filters, details, activity. 320px is a readable narrow column."
+                "note": "Secondary panel \u2014 filters, details, activity. 320px is a readable narrow column."
             },
             {
                 "name": "table-min",

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
-import { resolveTokens } from "../engine/resolve"
+import { apca } from "../engine/contrast"
+import { resolveTokens, semanticByName } from "../engine/resolve"
 import { hendriPreset } from "../presets/hendri"
+import { SCALE_ROLES } from "../engine/types"
 import { buildExport, exportAsMap, exportBudget, referencedAssets } from "./bundle"
 import { previewCss } from "./css"
 import { toSkillMd } from "./skillMd"
@@ -572,5 +574,67 @@ describe("findings from acceptance run 5", () => {
         // Lc 60.9 against a body bar of 75.
         expect(md).not.toContain("so use it inside dialogs and popovers")
         expect(md).toContain("Neither is verified on `surface-overlay`")
+    })
+})
+
+/**
+ * Findings from acceptance run 6 (long-form content site).
+ *
+ * The run exposed a class rather than a list: **hand-written measurements baked
+ * into a generated document.** Six separate claims were true of the palette they
+ * were written against and false of the next one — including one added while
+ * fixing run 5, which is how fast it happens.
+ */
+describe("findings from acceptance run 6", () => {
+    const md = fileAt("DESIGN_SYSTEM.md")
+    const skill = fileAt("SKILL.md")
+
+    it("computes the label-on-fill figures rather than quoting one measured once", () => {
+        // "`--primary-foreground` on `--primary` measures Lc 77.3 in light" was
+        // hardcoded. True for one brand; for the next it was Lc 50.6 and FAILING,
+        // and the sentence held it up as the example of a pair that clears.
+        expect(md).not.toContain("Lc 77.3")
+        expect(md).toContain("Measured on this brand in light mode, tightest first")
+        // The stated floor must be the real one.
+        const pairs = SCALE_ROLES.filter((r) => r !== "neutral").map((role) => ({
+            role,
+            lc: Math.abs(
+                apca(
+                    semanticByName(resolved, `${role}-foreground`)!.values.light!.hex,
+                    semanticByName(resolved, role)!.values.light!.hex,
+                ),
+            ),
+        }))
+        const floor = pairs.sort((a, b) => a.lc - b.lc)[0]!
+        expect(md).toContain(`The floor is \`--${floor.role}\` at Lc ${floor.lc.toFixed(0)}`)
+    })
+
+    it("does not assert which mode --link fails in — it measures", () => {
+        // "unreadable as text in dark mode" was stated flat. On a different
+        // palette the failing mode was light, so anyone reading carefully and
+        // concluding "fine in light" ships the worst version.
+        expect(md).not.toContain("is unreadable as text in dark mode")
+        expect(skill).not.toContain("is unreadable as text in dark mode")
+        expect(md).toContain("Against body text it")
+    })
+
+    it("does not claim a character count it cannot measure", () => {
+        // `--container-prose` claimed "~70 characters at body size". Measured
+        // against the brand's actual face it was 80–85. Character count depends
+        // on the font, which this tool never sees.
+        expect(md).not.toContain("~70 characters")
+    })
+
+    it("states the wash ratio it actually solved, not 'roughly twice'", () => {
+        const ratio = (mode: "light" | "dark") =>
+            semanticByName(resolved, "state-active")![mode].alpha! /
+            semanticByName(resolved, "state-hover")![mode].alpha!
+        expect(md).toContain(`${ratio("light").toFixed(1)}× as strong in light`)
+        expect(md).not.toContain("roughly twice as strong")
+    })
+
+    it("lists failing contrast pairs inline, since nothing else in the bundle carries them", () => {
+        // The docs said "see the brand's warnings" and no warnings file ships.
+        expect(md).not.toContain("see the brand's warnings")
     })
 })

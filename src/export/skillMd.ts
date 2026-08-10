@@ -102,10 +102,11 @@ Full token tables, component recipes and wrong/right pairs live in
    both: \`box-shadow: 0 0 0 2px var(--ring-inset), 0 0 0 4px var(--ring)\`, so whichever half
    matches the ground, the other one is still visible.
 10. **Links in body copy are \`--link\`, underlined.** Not \`--primary\` — that is a fill colour and
-    is unreadable as text in dark mode. Hover is \`--link-hover\`, which gains contrast rather than
-    losing it. The underline is required, not stylistic: \`--link\` sits at the same lightness as
-    \`--foreground\` and is distinguished only by hue, so in greyscale there is no link at all.
-    Inside an inverse region use \`--link-inverse\`.
+    is a fill and does not survive as text on a page. Hover is \`--link-hover\`, which gains contrast
+    rather than losing it. **The underline is required, not stylistic** — colour alone must never be
+    the only marker of a link (WCAG 1.4.1), and on some palettes \`--link\` is separated from
+    \`--foreground\` by hue alone, which disappears in greyscale. The reference gives the measured
+    figures for this brand. Inside an inverse region use \`--link-inverse\`.
 11. **An inverse region is opposite to the mode, not fixed dark.** \`--inverse\` is a tooltip, a
     dark chip, a footer band — dark on a light page and *light* on a dark one. Everything inside it
     takes \`--inverse-foreground\`, \`--inverse-border\`, \`--link-inverse\`, \`--ring-inverse\`.

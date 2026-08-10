@@ -25,7 +25,7 @@ export const DEFAULT_BREAKPOINTS: Breakpoint[] = [
  * good the type is.
  */
 export const DEFAULT_CONTAINERS: Container[] = [
-    { name: "prose", maxRem: 42, note: "Running text. ~70 characters at body size — the readable measure." },
+    { name: "prose", maxRem: 42, note: "Running text. Sized for a readable measure at body size — check the line length against your own face, since character count depends on it." },
     { name: "narrow", maxRem: 30, note: "Forms, dialogs, sign-in — anything with one column of controls." },
     { name: "page", maxRem: 72, note: "The default page frame. Most layouts live here." },
     { name: "wide", maxRem: 90, note: "Dashboards and tables that genuinely need the room." },
@@ -211,7 +211,7 @@ export const POLISH_RULES: Array<{ id: string; title: string; rule: string; defa
     {
         id: "underline-links",
         title: "Links in body copy are underlined",
-        rule: "A link inside running text carries an underline, not just `--link`. Colour alone is never sufficient (WCAG 1.4.1), and on this palette it is measurably not enough: `--link` and `--foreground` sit at the same lightness in both modes and differ only in hue, so anyone reading in greyscale or with a colour vision deficiency sees no link at all. Underline by default and remove it only where the link is already unmistakable as a control — nav items, buttons, cards. Use `text-underline-offset` rather than a border, so descenders stay legible.",
+        rule: "A link inside running text carries an underline, not just `--link`. Colour alone is never sufficient (WCAG 1.4.1). Depending on the palette `--link` can also sit at nearly the same lightness as `--foreground` and be separated by hue alone, which disappears in greyscale and for anyone with a colour vision deficiency — the reference gives the measured figures for this brand. Underline by default and remove it only where the link is already unmistakable as a control — nav items, buttons, cards. Use `text-underline-offset` rather than a border, so descenders stay legible.",
         default: true,
     },
     {

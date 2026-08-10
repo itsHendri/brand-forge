@@ -8,8 +8,9 @@
  * as well as right is.
  */
 
+import { apca, LC_THRESHOLD } from "../engine/contrast"
 import { spaceName } from "../engine/defaults"
-import type { ResolvedTokens, SemanticGroup } from "../engine/types"
+import { SCALE_ROLES, type ResolvedTokens, type SemanticGroup } from "../engine/types"
 import { primaryFamily } from "./css"
 
 /** shadcn's vocabulary, which is what a model reaches for unprompted. */
@@ -154,7 +155,28 @@ function tokenTable(resolved: ResolvedTokens, group: SemanticGroup): string {
     return table(["Token", "Light", "Dark", "Use it for"], rows)
 }
 
+/**
+ * The six solid role fills and their labels, measured, worst first — so the docs
+ * cite the real floor instead of whichever pair somebody happened to measure.
+ *
+ * Restricted to the role fills on purpose: `--muted`, `--inverse` and the
+ * `-subtle` washes all have a `-foreground` too, and sweeping them in produced a
+ * fourteen-item list in which the genuine label floor was buried.
+ */
+function labelPairsFor(resolved: ResolvedTokens): Array<{ role: string; lc: number }> {
+    const by = new Map(resolved.semantics.map((token) => [token.name, token]))
+    return SCALE_ROLES.filter((role) => role !== "neutral")
+        .flatMap((role) => {
+            const fill = by.get(role)
+            const label = by.get(`${role}-foreground`)
+            if (!fill || !label) return []
+            return [{ role, lc: Math.abs(apca(label.values.light!.hex, fill.values.light!.hex)) }]
+        })
+        .sort((a, b) => a.lc - b.lc)
+}
+
 function componentRecipes(resolved: ResolvedTokens): string {
+    const labelPairs = labelPairsFor(resolved)
     const r = resolved.radius
     const cardInner = Math.max(0, r.lg - 24)
     return `Component tokens deliberately do not exist. Compose these instead — the values below are
@@ -240,11 +262,12 @@ this case:
 \`\`\`
 
 **Set copy on a brand field at \`body-lg\` or larger.** Every \`-foreground\` is validated as a
-label colour (Lc 60), not as body text (Lc 75). Some clear the body bar comfortably —
-\`--primary-foreground\` on \`--primary\` measures Lc 77.3 in light — but you cannot rely on that
-per-fill: \`--success-foreground\` on \`--success\` is Lc 61.0, a point over the label bar and
-nowhere near the body one. Set small print on a brand or status band and it will be unreadable on
-some of them.
+label colour (Lc ${LC_THRESHOLD.ui}), not as body text (Lc ${LC_THRESHOLD.body}), and how much
+headroom each has varies per fill. Measured on this brand in light mode, tightest first: ${labelPairs
+        .map((p) => `\`--${p.role}\` Lc ${p.lc.toFixed(0)}`)
+        .join(", ")}. The floor is \`--${labelPairs[0]?.role}\` at Lc ${labelPairs[0]?.lc.toFixed(0)}${
+        (labelPairs[0]?.lc ?? 0) < LC_THRESHOLD.ui ? " — **which is under the label bar; that pair is reported in the contrast section**" : ""
+    }. Set small print on the tighter ones and it will not be readable.
 Small print on a brand band has no compliant colour in this system, so don't put any there.
 
 **Card** — \`background: var(--surface)\`, \`border: 1px solid var(--border)\`,
@@ -849,7 +872,11 @@ Lc 60 for UI labels and large text, Lc 25 for non-text boundaries.
 ${(() => {
         const contrast = resolved.warnings.filter((w) => w.kind === "contrast")
         if (contrast.length > 0) {
-            return `**${contrast.length} pairs currently miss their threshold** — see the brand's warnings. Do not treat the values in this file as validated until they are cleared.`
+            return `**${contrast.length} pair${contrast.length === 1 ? "" : "s"} in this brand currently miss${contrast.length === 1 ? "es" : ""} its threshold**, listed here because nothing else in this bundle carries them:
+
+${contrast.map((warning) => `- ${warning.message}`).join("\n")}
+
+Do not treat the affected values as validated until they are cleared.`
         }
         return `Every **validated** pair clears its own threshold, in both modes. Three things that
 sentence does not mean:

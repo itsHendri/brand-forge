@@ -44,7 +44,7 @@ re-points itself in dark mode. This is the whole API.
 | Token | Light | Dark | Use it for |
 | --- | --- | --- | --- |
 | `--foreground` | `#1f262d` | `#f4f6f8` | Primary text and icons. The default ink for body copy and headings. |
-| `--foreground-secondary` | `#475664` | `#d3dae1` | Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is verified against `surface-raised`, so it holds up on a lifted card. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it. **Neither is verified on `surface-overlay`** — the top of the ladder is the lightest ground in dark mode, and both supporting colours fall under the body bar there (`foreground-secondary` Lc 60.9, `muted-foreground` Lc 71.8). Inside a modal or a dropdown, set body copy in plain `foreground` and keep supporting text to `body-lg` or larger. |
+| `--foreground-secondary` | `#475664` | `#d3dae1` | Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is verified against `surface-raised`, so it holds up on a lifted card. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it. **Neither is verified on `surface-overlay`** — the top of the ladder is the lightest ground in dark mode, and both supporting colours fall under the body bar there. Inside a modal or a dropdown, set body copy in plain `foreground` and keep supporting text to `body-lg` or larger. |
 | `--muted-foreground` | `#36414d` | `#e7ebef` | Small supporting text — captions, helper text, metadata — on `background`, `surface` or `muted`. Verified against those three only; on `surface-raised` use `foreground-secondary`. |
 | `--foreground-tertiary` | `#92a2b3` | `#8697a8` | Deliberately faint text: placeholders, disabled labels, watermarks. NEVER body copy — it does not meet contrast for reading. |
 
@@ -52,20 +52,20 @@ re-points itself in dark mode. This is the whole API.
 
 | Token | Light | Dark | Use it for |
 | --- | --- | --- | --- |
-| `--link` | `#044864` | `#deedf7` | Links in running text, on `background`, `surface` or `muted`. **Underline them** — this colour sits at the same lightness as `foreground` and differs only in hue, so colour alone does not mark a link (see the polish rules). Never use `primary` for a link: it is a fill colour and is unreadable as text in dark mode. |
-| `--link-hover` | `#062c3d` | `#eff7fd` | Hover state of a link in running text. |
-| `--link-inverse` | `#cae7fa` | `#015071` | A link inside an `inverse` region. `link` is measured against the page and goes unreadable there, which is why this exists as its own token. |
+| `--link` | `#323397` | `#e6e9ff` | Links in running text, on `background`, `surface` or `muted`. **Underline them** — see the polish rules. Against body text it falls below APCA's noise floor in both modes — it is separated from `foreground` by hue alone, so in greyscale there is no link at all. Never use `primary` for a link: it is a fill colour, and on this palette it measures Lc 67 as text on the page in light and Lc 41 in dark, against a body bar of 75. |
+| `--link-hover` | `#1c1f5c` | `#f4f5ff` | Hover state of a link in running text. |
+| `--link-inverse` | `#dce0ff` | `#3734a6` | A link inside an `inverse` region. `link` is measured against the page and goes unreadable there, which is why this exists as its own token. |
 
 ### Interactive states
 
 | Token | Light | Dark | Use it for |
 | --- | --- | --- | --- |
 | `--state-hover` | `#92a2b3` at 10% | `#8697a8` at 12% | Hover wash for a neutral interactive surface — menu items, table rows, ghost buttons, a clickable card. Translucent, so it works on `background`, `surface`, `surface-raised` and `muted` alike rather than being calibrated for one of them. Layer it over the surface; do not replace the surface with it. |
-| `--state-active` | `#92a2b3` at 24% | `#8697a8` at 18% | Pressed state of a neutral interactive surface. The same wash as `state-hover`, roughly twice as strong. |
-| `--state-selected` | `#47abe1` at 24% | `#529ec9` at 20% | Selected or current state — brand-tinted so selection reads as intent rather than as a heavier hover. Translucent, so a selected row keeps whatever surface it is on. |
+| `--state-active` | `#92a2b3` at 24% | `#8697a8` at 18% | Pressed state of a neutral interactive surface. The same wash as `state-hover`, 2.4× as strong in light and 1.5× in dark — the two are solved separately against each mode's surfaces, so the ratio is not the same in both. |
+| `--state-selected` | `#8e97ff` at 24% | `#7e85ff` at 20% | Selected or current state — brand-tinted so selection reads as intent rather than as a heavier hover. Translucent, so a selected row keeps whatever surface it is on. |
 | `--state-disabled` | `#92a2b3` at 17% | `#8697a8` at 15% | Fill of a disabled control. Pair with `foreground-tertiary`. Translucent like the other states — an opaque disabled fill vanishes on any surface that happens to match it, which is what the old one did on `muted`. |
-| `--primary-hover` | `#1190c6` | `#c2def0` | Hover state of a solid `primary` fill. |
-| `--primary-active` | `#0075a3` | `#deedf7` | Pressed/active state of a solid `primary` fill. |
+| `--primary-hover` | `#423dc9` | `#4c48d7` | Hover state of a solid `primary` fill. |
+| `--primary-active` | `#323397` | `#3734a6` | Pressed/active state of a solid `primary` fill. |
 | `--secondary-hover` | `#a84d00` | `#f9cfb7` | Hover state of a solid `secondary` fill. |
 | `--secondary-active` | `#883c00` | `#fce6d8` | Pressed/active state of a solid `secondary` fill. |
 | `--success-hover` | `#008536` | `#127733` | Hover state of a solid `success` fill — a success button. |
@@ -85,18 +85,18 @@ re-points itself in dark mode. This is the whole API.
 | `--border-subtle` | `#dce3eb` | `#3e4b58` | Barely-there separator inside an already-bounded area. Deliberately below the visible-boundary threshold — never use it as the only thing dividing two regions. |
 | `--border-strong` | `#92a2b3` | `#8697a8` | Emphasised border — hovered fields, pulled-out quotes. |
 | `--input` | `#acbccd` | `#6d7e90` | Border of a form control at rest. |
-| `--ring` | `#47abe1` | `#a1cbe7` | Focus ring on a neutral ground — a page, a card, an input. On a `primary` or otherwise coloured fill it disappears into its own background: use `ring-inverse` there. |
+| `--ring` | `#574cff` | `#7e85ff` | Focus ring on a neutral ground — a page, a card, an input. On a `primary` or otherwise coloured fill it disappears into its own background: use `ring-inverse` there. |
 | `--ring-inverse` | `#f7f9fb` | `#1b2127` | Focus ring for a control sitting on a coloured or inverted ground — a button already filled with `primary`, anything on `inverse`. The neutral extreme for the mode, so it reads against a brand colour rather than blending into it. |
-| `--ring-inset` | `#f7f9fb` | `#1b2127` | Drawn immediately inside `ring` as a second hairline, so a focus indicator survives on a ground the system cannot predict — one of the two always contrasts. Not a substitute for `ring`. |
+| `--ring-inset` | `#f7f9fb` | `#f4f6f8` | Drawn immediately inside `ring` as a second hairline, so a focus indicator survives on a ground the system cannot predict — one of the two always contrasts. Not a substitute for `ring`. |
 
 ### Brand
 
 | Token | Light | Dark | Use it for |
 | --- | --- | --- | --- |
-| `--primary` | `#47abe1` | `#a1cbe7` | Solid primary fill — primary buttons, active nav, key accents. |
-| `--primary-foreground` | `#f7f9fb` | `#1b2127` | Text and icons on a solid `primary` fill. Never use it on a page background. |
-| `--primary-subtle` | `#e4f3fd` | `#013951` | Tinted primary wash — quiet badges, selected rows, callouts. Not a text colour. |
-| `--primary-subtle-foreground` | `#005d82` | `#c2def0` | Text on `primary-subtle`. |
+| `--primary` | `#574cff` | `#6362fa` | Solid primary fill — primary buttons, active nav, key accents. |
+| `--primary-foreground` | `#f7f9fb` | `#f4f6f8` | Text and icons on a solid `primary` fill. Never use it on a page background. |
+| `--primary-subtle` | `#edefff` | `#252579` | Tinted primary wash — quiet badges, selected rows, callouts. Not a text colour. |
+| `--primary-subtle-foreground` | `#423dc9` | `#d1d6ff` | Text on `primary-subtle`. |
 | `--secondary` | `#cc6000` | `#f3b590` | Solid secondary fill — secondary buttons and supporting accents. |
 | `--secondary-foreground` | `#f7f9fb` | `#1b2127` | Text and icons on a solid `secondary` fill. Never use it on a page background. |
 | `--secondary-subtle` | `#ffece0` | `#562300` | Tinted secondary wash — quiet badges, selected rows, callouts. Not a text colour. |
@@ -427,11 +427,8 @@ this case:
 ```
 
 **Set copy on a brand field at `body-lg` or larger.** Every `-foreground` is validated as a
-label colour (Lc 60), not as body text (Lc 75). Some clear the body bar comfortably —
-`--primary-foreground` on `--primary` measures Lc 77.3 in light — but you cannot rely on that
-per-fill: `--success-foreground` on `--success` is Lc 61.0, a point over the label bar and
-nowhere near the body one. Set small print on a brand or status band and it will be unreadable on
-some of them.
+label colour (Lc 60), not as body text (Lc 75), and how much
+headroom each has varies per fill. Measured on this brand in light mode, tightest first: `--success` Lc 61, `--secondary` Lc 68, `--info` Lc 69, `--warning` Lc 71, `--danger` Lc 73, `--primary` Lc 77. The floor is `--success` at Lc 61. Set small print on the tighter ones and it will not be readable.
 Small print on a brand band has no compliant colour in this system, so don't put any there.
 
 **Card** — `background: var(--surface)`, `border: 1px solid var(--border)`,
@@ -525,7 +522,7 @@ base rule times the exit, the `:hover` rule times the entrance. One `transition`
 
 ```css
 /* ❌ a raw value — invisible to theming, wrong in dark mode */
-.button { background: #47abe1; color: white; }
+.button { background: #574cff; color: white; }
 
 /* ❌ a primitive — skips the layer that carries the meaning */
 .button { background: var(--primary-700); }
@@ -572,21 +569,21 @@ use the one that describes your intent, because the values diverge the moment th
 | light | `#36414d` | `--muted-foreground`, `--inverse` |
 | light | `#92a2b3` | `--foreground-tertiary`, `--border-strong`, `--skeleton` |
 | light | `#acbccd` | `--border`, `--input` |
-| light | `#47abe1` | `--ring`, `--primary` |
+| light | `#574cff` | `--ring`, `--primary` |
+| light | `#323397` | `--link`, `--primary-active` |
+| light | `#423dc9` | `--primary-hover`, `--primary-subtle-foreground` |
 | light | `#883c00` | `--secondary-active`, `--secondary-subtle-foreground` |
 | light | `#7e4000` | `--warning-active`, `--warning-subtle-foreground` |
 | light | `#970d16` | `--danger-active`, `--danger-subtle-foreground` |
 | light | `#005783` | `--info-active`, `--info-subtle-foreground` |
-| dark | `#1b2127` | `--background`, `--surface-sunken`, `--ring-inverse`, `--ring-inset`, `--primary-foreground`, `--secondary-foreground`, `--warning-foreground` |
+| dark | `#1b2127` | `--background`, `--surface-sunken`, `--ring-inverse`, `--secondary-foreground`, `--warning-foreground` |
 | dark | `#3e4b58` | `--surface-raised`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
 | dark | `#8697a8@0.18` | `--muted`, `--state-active` |
-| dark | `#f4f6f8` | `--foreground`, `--success-foreground`, `--danger-foreground`, `--info-foreground` |
+| dark | `#f4f6f8` | `--foreground`, `--ring-inset`, `--primary-foreground`, `--success-foreground`, `--danger-foreground`, `--info-foreground` |
 | dark | `#e7ebef` | `--muted-foreground`, `--inverse` |
 | dark | `#8697a8` | `--foreground-tertiary`, `--border-strong`, `--skeleton` |
 | dark | `#6d7e90` | `--border`, `--input`, `--inverse-border` |
-| dark | `#a1cbe7` | `--ring`, `--primary` |
-| dark | `#deedf7` | `--link`, `--primary-active` |
-| dark | `#c2def0` | `--primary-hover`, `--primary-subtle-foreground` |
+| dark | `#3734a6` | `--link-inverse`, `--primary-active` |
 | dark | `#f9cfb7` | `--secondary-hover`, `--secondary-subtle-foreground` |
 | dark | `#2e924b` | `--success`, `--success-border` |
 | dark | `#f3d2b8` | `--warning-hover`, `--warning-subtle-foreground` |
@@ -673,7 +670,22 @@ Text pairs are validated with APCA (Lc), which unlike WCAG 2 models dark-mode pe
 **Each pair is held to the threshold for its own job, not to a single number:** Lc 75 for body text,
 Lc 60 for UI labels and large text, Lc 25 for non-text boundaries.
 
-**1 pairs currently miss their threshold** — see the brand's warnings. Do not treat the values in this file as validated until they are cleared.
+Every **validated** pair clears its own threshold, in both modes. Three things that
+sentence does not mean:
+
+- It is not "every pair clears 75". Labels on solid fills and `--foreground-secondary` are held to
+  the Lc 60 bar and sit well below the body target — correct for their job, wrong for small body
+  copy. Set supporting text below `body-lg` in `--muted-foreground`.
+- `--border-subtle` and `--foreground-tertiary` are **deliberately exempt**. Both are defined as
+  below the visible threshold, so they are not validated and never will be. Neither may be the only
+  thing carrying meaning — `--border-subtle` separates rows inside an already-bounded table, it
+  does not divide two regions.
+- Pairs nobody declared are not checked. If you compose a combination the token descriptions don't
+  sanction — `--primary` as body text, `--muted-foreground` on `--surface-raised` — you are
+  outside the validated set and should measure it yourself.
+
+**"Large text" means `body-lg` (1.125rem) and up at weight 400, or `body` and up at weight 600.**
+Below that, the Lc 75 body bar applies.
 
 `--foreground-tertiary` is deliberately below the reading threshold. It is for placeholders and
 watermarks. If you find yourself wanting it for text a person must read, use `--muted-foreground`.

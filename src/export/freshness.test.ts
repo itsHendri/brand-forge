@@ -16,7 +16,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { join, relative } from "node:path"
 import { describe, expect, it } from "vitest"
-import { brandSlugs, EXPORTS_DIR, expectedFiles } from "../../scripts/exportFromDisk"
+import { hendriPreset } from "../presets/hendri"
+import { BRANDS_DIR, brandSlugs, EXPORTS_DIR, expectedFiles } from "../../scripts/exportFromDisk"
 
 const FIX = "Run `npm run export` to regenerate."
 
@@ -33,6 +34,26 @@ function actualFiles(root: string): string[] {
     if (existsSync(root)) walk(root)
     return found.sort()
 }
+
+/**
+ * The freshness test guarantees the export matches the brand file. It does not,
+ * and cannot, guarantee the brand file is the brand anyone meant — and on
+ * 2026-08-09 the shipped primary silently became `#47abe1` because the dev
+ * server autosaves and a `git add -A` swept the change into an unrelated docs
+ * commit. Two acceptance runs then tested a brand nobody had chosen, and the
+ * export was perfectly faithful to it the whole time.
+ */
+describe("the shipped brand is still the brand", () => {
+    it("keeps brands/hendri.json's seeds identical to the preset's", () => {
+        const saved = JSON.parse(readFileSync(join(BRANDS_DIR, "hendri.json"), "utf8")) as typeof hendriPreset
+        const seeds = (config: typeof hendriPreset) =>
+            Object.fromEntries(config.color.scales.map((scale) => [scale.role, scale.seed]))
+        expect(
+            seeds(saved),
+            "brands/hendri.json has drifted from the preset — if the change was deliberate, update src/presets/hendri.ts too",
+        ).toEqual(seeds(hendriPreset))
+    })
+})
 
 describe("exports are not stale", () => {
     const slugs = brandSlugs()

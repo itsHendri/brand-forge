@@ -552,3 +552,59 @@ warnings "the single highest-value sentence in the documentation", and those are
 front *and* repeated where relevant. It also credited rule 4's surface explanation and rule 8's wash
 explanation by name. Repetition in agent-facing docs is not automatically waste — repetition of a
 *rule across files* is, because only one copy can be right after the next edit.
+
+### 31. A measurement written by hand into a generated document is a bug — 2026-08-09
+
+Run 6 (long-form content site) found one class of error six times over, and the class matters far
+more than the instances: **prose in a generated document asserting a number somebody measured once.**
+
+The examples, all now computed from `resolveTokens()` at generation time:
+
+- "`--primary-foreground` on `--primary` measures Lc 77.3 in light" — added *while fixing run 5*, and
+  false for any other palette. On the brand run 6 actually saw it was Lc 50.6, **failing** the label
+  bar, and the sentence was holding that pair up as the example of one that clears comfortably. The
+  one line that should have warned instead reassured.
+- "`--primary` is unreadable as text in dark mode" — the failing mode is palette-dependent. On the
+  brand run 6 saw, light was the bad mode and dark passed, so a careful reader would conclude the
+  opposite of the truth.
+- "`--link` sits at the same lightness as `--foreground`, in both modes" — true of one palette. The
+  underline requirement does not depend on it; only the justification does, so the requirement now
+  stands on WCAG 1.4.1 and the measurement is printed alongside.
+- "`--state-active` is roughly twice `--state-hover`" — the alphas are solved per mode, so the ratio
+  is 2.4× in light and 1.5× in dark.
+- "`--container-prose` is ~70 characters at body size" — character count depends on the face, which
+  this tool never sees. Measured against Space Grotesk it is 80–85. The claim is withdrawn rather
+  than replaced, because it is not computable from anything in the config.
+- "N pairs currently miss their threshold — see the brand's warnings", where no warnings file ships
+  in the bundle. The failing pairs are now listed inline. (Also unpluralised at N=1, which is how you
+  can tell nobody had read it at that count.)
+
+`STATUS.md` has said since run 2 that "the numbers have never been wrong; every failure has been in
+what the prose infers from them". Six runs in, that is still exactly true — and the rule it implies
+is stronger than it has been stated: **if a sentence contains a number about this brand, it must be
+generated, or it must go.** Generated tables have never drifted. Hand-written numbers have drifted
+every single time somebody has looked.
+
+### 32. The shipped brand drifted, and only an acceptance run noticed — 2026-08-09
+
+Run 6 reported the primary as `#47abe1`. It is `#574cff`. The run was right: `brands/hendri.json` had
+silently become a different brand, and the export was faithfully following it.
+
+The mechanism: the dev server autosaves every edit instantly and unconditionally, a stray interaction
+with the colour input during a long session rewrote the seed, and a `git add -A` in a docs-only commit
+swept it in. Both acceptance runs after that point tested a brand nobody had chosen.
+
+**Every safety net held and none of them helped**, which is the part worth keeping. `resolve.test.ts`
+asserts the *preset* is `#574cff` — it passed, because the preset was untouched.
+`freshness.test.ts` asserts the export matches the *brand file* — it passed, because the export was
+regenerated from the drifted brand and matched it perfectly. The audit reported one failing pair, and
+the docs pointed at a warnings file that does not ship (#31). Undo is memory-only and the session had
+been reloaded. `brands/.backup/` holds one version and had been overwritten.
+
+So a test now asserts that `brands/hendri.json`'s seeds equal the preset's. Not because a brand may
+never be edited — that is the entire product — but because *this* brand is the shipped reference, the
+docs quote its hexes, and `STATUS.md` makes claims about it. Deliberate change means changing the
+preset too.
+
+The general lesson is about the tooling, not the code: **`git add -A` is unsafe in a repo whose dev
+server writes to tracked files.** Review the diff, or stage paths.

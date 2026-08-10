@@ -74,10 +74,11 @@ Full token tables, component recipes and wrong/right pairs live in
    both: `box-shadow: 0 0 0 2px var(--ring-inset), 0 0 0 4px var(--ring)`, so whichever half
    matches the ground, the other one is still visible.
 10. **Links in body copy are `--link`, underlined.** Not `--primary` — that is a fill colour and
-    is unreadable as text in dark mode. Hover is `--link-hover`, which gains contrast rather than
-    losing it. The underline is required, not stylistic: `--link` sits at the same lightness as
-    `--foreground` and is distinguished only by hue, so in greyscale there is no link at all.
-    Inside an inverse region use `--link-inverse`.
+    is a fill and does not survive as text on a page. Hover is `--link-hover`, which gains contrast
+    rather than losing it. **The underline is required, not stylistic** — colour alone must never be
+    the only marker of a link (WCAG 1.4.1), and on some palettes `--link` is separated from
+    `--foreground` by hue alone, which disappears in greyscale. The reference gives the measured
+    figures for this brand. Inside an inverse region use `--link-inverse`.
 11. **An inverse region is opposite to the mode, not fixed dark.** `--inverse` is a tooltip, a
     dark chip, a footer band — dark on a light page and *light* on a dark one. Everything inside it
     takes `--inverse-foreground`, `--inverse-border`, `--link-inverse`, `--ring-inverse`.
@@ -128,7 +129,7 @@ Full token tables, component recipes and wrong/right pairs live in
 ## Craft rules
 
 1. **Concentric radius.** A rounded box flush against its parent's inner edge uses `inner = outer − padding`, squared off at 0. Flush means touching the padding on both sides: a full-width field, banner or button follows the formula even though it is a control. Elements that float inside the padding with space around them — badges, chips, inline code, an auto-width button — are not concentric with anything and keep their own radius. When in doubt, ask whether the element's edge and the parent's edge are parallel and one padding apart; if they are, it is flush.
-2. **Links in body copy are underlined.** A link inside running text carries an underline, not just `--link`. Colour alone is never sufficient (WCAG 1.4.1), and on this palette it is measurably not enough: `--link` and `--foreground` sit at the same lightness in both modes and differ only in hue, so anyone reading in greyscale or with a colour vision deficiency sees no link at all. Underline by default and remove it only where the link is already unmistakable as a control — nav items, buttons, cards. Use `text-underline-offset` rather than a border, so descenders stay legible.
+2. **Links in body copy are underlined.** A link inside running text carries an underline, not just `--link`. Colour alone is never sufficient (WCAG 1.4.1). Depending on the palette `--link` can also sit at nearly the same lightness as `--foreground` and be separated by hue alone, which disappears in greyscale and for anyone with a colour vision deficiency — the reference gives the measured figures for this brand. Underline by default and remove it only where the link is already unmistakable as a control — nav items, buttons, cards. Use `text-underline-offset` rather than a border, so descenders stay legible.
 3. **Optical alignment.** On a button with a leading icon, the icon-side padding is 2px tighter than the text side (e.g. `pl-14 pr-16`). Fix lopsided glyphs in the SVG viewBox, not with margins.
 4. **Shadows elevate, borders structure.** Use `--shadow-*` for things that float above the page and `--border` for things that divide it. Never both for the same job. In dark mode elevation is a hairline ring plus a lighter surface, not a drop shadow.
 5. **Interruptible animation.** State changes use CSS transitions so they can be interrupted mid-flight. Keyframes are only for one-shot sequences.

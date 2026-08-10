@@ -681,6 +681,37 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
      * so the tie is broken explicitly rather than left to arithmetic.
      */
     const inkStep: Record<Mode, Step> = { light: 950, dark: 50 }
+
+    const linkStep: Record<Mode, Step> = {
+        light: pickAgainst(ramps.primary.light, flatGround.light, INK_CANDIDATES, LC_THRESHOLD.body),
+        dark: pickAgainst(ramps.primary.dark, flatGround.dark, PAPER_CANDIDATES, LC_THRESHOLD.body),
+    }
+    /**
+     * Whether the link is distinguishable from body text with the colour alone —
+     * measured, not asserted.
+     *
+     * This used to claim "sits at the same lightness as `foreground`, in both
+     * modes" as a flat fact. That was true of the palette it was written against
+     * and false of the next one, which is what every hand-written measurement in
+     * a generated document eventually becomes. The underline requirement does
+     * not depend on the answer; only the justification does, so the answer is
+     * computed and the requirement stands either way.
+     */
+    const linkVsForeground = (() => {
+        const gap = (mode: Mode) =>
+            Math.abs(apca(ramps.primary[mode][linkStep[mode]]!, neutral[mode][inkStep[mode]]!))
+        const light = gap("light")
+        const dark = gap("dark")
+        const flat = (lc: number) => lc < LC_THRESHOLD["non-text"]
+        if (flat(light) && flat(dark)) {
+            return "Against body text it falls below APCA's noise floor in both modes — it is separated from \`foreground\` by hue alone, so in greyscale there is no link at all."
+        }
+        if (flat(light) || flat(dark)) {
+            const bad = flat(light) ? "light" : "dark"
+            return `Against body text it measures Lc ${light.toFixed(0)} in light and Lc ${dark.toFixed(0)} in dark, so in **${bad}** mode it is separated from \`foreground\` by hue alone and disappears in greyscale.`
+        }
+        return `Against body text it measures Lc ${light.toFixed(0)} in light and Lc ${dark.toFixed(0)} in dark, so it is visibly distinct from \`foreground\` — but colour alone still must not be the only marker (WCAG 1.4.1).`
+    })()
     const secondaryRef = {
         light: {
             scale: "neutral" as const,
@@ -766,7 +797,7 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             // is the supporting-text colour that works inside a dialog too.
             ...secondaryRef,
             description:
-                "Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is verified against `surface-raised`, so it holds up on a lifted card. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it. **Neither is verified on `surface-overlay`** — the top of the ladder is the lightest ground in dark mode, and both supporting colours fall under the body bar there (`foreground-secondary` Lc 60.9, `muted-foreground` Lc 71.8). Inside a modal or a dropdown, set body copy in plain `foreground` and keep supporting text to `body-lg` or larger.",
+                "Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is verified against `surface-raised`, so it holds up on a lifted card. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it. **Neither is verified on `surface-overlay`** — the top of the ladder is the lightest ground in dark mode, and both supporting colours fall under the body bar there. Inside a modal or a dropdown, set body copy in plain `foreground` and keep supporting text to `body-lg` or larger.",
         },
         {
             name: "muted-foreground",
@@ -816,7 +847,7 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             group: "state",
             light: { scale: "neutral", step: 500, alpha: activeAlpha.light },
             dark: { scale: "neutral", step: 500, alpha: activeAlpha.dark },
-            description: "Pressed state of a neutral interactive surface. The same wash as `state-hover`, roughly twice as strong.",
+            description: `Pressed state of a neutral interactive surface. The same wash as \`state-hover\`, ${(activeAlpha.light / hoverAlpha.light).toFixed(1)}× as strong in light and ${(activeAlpha.dark / hoverAlpha.dark).toFixed(1)}× in dark — the two are solved separately against each mode's surfaces, so the ratio is not the same in both.`,
         },
         {
             name: "state-selected",
@@ -922,7 +953,7 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
                 step: pickAgainst(ramps.primary.dark, flatGround.dark, PAPER_CANDIDATES, LC_THRESHOLD.body),
             },
             description:
-                "Links in running text, on `background`, `surface` or `muted`. **Underline them** — this colour sits at the same lightness as `foreground` and differs only in hue, so colour alone does not mark a link (see the polish rules). Never use `primary` for a link: it is a fill colour and is unreadable as text in dark mode.",
+                `Links in running text, on \`background\`, \`surface\` or \`muted\`. **Underline them** — see the polish rules. ${linkVsForeground} Never use \`primary\` for a link: it is a fill colour, and on this palette it measures Lc ${Math.abs(apca(ramps.primary.light[anchors.primary]!, neutral.light[surfaces.background.light.step]!)).toFixed(0)} as text on the page in light and Lc ${Math.abs(apca(ramps.primary.dark[shift(anchors.primary, -DARK_LIFT)]!, neutral.dark[surfaces.background.dark.step]!)).toFixed(0)} in dark, against a body bar of ${LC_THRESHOLD.body}.`,
         },
         {
             name: "link-hover",
@@ -931,17 +962,11 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             // than losing it, the same rule the fills follow.
             light: {
                 scale: "primary",
-                step: shift(
-                    pickAgainst(ramps.primary.light, flatGround.light, INK_CANDIDATES, LC_THRESHOLD.body),
-                    1,
-                ),
+                step: shift(linkStep.light, 1),
             },
             dark: {
                 scale: "primary",
-                step: shift(
-                    pickAgainst(ramps.primary.dark, flatGround.dark, PAPER_CANDIDATES, LC_THRESHOLD.body),
-                    -1,
-                ),
+                step: shift(linkStep.dark, -1),
             },
             description: "Hover state of a link in running text.",
         },

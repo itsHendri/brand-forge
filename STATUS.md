@@ -1,7 +1,7 @@
 # Status — 2026-08-09
 
 **Phases 0–5 done, plus assets. The tool does the whole loop it was built for.**
-Three sessions. 155 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
+Three sessions. 162 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
 
 Type a seed colour → get a complete system → see it on realistic UI → export it as something an AI
 agent can actually build from. That runs end to end today.
@@ -56,7 +56,7 @@ Improving a default now reaches brands that already exist. See `DECISIONS.md` #2
 
 ## The quality gate
 
-**The acceptance test has run five times.** Each time a subagent with no knowledge of this project
+**The acceptance test has run six times.** Each time a subagent with no knowledge of this project
 built a real page from the exported skill folder alone, then critiqued *the documentation*. All five
 succeeded; every critique found genuine defects. The method is now a skill:
 `~/skills/skills/doc-acceptance-test/` (pushed to `github.com/itsHendri/skills`).
@@ -68,6 +68,7 @@ succeeded; every critique found genuine defects. The method is now a skill:
 | 3 | Settings page | Every status border at Lc 0; contrast claim counting half its warnings |
 | 4 | Plans/upgrade | Focus invisible on a brand field (`--ring` **is** `--primary`) |
 | 5 | App shell | The "does not define" list still denying tokens added an hour earlier |
+| 6 | Content site | The shipped brand had silently become a different colour, and six hand-written measurements were false |
 
 Runs 2–5 independently recomputed every token hex from the OKLCH sources and confirmed the doc
 tables and shared-value list are exact — run 5 checked all 70 semantics in both modes plus all 24
