@@ -105,33 +105,24 @@ site with a hero, an article, and an embedded media block. That shape has never 
 current type scale, and it is the one that would exercise `--container-prose` nesting and the display
 face, which the app shell never touched.
 
-## Immediate: cut the duplication (option C)
+## ~~Cut the duplication~~ — done 2026-08-09
 
-Decided 2026-08-09, after laying out the alternatives.
+The 🚨 deviations section no longer restates seven of `SKILL.md`'s hard rules. See `DECISIONS.md`
+#30 for what stays and why. 528 tokens, which was never the point — seven fewer places for a rule to
+drift was.
 
-**First, a correction that matters.** The 18k doc budget is something *this tool invented*, not a
-measured limit and not Hendri's. It was then treated as a discovered constraint, and it drove a
-proposal — splitting `DESIGN_SYSTEM.md` in two — that would have reduced nothing while doubling the
-number of places a rule can be restated and drift. Five acceptance runs, none has ever complained
-about length; run 5 read all 17k and produced the best build and the sharpest critique of the five.
+**The 18k budget is retired as a driver.** It was invented by this tool and then treated as a
+discovered limit; Hendri confirmed it was never his. It remains useful as a *meter* — it is what
+surfaced the duplication — but it is not a reason to cut, and it is not a reason to split the
+reference. Five runs, none has complained about length.
 
-So the reason to trim is **not** size. It is that the same rule stated in three places is three
-places to disagree, and disagreement is the defect class every run keeps finding. Size is a proxy;
-contradiction is the disease.
+**The standing rule for docs edits: cut what restates, keep what warns.** Run 5 named the three
+silent-failure warnings as the highest-value content in the file, and credited rules 4 and 8 by name.
+Repetition inside one file can be doing real work. Repetition of a rule *across* files cannot, because
+only one copy stays right after the next edit.
 
-Where the duplication actually is — the same rule appears in `SKILL.md`, in the token's `description`
-(which is also the DTCG `$description`), and again in a Component recipe. Surfaces, the state washes
-and links are the clearest cases. The reference is ~5k of generated table and ~8k of prose; the
-tables have been exact in all five runs, so **whatever gets cut, it is not those.**
-
-The honest counter, worth holding on to: run 5 called the three silent-failure warnings "the single
-highest-value sentence in the documentation", and those are prose stated up front *and* repeated
-where relevant. Repetition in agent-facing docs is not automatically waste. Cut what *restates*, keep
-what *warns*.
-
-Rejected, with reasons: splitting the reference (moves tokens, adds contradiction surface); moving
-the gap list out (it is what stops agents inventing silently); shortening token descriptions (they
-carry the "when to use it" teaching that `DECISIONS.md` #3 relies on instead of a numbering legend).
+Further trimming is not obviously worth it, and guessing which prose earns its place is exactly what
+the acceptance test exists to answer. Run it rather than reasoning about it.
 
 ## Open, and deliberately not being built yet: a CLI and/or an MCP
 

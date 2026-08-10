@@ -23,7 +23,7 @@
             {
                 "role": "primary",
                 "name": "Signal",
-                "seed": "#574cff"
+                "seed": "#47abe1"
             },
             {
                 "role": "secondary",
@@ -341,7 +341,8 @@
             "hit-areas": true,
             "icon-stroke": true,
             "focus-visible": true,
-            "reduced-motion": true
+            "reduced-motion": true,
+            "underline-links": true
         }
     }
 }

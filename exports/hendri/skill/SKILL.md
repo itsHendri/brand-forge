@@ -128,18 +128,19 @@ Full token tables, component recipes and wrong/right pairs live in
 ## Craft rules
 
 1. **Concentric radius.** A rounded box flush against its parent's inner edge uses `inner = outer − padding`, squared off at 0. Flush means touching the padding on both sides: a full-width field, banner or button follows the formula even though it is a control. Elements that float inside the padding with space around them — badges, chips, inline code, an auto-width button — are not concentric with anything and keep their own radius. When in doubt, ask whether the element's edge and the parent's edge are parallel and one padding apart; if they are, it is flush.
-2. **Optical alignment.** On a button with a leading icon, the icon-side padding is 2px tighter than the text side (e.g. `pl-14 pr-16`). Fix lopsided glyphs in the SVG viewBox, not with margins.
-3. **Shadows elevate, borders structure.** Use `--shadow-*` for things that float above the page and `--border` for things that divide it. Never both for the same job. In dark mode elevation is a hairline ring plus a lighter surface, not a drop shadow.
-4. **Interruptible animation.** State changes use CSS transitions so they can be interrupted mid-flight. Keyframes are only for one-shot sequences.
-5. **Exits are faster than entrances.** Enter: `--duration-base`, opacity 0→1 with a 12px rise. Exit: `--duration-fast`, opacity→0 with a 12px fall. Leaving should never take as long as arriving.
-6. **Press feedback.** Active state scales to 0.96 over `--duration-fast`. Never below 0.95.
-7. **Never `transition: all`.** Name the properties you are animating. `transition: all` animates layout properties by accident and stutters.
-8. **Tabular numbers.** `font-variant-numeric: tabular-nums` for numbers that change in place (counters, timers) or that are compared down a column (amounts, counts, durations). Not for identifiers that merely contain digits — version strings, phone numbers, order references — even when they sit in a table.
-9. **Text wrapping.** `text-wrap: balance` on headings up to ~6 lines; `text-wrap: pretty` on body copy.
-10. **Hit areas.** 44×44px minimum on touch, 40×40px in dense desktop UI. Extend with a pseudo-element rather than padding that breaks the layout. Hit areas must not overlap.
-11. **Icon stroke matches text weight.** 1.5px stroke next to 400-weight text, 2px next to 600. One stroke weight per icon set. Recolour with `currentColor`.
-12. **Focus is always visible.** Keyboard focus draws a 2px `--ring` outline with a 2px offset. Never `outline: none` without a replacement.
-13. **Honour reduced motion.** Under `prefers-reduced-motion: reduce`, drop transforms and cut durations to near zero. Motion is never the only signal that something changed — pair it with colour, icon or label.
+2. **Links in body copy are underlined.** A link inside running text carries an underline, not just `--link`. Colour alone is never sufficient (WCAG 1.4.1), and on this palette it is measurably not enough: `--link` and `--foreground` sit at the same lightness in both modes and differ only in hue, so anyone reading in greyscale or with a colour vision deficiency sees no link at all. Underline by default and remove it only where the link is already unmistakable as a control — nav items, buttons, cards. Use `text-underline-offset` rather than a border, so descenders stay legible.
+3. **Optical alignment.** On a button with a leading icon, the icon-side padding is 2px tighter than the text side (e.g. `pl-14 pr-16`). Fix lopsided glyphs in the SVG viewBox, not with margins.
+4. **Shadows elevate, borders structure.** Use `--shadow-*` for things that float above the page and `--border` for things that divide it. Never both for the same job. In dark mode elevation is a hairline ring plus a lighter surface, not a drop shadow.
+5. **Interruptible animation.** State changes use CSS transitions so they can be interrupted mid-flight. Keyframes are only for one-shot sequences.
+6. **Exits are faster than entrances.** Enter: `--duration-base`, opacity 0→1 with a 12px rise. Exit: `--duration-fast`, opacity→0 with a 12px fall. Leaving should never take as long as arriving.
+7. **Press feedback.** Active state scales to 0.96 over `--duration-fast`. Never below 0.95.
+8. **Never `transition: all`.** Name the properties you are animating. `transition: all` animates layout properties by accident and stutters.
+9. **Tabular numbers.** `font-variant-numeric: tabular-nums` for numbers that change in place (counters, timers) or that are compared down a column (amounts, counts, durations). Not for identifiers that merely contain digits — version strings, phone numbers, order references — even when they sit in a table.
+10. **Text wrapping.** `text-wrap: balance` on headings up to ~6 lines; `text-wrap: pretty` on body copy.
+11. **Hit areas.** 44×44px minimum on touch, 40×40px in dense desktop UI. Extend with a pseudo-element rather than padding that breaks the layout. Hit areas must not overlap.
+12. **Icon stroke matches text weight.** 1.5px stroke next to 400-weight text, 2px next to 600. One stroke weight per icon set. Recolour with `currentColor`.
+13. **Focus is always visible.** Keyboard focus draws a 2px `--ring` outline with a 2px offset. Never `outline: none` without a replacement.
+14. **Honour reduced motion.** Under `prefers-reduced-motion: reduce`, drop transforms and cut durations to near zero. Motion is never the only signal that something changed — pair it with colour, icon or label.
 
 ## Reviewing existing code
 

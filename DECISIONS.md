@@ -524,3 +524,31 @@ somebody edits one section in isolation.
 The lesson to carry: **run this after a change, not before a release.** Half these defects existed
 for under a day, and none would have been found by reading — the "does not define" bullet reads
 perfectly, and is false.
+
+### 30. The rules are stated once, in SKILL.md — 2026-08-09
+
+The reference's 🚨 section repeated seven of `SKILL.md`'s hard rules verbatim, interpolated values
+and all: dark mode as an attribute, never a primitive, breakpoints, containers, spacing, radius, type
+roles. `SKILL.md` always loads and the reference is read after it, so the second copy taught an agent
+nothing it had not already been told — and it was seven more places for a rule to drift from the file
+that stated it first. Drift between two statements of the same rule is the defect class every
+acceptance run keeps finding; run 5 alone returned four.
+
+What stays in the deviations, and why each earns it: the **shadcn name mapping** (computed from which
+names this brand actually lacks — not a rule, and not statable without the config); the **on-brand
+trap** (placed there deliberately after an earlier run found it, and pinned by a test); the
+**label-polarity note** (claimed only in the modes where the polarity actually splits, which is
+measured); and the brand's own hand-written deviations. Everything else was a rule, and rules live in
+`SKILL.md`.
+
+**The saving was not the point and is not the justification.** It came to 528 tokens out of 17k. The
+budget that prompted this was invented by this tool, treated as a discovered limit, and used to argue
+for splitting the reference in two — which would have reduced nothing while doubling the surface for
+exactly this defect. Five acceptance runs, none has complained about length; run 5 read all 17k and
+produced the best build of the five.
+
+The rule to keep: **cut what restates, keep what warns.** Run 5 called the three silent-failure
+warnings "the single highest-value sentence in the documentation", and those are prose, stated up
+front *and* repeated where relevant. It also credited rule 4's surface explanation and rule 8's wash
+explanation by name. Repetition in agent-facing docs is not automatically waste — repetition of a
+*rule across files* is, because only one copy can be right after the next edit.

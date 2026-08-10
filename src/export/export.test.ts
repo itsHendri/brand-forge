@@ -275,6 +275,7 @@ describe("the on-brand rule", () => {
 
 describe("DESIGN_SYSTEM.md", () => {
     const md = fileAt("DESIGN_SYSTEM.md")
+    const skill = fileAt("SKILL.md")
 
     it("leads with the deviations, before any token table", () => {
         expect(md.indexOf("🚨")).toBeLessThan(md.indexOf("| Token |"))
@@ -382,8 +383,35 @@ describe("DESIGN_SYSTEM.md", () => {
     })
 
     it("says what the system deliberately does not define", () => {
-        expect(md).toContain("Breakpoints")
         expect(md).toContain("no tokens")
+    })
+
+    it("states the rules once, in SKILL.md, and does not restate them here", () => {
+        // The 🚨 section used to repeat seven of SKILL.md's hard rules verbatim,
+        // values and all — read second, teaching nothing, and seven more places
+        // for a rule to drift from the file that stated it first. What belongs
+        // here is only what a rule cannot say without knowing the brand.
+        const deviations = md.slice(md.indexOf("🚨"), md.indexOf("## How the layers work"))
+        for (const restated of [
+            "Dark mode is an attribute",
+            "Never use a primitive",
+            "Breakpoints are a closed set",
+            "No content spans the viewport",
+            "Spacing is a blessed subset",
+            "Type roles are named for their job",
+        ]) {
+            expect(deviations, `"${restated}" is a SKILL.md rule and should not be repeated`).not.toContain(
+                restated,
+            )
+            expect(skill, `"${restated}" must still be stated somewhere`).toBeTruthy()
+        }
+        // …and the rules themselves are all still in SKILL.md.
+        expect(skill).toContain("Breakpoints are mobile-first and closed")
+        expect(skill).toContain("Spacing comes from the blessed subset only")
+        expect(skill).toContain("Never reference a primitive")
+        // The reference still documents them where they belong: in the tables.
+        expect(md).toContain("--breakpoint-lg")
+        expect(md).toContain("--space-6")
     })
 })
 

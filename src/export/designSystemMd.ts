@@ -56,8 +56,21 @@ function table(headers: string[], rows: string[][]): string {
 }
 
 /**
- * Where this system contradicts a default assumption. Computed, not authored,
- * so it can't go stale when the brand changes.
+ * Where this system contradicts a default assumption — and *only* the parts that
+ * need the brand to be known.
+ *
+ * This list used to restate seven of `SKILL.md`'s hard rules verbatim, values
+ * and all. That is not free: `SKILL.md` always loads and this file is read after
+ * it, so the second copy taught an agent nothing it had not already been told,
+ * and it was seven more places for a rule to drift out of step with the file
+ * that stated it first. Drift between two statements of the same rule is the
+ * defect class every acceptance run finds; see DECISIONS #30.
+ *
+ * What stays: the shadcn name mapping (computed from which names this brand
+ * actually lacks), the on-brand trap (placed here deliberately after an earlier
+ * run, and pinned by a test), the label-polarity note (only claimed in the modes
+ * where it is true), and the brand's own hand-written deviations. Everything
+ * else is a rule, and rules live in SKILL.md.
  */
 function deviations(resolved: ResolvedTokens): string[] {
     const { config } = resolved
@@ -84,43 +97,16 @@ function deviations(resolved: ResolvedTokens): string[] {
         )
     }
 
-    out.push(
-        `**Dark mode is an attribute, not a media query.** Every token re-points under \`[data-theme="dark"]\`. Set that attribute on \`<html>\`; do not write \`dark:\` variants of colour utilities — the token already changed.`,
-    )
 
-    out.push(
-        `**Never use a primitive (\`--${resolved.scales.primary?.role ?? "primary"}-600\`) in a component.** Primitives exist so a human can tune the ramp. Components and generated code use semantics only. If no semantic fits, say so rather than reaching past the layer.`,
-    )
 
     out.push(
         `**On a coloured fill, the neutral text tokens are wrong.** Inside a \`--primary\` band or a solid status banner, text and controls take that fill's own \`-foreground\` — for text *and* border. \`--foreground\` is dark ink and is unreadable there. Full-bleed call-to-action sections are where this bites.`,
     )
 
-    if (config.radius.basePx !== 8) {
-        out.push(
-            `**Radius is derived from one base of ${config.radius.basePx}px**, not from Tailwind's defaults: \`--radius-sm\` ${resolved.radius.sm}px, \`--radius-md\` ${resolved.radius.md}px, \`--radius-lg\` ${resolved.radius.lg}px, \`--radius-xl\` ${resolved.radius.xl}px.`,
-        )
-    }
 
-    const breakpointList = config.layout.breakpoints
-        .map((breakpoint) => `${breakpoint.minPx}px (\`${breakpoint.name}\`)`)
-        .join(", ")
-    out.push(
-        `**Breakpoints are a closed set and mobile-first only:** ${breakpointList}. Any other number is not a breakpoint, and there are no \`max-width\` breakpoints. \`var(--breakpoint-*)\` does not work inside a media query — write the pixel value.`,
-    )
 
-    out.push(
-        `**No content spans the viewport.** Every region's *content* sits in a \`--container-*\`, centred with \`margin-inline: auto\`, and running text takes \`--container-prose\` even inside a wider frame. Backgrounds and borders may still go full-bleed — a sticky top bar or a footer rule spans the window while the things inside it stay contained. A full-bleed paragraph is a bug; a full-bleed background is not.`,
-    )
 
-    const blessed = config.spacing.blessed
-    out.push(
-        `**Spacing is a blessed subset, not every multiple of ${config.spacing.basePx}.** Only ${blessed.map((px) => `\`--space-${spaceName(px, config.spacing.basePx)}\` (${px}px)`).join(", ")} exist. A value between two of them is a bug, not a refinement.`,
-    )
 
-    out.push(
-        `**Type roles are named for their job**, never \`h1\`/\`h2\`/\`text-2xl\`: ${config.typography.roles.map((role) => `\`--text-${role.role}\``).join(", ")}. Heading level is semantics for the document outline; size comes from the role token.`,
-    )
 
     const onFills = resolved.semantics.filter(
         (token) => token.name.endsWith("-foreground") && token.light.scale === "neutral",
