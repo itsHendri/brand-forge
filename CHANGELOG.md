@@ -4,6 +4,12 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+### Session 3 — 2026-08-09
+
+Rebuilt the token layer against IBM Carbon and Atlassian, and ran the acceptance test three more
+times (5, 6, 7). 57 → 71 semantic tokens plus a stacking order and an app frame; 115 → 166 tests.
+Pushed to `github.com/itsHendri/brand-forge`.
+
 - **Fixed: `--container-intro` was documented and did not exist.** Added to the defaults, justified in
   the Editorial section, and never emitted — because a saved brand's four-item `containers` array
   replaced the five-item default. `var(--container-intro)` resolves to nothing, so the headline it

@@ -1,290 +1,166 @@
 # Future
 
-Start here next session. Read `STATUS.md` first for where things actually stand.
+Start here. Read `STATUS.md` first for where things actually stand, and `DECISIONS.md` before
+changing anything that looks arbitrary — most of it isn't.
 
-## Immediate next step
+Session 3 (2026-08-09) rebuilt the token layer against IBM Carbon and Atlassian, Hendri's two
+favourite systems, and ran the acceptance test three more times. Everything those runs found is
+fixed except what is listed below.
 
-**Close the token gaps, using Carbon and Atlassian as the reference.** Hendri named IBM Carbon and
-Atlassian as his two favourite systems on 2026-08-09; both were read in full (core token tables,
-colour roles, elevation model) and both answer most of the *Gaps* list below. Phase 6 moves behind
-this — see the reasoning under *After that*.
+---
 
-### 0. ~~First, stop the drift~~ — done 2026-08-09
+## Pick one of these
 
-Both halves shipped. `brands/*.json` now stores only `color.semanticOverrides` — the deltas a human
-actually made — and everything else regenerates on load, so step 1's new tokens will reach the saved
-brand without anyone deleting a file (`DECISIONS.md` #22). `npm run export` regenerates `exports/`
-headlessly and `src/export/freshness.test.ts` fails when it goes stale (#23).
+### A. The syntax-highlighting palette — the biggest hole
 
-Verified rather than assumed: the one real brand file had drifted in zero of its 57 tokens, so the
-format conversion froze nothing, and it shrank from 40KB to 14.7KB.
+Run 7 built a documentation site and its code blocks came out **monochrome**. There is nothing for
+keywords, strings, comments or numbers, and the obvious workaround is closed off: the solid
+`--<status>` tokens are forbidden as text on a page background, so you cannot borrow `--success` for
+a string literal.
 
-**What this means for step 1:** add a token to `defaultSemanticMapping`, and it appears in the
-preview, in `brands/hendri.json` and in `exports/hendri/` without any manual step. If a test reports
-a stale export, run `npm run export`.
+A design system whose own docs are a code-heavy site cannot colour a code sample. That is the
+clearest remaining gap in the product.
 
-### 1. ~~The settled batch~~ — done 2026-08-09
+Carbon ships ~90 `$syntax-*` tokens, which is far more than this needs — but the answer is not zero.
+Think: keyword, string, comment, number, function, punctuation, and a diff pair. Seven or eight,
+measured against `--muted` (where code blocks live) in both modes.
 
-All of it shipped. 57 → 68 semantic tokens, plus two opacities. Every one is chosen by measurement
-and covered by a contrast pair, and the shipped preset still reports zero warnings.
+**Watch for:** they must be readable on `--muted` composited over every ladder surface, which is the
+same compositing problem the state washes have. `composite()` and the `over` field in
+`CONTRAST_PAIRS` already exist for this.
 
-- **Inverse region** — `--inverse`, `--inverse-foreground`, `--inverse-border`, plus `--link-inverse`
-  and `--ring-inverse`. Inverse means *opposite to the mode*, so on a dark page the chip is light.
-- **Links** — `--link`, `--link-hover`, `--link-inverse`. Measured as body text against the hardest
-  flat surface, which is what `--primary` never was.
-- **Focus** — `--ring-inverse` for a coloured or inverted ground, `--ring-inset` as the companion
-  hairline. Acceptance run 4's defect is now a token rather than a rule.
-- **Opacity** — `--opacity-disabled`, `--opacity-loading`. Two, and neither is for live text.
-- **Skeleton** — `--skeleton` on `--skeleton-surface`, measured against each other.
-- **Scrim** — `--scrim`, the one translucent token (`DECISIONS.md` #24).
+### B. `--muted` is doing five jobs
 
-Two findings came out of building it, both worth knowing:
+Table headers, inactive tabs, code blocks, neutral badges and image placeholders all resolve to the
+same 18% wash, so run 7's content page "reads as one undifferentiated grey texture". In dark mode it
+is also byte-identical to `--state-active`, so pressing a table row paints it the header's colour.
 
-**A link cannot rely on colour here.** `--link` and `--foreground` sit at the *same lightness* in
-both modes and differ only in hue, so in greyscale there is no link at all. The palette cannot fix
-it — only the two lightest primary steps clear the body bar on the darkest flat ground in dark mode.
-So the system mandates an underline instead, as a polish rule (`underline-links`) and in every place
-the token is documented.
+This is a real design problem, not a doc problem. Options: split code surfaces from quiet fills, or
+accept it and say so. Do not add a token without deciding which of the five jobs it takes.
 
-**Dark mode in the preview had been broken since the iframe landed.** See `DECISIONS.md` #25 — the
-canvas rendered light values under a dark label for a session and a half, and every test stayed
-green. Fixed.
+### C. `--primary-subtle` is invisible where the recipe blesses it
 
-### 2. ~~Make the state tokens transparent~~ — done 2026-08-09
+Measured Lc 2.2 on `--background` in light — *worse* than the `--secondary-subtle` (Lc 3.0) the docs
+explicitly warn about, and `primary` is the role the Badge recipe names first. The warning describes
+one case and misses the identical one in the sanctioned default.
 
-All four `--state-*` tokens are translucent washes now, and their alphas are **solved against the
-palette** rather than picked: `active` is the strongest wash that keeps body text at Lc 75 on every
-surface, `hover` the gentlest that still visibly shifts every surface, `disabled` their midpoint,
-`selected` the same solve on the primary ramp. See `DECISIONS.md` #26.
+Either the subtle steps need re-picking against the page rather than against `--surface`, or the
+Badge recipe needs to stop blessing a fill nobody can see. Measure before choosing.
 
-Worth knowing before step 3 touches the surfaces: **dark mode is squeezed from both directions by
-`surface-raised`.** It is the lightest ground, so a lightening wash eats the foreground's contrast
-fastest — and it is nearest the wash on the ramp, so it shifts least. Dark tolerates less wash at
-the top (0.18 vs 0.24) and needs more at the bottom (0.12 vs 0.10). Renaming or re-pointing the
-surface ladder will move both numbers; the solver will follow, but look at the result.
+### D. The logo accent shifts between modes
 
-The audit grew to match: `CONTRAST_PAIRS` gained an `over`, and a wash is composited onto each
-ground before being measured. Sixteen pairs where there were two.
+The sanctioned pattern is `fill="var(--secondary-500, #f1760f)"`, but primitive ramps re-declare
+under `[data-theme="dark"]`, so the accent renders `#f1760f` in light and `#d97736` in dark. The one
+place the docs sanction reaching into a primitive is the one place the primitive layer's
+mode-switching bites. Either the mark needs a non-theming token, or the docs should say the accent
+moves.
 
-### 3. ~~Rename the elevation model on Atlassian's scheme~~ — done 2026-08-09
+### E. Smaller, all named by run 7
 
-Five levels now: `--surface-sunken / --background / --surface / --surface-raised / --surface-overlay`,
-with shadows renamed to pair by name (`sm`, `raised`, `overlay` — `md` and `lg` are gone). See
-`DECISIONS.md` #27 for what the palette refused to give.
-
-The short version: both modes run out of ramp at opposite ends, so light collapses raised and overlay
-onto `surface` (shadows carry it) and dark collapses sunken onto `background`. Dark also has a hard
-ceiling — `neutral-700` is Lc 79 and `neutral-600` fails at 68 — so 950/900/800/700 is the whole
-ladder and there is no fifth level to be had.
-
-That left no opaque step for `--muted`, so **`--muted` is now a translucent wash** (Hendri's call).
-Anything nesting a quiet fill inside a surface should layer it rather than replace the surface.
-
-### 4. ~~Z-index and app-shell interiors~~ — done 2026-08-09
-
-Seven stacking layers (`--z-sticky` 100 → `--z-tooltip` 600) and five frame dimensions
-(`--shell-header`, `--shell-sidebar`, `--shell-sidebar-collapsed`, `--shell-aside`,
-`--shell-table-min`). Both closed sets, both carrying their reasoning in the notes. See
-`DECISIONS.md` #28.
-
-The Dashboard context now uses them instead of the numbers it had invented, which is the honest test
-of whether they are the right ones.
-
-### 5. ~~Run the acceptance test, on an app shell~~ — done 2026-08-09
-
-Run 5 built a multi-column shell and returned eight documentation defects, **four of them introduced
-by this same session's token work hours earlier**. Every number it checked was exact; every defect
-was prose. All eight are fixed with a test each. See `DECISIONS.md` #29.
-
-The lesson worth keeping: **run this after a change, not before a release.** The worst finding — the
-"what this system does not define" list still denying tokens added an hour before, forty lines above
-the tables defining them — reads perfectly and is false. No amount of re-reading would have caught it.
-
-**Brief the next run on something with heavy long-form content and imagery** — a marketing or docs
-site with a hero, an article, and an embedded media block. That shape has never been run against the
-current type scale, and it is the one that would exercise `--container-prose` nesting and the display
-face, which the app shell never touched.
-
-## ~~Cut the duplication~~, ~~and add the editorial layer~~ — done 2026-08-09
-
-The 🚨 section no longer restates seven of `SKILL.md`'s hard rules (`DECISIONS.md` #30), and the
-reference gained an **Editorial** section — running text, figures, code, button sizes — plus three
-tokens: `--inverse-muted-foreground`, `--container-intro`, and a documented job for `--shadow-sm`,
-which had none (#33). `display`'s floor rose to 2.5rem so a hero stays clear of a section heading on
-a phone.
-
-**The budget is retired as a driver.** It was invented by this tool, never Hendri's, and was used to
-argue for a split that would have reduced nothing. It is now a smoke alarm at 24k — useful for
-noticing a jump, not a reason to cut. Standing rule: **cut what restates, keep what warns.**
-
-## ~~Acceptance run 7~~ — done 2026-08-09. What it left open.
-
-The Editorial section worked: coverage went from "seventy per cent had nothing behind it" to "roughly
-55% specified", and run 7 called it "the difference between this being usable and not". Colour is
-complete — it never guessed a colour in either mode.
-
-Everything it found is fixed except these, which are real and were not worth rushing:
-
-- **No syntax-highlighting palette.** For a documentation system this is the biggest hole: there is
-  nothing for keywords, strings or comments, and the obvious workaround is closed off because the
-  solid `--<status>` tokens are forbidden as text on a page. Run 7's code blocks are monochrome.
-  Carbon ships ~90 `$syntax-*` tokens; that is far more than this needs, but the answer is not zero.
-- **`--muted` is doing five jobs** — table headers, inactive tabs, code blocks, neutral badges, image
-  placeholders — so a content page flattens into one grey texture. In dark mode it is also
-  byte-identical to `--state-active`, so pressing a table row paints it the header's colour.
-- **`--primary-subtle` measures Lc 2.2 on `--background`**, worse than the `--secondary-subtle`
-  (Lc 3.0) the docs explicitly warn about — and `primary` is the role the Badge recipe blesses. The
-  warning names one case and misses the identical one in the sanctioned default.
-- **The logo accent shifts between modes.** The sanctioned pattern is `var(--secondary-500, #f1760f)`,
-  but primitive ramps re-declare under `[data-theme="dark"]`, so the accent is `#f1760f` in light and
-  `#d97736` in dark. The one place the docs sanction reaching into a primitive is the one place the
-  primitive layer's mode-switching bites.
 - **Media geometry** — aspect ratios, figure radius, whether a full-bleed figure's caption aligns to
-  the figure or the text column. And a **footer layout**, an **`hr`**, and **`scroll-padding-top`**
-  for anchors under sticky chrome, which a docs site is made of.
+  the figure or the text column.
+- **A footer layout** — `--inverse` is documented as "a footer band" and four `inverse-*` tokens
+  exist, but there is no column count, gap or link treatment.
+- **`scroll-padding-top` for anchors under sticky chrome.** A docs site is nothing but in-page
+  anchors and `--shell-header` exists; nothing connects them.
+- **An `hr` / section break.** Nothing.
+- **Whether a *marketing* header may use `--shell-header`**, which is documented as app chrome.
 
-Brief run 8 on whatever these turn into — and keep varying the shape, since seven runs have each
-found a different class.
+---
 
-## Open, and deliberately not being built yet: a CLI and/or an MCP
+## Then: acceptance run 8
+
+Seven runs, seven distinct classes of defect, and every one found something real. Keep varying the
+shape — the brief table is in the `doc-acceptance-test` skill.
+
+Three things that have never been briefed: an email/newsletter layout (no media queries, tables for
+layout), a data-dense chart or report page (the system has no chart colours at all), and a form-heavy
+multi-step flow.
+
+**The lesson from runs 5–7: run it after a change, not before a release.** Four of run 5's eight
+findings were introduced hours earlier the same day. Run 7's worst finding was a token added that
+morning. None of these would survive a build attempt; all of them survived careful reading.
+
+---
+
+## Still open, older
+
+**Is Ember the button colour, or the darkened stand-in?** `--secondary` resolves to `#cc6000` so it
+can carry a label, while the ramp keeps `#f1760f` at its anchor. The Components preview now has a
+*When a fill can't carry a label* section showing the seed with a dark label, the seed with a white
+label, and the shipped `--secondary`, side by side. Pick whichever you can read. Both references
+solve this with an inverse token rather than by darkening, so switching is a real option now those
+tokens exist. **Do not settle it by argument — look at it.**
+
+**Gaps the docs declare honestly and still do not solve:** icon box size (the craft rules specify
+stroke weight to a fraction of a pixel and never the box); card emphasis for "this is the recommended
+plan"; a wordmark treatment in type; standalone font weights and blur; a reduced-motion duration
+below 100ms; a type step between 1.5rem and 2.25rem; theme persistence.
+
+**Known rough edges:** undo history is memory-only (a refresh clears it; `brands/.backup/` holds only
+the immediately-previous version); `client-zip` is planned and not installed, so the download path
+writes one file at a time; `migrateConfig` fills and merges but does not *validate* — a file with
+`radius: "nonsense"` still gets through, and `zod` was planned for that; preview contexts are inline
+`style={{}}` objects, which Phase 6 will need as real stylesheets; and `DARK_LIFT` decides where
+`pickFill`'s dark search starts, which a very light or very dark seed may not want.
+
+---
+
+## Phase 6 — the static guideline page
+
+The one output the tool still doesn't produce: a second Vite entry SSG-rendering the preview contexts
+plus the token tables into `exports/<slug>/guidelines/index.html`, so a brand is handed over as a page
+rather than a folder of Markdown.
+
+It was the immediate next step until 2026-08-09 and moved behind the token work because it is a
+presentation layer over the system, and the system had about ten holes in it. Most are now closed.
+
+**Hendri confirmed 2026-08-09 that the export's audience is an agent building UI, not a human
+reader** — so this is not the priority it once looked like. Revisit if that changes.
+
+One obstacle, unchanged: preview contexts are inline style objects, not CSS. SSG output needs real
+stylesheets, so either the kit grows a class-based mode or the generator serialises the style objects.
+Decide that first; it shapes the phase.
+
+---
+
+## Open, and deliberately not being built: a CLI and/or an MCP
 
 Raised by Hendri 2026-08-09 as a direction to plan for, not to build.
 
-The observation that reframes it: **a consumer-side MCP would largely dissolve the doc-budget
-question.** An agent currently loads 13k of reference *in case*; one that can ask loads what it
-needs. It also attacks the real defect class, because a tool answering from `resolveTokens()` cannot
-go stale — the same argument that made `exports/` generated rather than maintained.
-
-Consequence for sequencing: a heroic doc restructure now would be partly wasted work. The modest
-duplication pass above is not, because it is a correctness fix either way.
+The observation that reframes it: **a consumer-side MCP would largely dissolve the doc-size question**
+— an agent that can ask loads what it needs rather than 17k in case — and a tool answering from
+`resolveTokens()` cannot go stale, which is the argument that made `exports/` generated rather than
+maintained.
 
 Three shapes, frequently conflated:
 
-1. **A CLI.** `export` (exists as `npm run export`), `init` to wire `tokens.css` into a consuming
-   project, and `check` to fail a build on colour literals, primitives and unknown token names —
-   the hard rules turned into enforcement. Deterministic, CI-friendly, needs no server, works for
-   any consumer. Does nothing for an agent mid-build.
+1. **A CLI.** `export` (exists), `init` to wire `tokens.css` into a consuming project, `check` to
+   fail a build on colour literals, primitives and unknown token names. Deterministic, CI-friendly,
+   no server, works for any consumer. Does nothing for an agent mid-build.
 2. **A consumer MCP.** `find_token("hovered row on a card")`, `check_contrast`, `recipe("button")`.
-   Kills the budget question and cannot go stale. But it needs a server running, which is a
-   liability precisely where the product is strongest — handing a folder to a client — and it only
-   serves MCP clients, where the export serves Cursor, Copilot, CI and a human. The docs do not
-   disappear either: an agent must know an inverse region *exists* before it can ask about one.
-3. **An authoring MCP** — an agent drives Brand Forge itself: create a brand, set a seed, read the
-   audit, export. A different product surface, and arguably the more interesting one. Check it
+   Needs a server running — a liability exactly where the product is strongest, handing a folder to
+   someone — and only serves MCP clients where the export serves Cursor, Copilot, CI and a human.
+3. **An authoring MCP** — an agent drives Brand Forge itself. Different product surface. Check it
    against `DECISIONS.md` #20 (hosting/auth refused) rather than sliding past that entry.
 
-1 and 2 are not alternatives; the CLI is the deterministic path and the MCP the conversational one,
-over the same engine.
+Hendri also floated simply hosting the export or linking it from GitHub, which is cheaper than any of
+these and may be the whole answer.
 
-**The constraint on any of them:** every tool must be a thin wrapper over `resolveTokens()` /
+**The constraint on all of them:** every tool must be a thin wrapper over `resolveTokens()` /
 `validateContrast()` / `buildExport()`. The moment one computes its own answer it is a second path
-from config to output, which is the one thing `CLAUDE.md` forbids — and it would drift exactly the
-way the prose did.
+from config to output, which `CLAUDE.md`'s one rule forbids — and it would drift exactly as the prose
+did.
 
-**The question that decides which to build:** who is the consumer? Hendri on his own machine (MCP is
-ideal), a client receiving a brand (the folder is the deliverable, a server is a liability), or an
-agent in someone else's repo (the folder, committed). The tool is currently built around handing
-over an export; an MCP makes it a service. That is a product decision, not a technical one.
+**The question that decides it:** who is the consumer? Hendri on his own machine (MCP is ideal), a
+client receiving a brand (the folder is the deliverable), or an agent in someone else's repo (the
+folder, committed).
 
-## After that — Phase 6
-
-**The static guideline page** — the one output the tool still doesn't produce, and the artifact a
-client actually wants. A second Vite entry SSG-rendering the preview contexts plus the token tables
-into `exports/<slug>/guidelines/index.html`, so a brand can be handed over as a page rather than a
-folder of Markdown.
-
-It was the immediate next step until 2026-08-09 and moved behind the token work for one reason: it
-is a presentation layer over the system, and the system still has roughly ten documented holes in
-it. Building a page that documents a system with ten holes just publishes the holes.
-
-Two things make it more valuable than when it was first planned: the wordmark exists, so it can show
-the real mark; and the preview kit already renders every documented recipe, so the page is mostly a
-second consumer of `preview/kit.tsx` rather than new design work. (The real *typeface* is a separate
-matter — see custom font upload below.)
-
-One known obstacle, already logged below: **preview contexts are inline `style={{}}` objects, not
-CSS.** SSG output needs real stylesheets, so either the kit grows a class-based mode or the
-generator serialises the style objects. Decide that first — it shapes the whole phase.
-
-### Before shipping it to anyone
-
-Run the acceptance test again (`doc-acceptance-test` skill). Four runs in, it has found real defects
-every single time, including two that had shipped. Brief it on a shape not yet used — a dashboard or
-an app shell — since each new shape has surfaced a different class of failure.
-
-### Custom font upload, properly
-
-The upload path works and nothing ships through it. What's missing is the *product* around it: a
-face uploaded per family slot, weights detected or entered, and a clear statement in the export
-about what is being redistributed. `--font-display` borrows the sans until then.
-
-Rule to keep: **the tool bundles what a user uploads and never acquires a font on their behalf.**
-See `DECISIONS.md` #17.
-
-## One decision still open from the marketing context
-
-(~~Fluid type~~ — done 2026-08-09. `display` and `heading-lg` scale across 390–1280px; see
-`DECISIONS.md` #18, and #19 for the iframe canvas it forced.)
-
-(~~A control on a brand field has a rule but not a token~~ — closed 2026-08-09. Carbon and Atlassian
-both make this a token family rather than a rule, and both cover icon and focus as well as text and
-border. It is now step 1 of the immediate next step above.)
-
-**Is Ember the button colour, or is the darkened stand-in?** Both references treat "a bold fill that
-cannot carry white text" as solved: Atlassian gives bold yellow its own `warning.inverse` tokens
-rather than darkening the fill. We darkened instead — `--secondary` resolves to `#cc6000` while the
-ramp keeps Ember `#f1760f` at its anchor. Hendri's call, deferred until it can be seen: build the
-inverse tokens in step 1, render real `#f1760f` with a dark foreground beside the current `#cc6000`
-with a white one, and choose with both in front of you. Do not settle this by argument.
-
-## Gaps the acceptance test exposed
-
-A subagent built a page from the exported docs and listed what it had to invent. The docs now
-*declare* these gaps honestly, but declaring is not solving:
-
-- ~~**Breakpoints**~~ and ~~**container widths**~~ — done. See `DECISIONS.md` #10 and #11.
-- **Icon box size.** The craft rules specify stroke weight to a fraction of a pixel and never the
-  box. They also cover weight 400 and 600 only, and every button uses `label` at weight 500.
-- ~~**Link colour in body copy.**~~ Done — `--link`, `--link-hover`, `--link-inverse`, plus a polish
-  rule requiring the underline, because the colour alone is not distinguishable in greyscale.
-- **App-shell interiors.** Sidebar and column widths, header heights, z-index, minimum table widths.
-  `--container-*` bound the page frame, not what's inside it. Every run has invented these.
-  **Planned — step 4 above.**
-- **Card emphasis.** No token or recipe for "this is the recommended plan". `--primary` as a border
-  measures Lc 24.7 against `--surface` in dark, just under the visible bar. Atlassian's answer is
-  the raised elevation plus its paired shadow, used "sparingly, limited to one focal point" — which
-  step 3 makes available.
-- ~~**A scrim.**~~ Done — `--scrim`, the one translucent token (`DECISIONS.md` #24).
-- ~~**Skeleton colours.**~~ Done — `--skeleton` on `--skeleton-surface`.
-- **A wordmark treatment.** Even with a mark defined, nothing says which role, weight or colour the
-  brand name takes when set in type.
-- **Standalone font weights** and **blur** — not modelled at all. (~~Opacity~~ is, as exactly two
-  tokens: `--opacity-disabled` and `--opacity-loading`.)
-- **Reduced-motion duration.** The rule says "cut to near zero"; the smallest token is 100ms.
-- **A type step between 1.5rem and 2.25rem.** A price or a stat lands awkwardly between them.
-- **Theme persistence.** The attribute is defined; storing the choice, seeding from the OS
-  preference and avoiding a first-paint flash are left to the implementer. Every run built its own.
-
-## Known rough edges
-
-- (~~Saved brands don't pick up improved defaults~~ and ~~the export can silently go stale~~ — both
-  fixed 2026-08-09. `DECISIONS.md` #22 and #23.)
-- **Undo history is memory-only.** A browser refresh clears it. `brands/.backup/<slug>.json` is the
-  second line of defence and holds only the immediately-previous version. A short on-disk history
-  would close the gap.
-- **`client-zip` is in the plan but not installed** — the download path writes one file at a time
-  instead of a zip.
-- **`migrateConfig` fills missing blocks but does not validate their contents.** A file with
-  `radius: "nonsense"` still gets through. `zod` was planned for this and isn't installed yet.
-- **Preview contexts are `style={{}}` objects, not CSS**, which is fine for now but will not
-  translate directly to the static guideline page (Phase 6) — it needs real stylesheets.
-- **`DARK_LIFT` interacts with `pickFill` in a way worth revisiting.** The lift decides where the
-  dark fill search starts; a very light or very dark seed may deserve a different starting point.
+---
 
 ## Deliberately refused
 
-Component tokens, Figma sync, per-brand preview content, hosting/auth. See `DECISIONS.md` #2 and
-#20 before reopening any of these.
+Component tokens, Figma sync, per-brand preview content, hosting/auth. See `DECISIONS.md` #2 (amended
+— Carbon *does* ship component tokens, and the refusal now rests on a narrower argument) and #20.
 
-(Font-file management was on this list and is no longer refused — it shipped, see `DECISIONS.md`
-#14 and #15.)
+Font-file management was on this list and shipped — see #14 and #15.

@@ -15,7 +15,7 @@ preview and the export drift apart, and the whole point of this tool is that the
 
 ```bash
 npm run dev                   # localhost:5300
-npm test                      # 115 engine + export tests
+npm test                      # 166 engine + export tests
 npm run typecheck
 npm run lint:preview-colors   # no colour literals in preview contexts
 npm run export                # regenerate exports/ from brands/ — the fix for a stale export
@@ -36,6 +36,20 @@ Colour maths is taste as much as maths — look at the ramps.
 - **The preset is contrast-aware at construction time.** `defaultSemanticMapping` generates real
   ramps and measures APCA to choose foregrounds. It is not a lookup table; changing a step number
   by hand there usually means you've misread what it's doing.
+- **Adding a default that a saved brand already has a version of will go missing.** `migrateConfig`
+  merges three levels — block, then key, then *item* for the named collections (breakpoints,
+  containers, z-layers, shell, type roles). Each level was added only after the previous one let a
+  new default vanish silently, most recently `--container-intro`, which was documented, justified,
+  and absent from the stylesheet. If you add an item to one of those arrays, check it reaches
+  `exports/` before believing it shipped.
+- **The dev server autosaves, so `git add -A` can commit a brand change you didn't make.** That is
+  how the shipped primary silently became `#47abe1` for two acceptance runs. A test now pins
+  `brands/hendri.json`'s seeds to the preset's — if it fails, look at the brand file before
+  "fixing" the test.
+- **A generated number can still be the wrong number.** Run 7 found a computed figure that measured
+  the *start* of `pickFill`'s search rather than the step it lands on, so the docs quoted `--ring`'s
+  contrast while naming `--primary`. Generating a measurement stops it going stale; it does not stop
+  it being wrong.
 - **A test asserting the dark chroma trim must use a seed inside sRGB.** At the saturated end both
   ramps hit the gamut ceiling, so clamping decides the value and the trim is invisible.
 - **Don't validate dark mode with WCAG 2.** It gives false passes among dark colours — there's a
@@ -49,6 +63,16 @@ Colour maths is taste as much as maths — look at the ramps.
 The exported docs are the product. To check them, hand `exports/<brand>/skill/` to a subagent that
 has never seen this repo, ask it to build something realistic, and — this is the important part —
 ask it to critique the documentation: what it had to invent, what was ambiguous, what saved it from
-a mistake. Session 1 did this and got nine real defects back, including an invalid CSS shorthand
-that made every component recipe fail silently. Expect to rewrite doc templates 2–3 times; that's
-the process working.
+a mistake. Seven runs so far, each on a different shape, each finding a different class of
+defect — an invalid CSS shorthand that made every recipe fail silently, a focus ring that was its
+own background, a documented token that did not exist.
+
+Two things worth knowing before you run it:
+
+**Run it after a change, not before a release.** Four of run 5's eight findings were introduced hours
+earlier the same day; run 7's worst finding was a token added that morning. None would survive a
+build attempt, and all of them survived careful reading.
+
+**The generated tables have never been wrong in seven runs. Every defect has been in prose.** Treat
+a hand-written sentence about this brand as a liability until an agent has built from it — and
+prefer to generate any sentence containing a measurement.
