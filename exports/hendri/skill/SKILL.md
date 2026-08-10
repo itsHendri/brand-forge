@@ -73,8 +73,7 @@ Full token tables, component recipes and wrong/right pairs live in
    use `--ring-inverse` there. When a focusable element can land on either kind of ground, draw
    both: `box-shadow: 0 0 0 2px var(--ring-inset), 0 0 0 4px var(--ring)`, so whichever half
    matches the ground, the other one is still visible.
-10. **Links in body copy are `--link`, underlined.** Not `--primary` — that is a fill colour and
-    is a fill and does not survive as text on a page. Hover is `--link-hover`, which gains contrast
+10. **Links in body copy are `--link`, underlined.** Not `--primary` — that is a fill colour and does not survive as text on a page. Hover is `--link-hover`, which gains contrast
     rather than losing it. **The underline is required, not stylistic** — colour alone must never be
     the only marker of a link (WCAG 1.4.1), and on some palettes `--link` is separated from
     `--foreground` by hue alone, which disappears in greyscale. The reference gives the measured
@@ -108,7 +107,7 @@ Full token tables, component recipes and wrong/right pairs live in
     breakpoint, never a number outside this set, and never `var(--breakpoint-*)` inside a media
     query — custom properties do not resolve there and the rule is dropped in silence.
 17. **No content spans the viewport.** Every region's content sits in a container, centred with
-    `margin-inline: auto`: `--container-prose` (42rem), `--container-narrow` (30rem), `--container-page` (72rem), `--container-wide` (90rem).
+    `margin-inline: auto`: `--container-prose` (42rem), `--container-narrow` (30rem), `--container-page` (72rem), `--container-wide` (90rem), `--container-intro` (52rem).
     Running text takes `--container-prose` even inside a wider frame — a full-bleed paragraph is a
     bug, not a stylistic choice. Backgrounds and borders may span the window; a sticky bar is a
     full-bleed background with contained content inside it.

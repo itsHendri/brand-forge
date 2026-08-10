@@ -181,7 +181,7 @@
             {
                 "name": "prose",
                 "maxRem": 42,
-                "note": "Running text. ~70 characters at body size \u2014 the readable measure."
+                "note": "Running text. Sized for a readable measure at body size \u2014 check the line length against your own face, since character count depends on it."
             },
             {
                 "name": "narrow",
@@ -197,6 +197,11 @@
                 "name": "wide",
                 "maxRem": 90,
                 "note": "Dashboards and tables that genuinely need the room."
+            },
+            {
+                "name": "intro",
+                "maxRem": 52,
+                "note": "Large type that needs more room than the reading measure \u2014 a hero headline, a section intro, a pull quote. At `prose` a display headline wraps to five lines; at `page` it is unreadable."
             }
         ],
         "zLayers": [

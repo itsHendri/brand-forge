@@ -4,6 +4,19 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- **Fixed: `--container-intro` was documented and did not exist.** Added to the defaults, justified in
+  the Editorial section, and never emitted — because a saved brand's four-item `containers` array
+  replaced the five-item default. `var(--container-intro)` resolves to nothing, so the headline it
+  exists to cap ran full-bleed. Named collections now merge item by item; the brand's version wins,
+  missing defaults are appended, both are reported. Fourth instance of one bug class, each previous
+  fix a level too shallow. `DECISIONS.md` #34.
+- **Fixed: a computed figure quoted the wrong token.** The link description measured `--primary` in
+  dark from the *start* of the fill search rather than where it lands, printing Lc 41 — which belongs
+  to `--ring`. Being generated is not the same as being right.
+- `--inverse-muted-foreground` no longer claims it can carry fine print while held to the large-text
+  bar; "there is no third size" no longer contradicts the 44px touch variant two sections up; and
+  process notes ("until run 6 this section did not exist") are out of the shipped reference.
+
 - **An editorial layer.** Every component recipe was app-shaped, so a long-form content page had
   nothing behind roughly seventy per cent of what it needed — and the gap list did not admit it. The
   reference gained an **Editorial** section (paragraph rhythm, headings, lists, blockquote, figures

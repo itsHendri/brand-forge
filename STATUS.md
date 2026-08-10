@@ -1,7 +1,7 @@
 # Status — 2026-08-09
 
 **Phases 0–5 done, plus assets. The tool does the whole loop it was built for.**
-Three sessions. 165 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
+Three sessions. 166 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
 
 Type a seed colour → get a complete system → see it on realistic UI → export it as something an AI
 agent can actually build from. That runs end to end today.
@@ -24,8 +24,10 @@ agent can actually build from. That runs end to end today.
   warnings of any level.**
 - `semanticDefs` — the full set for a brand: generated from the seeds, then the sparse
   `semanticOverrides` applied on top. **Call this, not `defaultSemanticMapping`.**
-- `migrateConfig` — a loaded brand is merged over a complete default, block by block, and a
-  pre-override file has its hand edits recovered as deltas.
+- `migrateConfig` — a loaded brand is merged over a complete default: block by block, then key by
+  key, then **item by item** for the named collections (breakpoints, containers, z-layers, shell,
+  type roles). Each of those three levels was added after the previous one let a new default go
+  missing. A pre-override file also has its hand edits recovered as deltas.
 
 **App** at `localhost:5300` — eight panels (Brand, Colour, Semantics, Type, Layout, Space & shape,
 Motion, Rules), four preview contexts (Components, Surfaces & elevation, Marketing, Dashboard)
@@ -56,8 +58,8 @@ Improving a default now reaches brands that already exist. See `DECISIONS.md` #2
 
 ## The quality gate
 
-**The acceptance test has run six times.** Each time a subagent with no knowledge of this project
-built a real page from the exported skill folder alone, then critiqued *the documentation*. All five
+**The acceptance test has run seven times.** Each time a subagent with no knowledge of this project
+built a real page from the exported skill folder alone, then critiqued *the documentation*. All seven
 succeeded; every critique found genuine defects. The method is now a skill:
 `~/skills/skills/doc-acceptance-test/` (pushed to `github.com/itsHendri/skills`).
 
@@ -68,11 +70,12 @@ succeeded; every critique found genuine defects. The method is now a skill:
 | 3 | Settings page | Every status border at Lc 0; contrast claim counting half its warnings |
 | 4 | Plans/upgrade | Focus invisible on a brand field (`--ring` **is** `--primary`) |
 | 5 | App shell | The "does not define" list still denying tokens added an hour earlier |
-| 6 | Content site | The shipped brand had silently become a different colour, and six hand-written measurements were false |
+| 6 | Content site | Six hand-written measurements that were true of one palette only — and the shipped brand had silently become a different colour |
+| 7 | Docs site | `--container-intro` documented, justified — and absent from the stylesheet |
 
-Runs 2–5 independently recomputed every token hex from the OKLCH sources and confirmed the doc
-tables and shared-value list are exact — run 5 checked all 70 semantics in both modes plus all 24
-shared-value rows and both `clamp()` endpoints. **The numbers have never been wrong.
+Runs 2–7 independently recomputed every token hex from the OKLCH sources and confirmed the doc
+tables and shared-value list are exact — run 7 checked all 71 semantics in both modes, both
+shared-value tables, both `clamp()` endpoints and the concentric worked examples. **The numbers have never been wrong.
 Every failure has been in what the prose *infers* from them.** That is the argument for keeping
 generated tables generated and treating every hand-written sentence as a liability until an agent
 has tried to build from it.

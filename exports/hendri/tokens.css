@@ -218,6 +218,7 @@
     --container-narrow: 30rem;
     --container-page: 72rem;
     --container-wide: 90rem;
+    --container-intro: 52rem;
     --shell-header: 3.5rem;
     --shell-sidebar: 16rem;
     --shell-sidebar-collapsed: 3.5rem;
@@ -530,6 +531,7 @@
     --container-narrow: var(--container-narrow);
     --container-page: var(--container-page);
     --container-wide: var(--container-wide);
+    --container-intro: var(--container-intro);
     --radius-sm: var(--radius-sm);
     --radius-md: var(--radius-md);
     --radius-lg: var(--radius-lg);

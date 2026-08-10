@@ -682,6 +682,16 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
      */
     const inkStep: Record<Mode, Step> = { light: 950, dark: 50 }
 
+    // The step `--primary` actually resolves to in dark — `pickFill` walks darker
+    // from the lifted anchor, so the anchor is where the search *starts*, not
+    // where it lands. Quoting the start put a figure in the docs that belonged to
+    // `--ring`, one ramp step away.
+    const primaryFillDark = pickFill(
+        ramps.primary.dark,
+        neutral.dark,
+        shift(anchors.primary, -DARK_LIFT),
+    )
+
     const linkStep: Record<Mode, Step> = {
         light: pickAgainst(ramps.primary.light, flatGround.light, INK_CANDIDATES, LC_THRESHOLD.body),
         dark: pickAgainst(ramps.primary.dark, flatGround.dark, PAPER_CANDIDATES, LC_THRESHOLD.body),
@@ -953,7 +963,7 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
                 step: pickAgainst(ramps.primary.dark, flatGround.dark, PAPER_CANDIDATES, LC_THRESHOLD.body),
             },
             description:
-                `Links in running text, on \`background\`, \`surface\` or \`muted\`. **Underline them** — see the polish rules. ${linkVsForeground} Never use \`primary\` for a link: it is a fill colour, and on this palette it measures Lc ${Math.abs(apca(ramps.primary.light[anchors.primary]!, neutral.light[surfaces.background.light.step]!)).toFixed(0)} as text on the page in light and Lc ${Math.abs(apca(ramps.primary.dark[shift(anchors.primary, -DARK_LIFT)]!, neutral.dark[surfaces.background.dark.step]!)).toFixed(0)} in dark, against a body bar of ${LC_THRESHOLD.body}.`,
+                `Links in running text, on \`background\`, \`surface\` or \`muted\`. **Underline them** — see the polish rules. ${linkVsForeground} Never use \`primary\` for a link: it is a fill colour, and on this palette it measures Lc ${Math.abs(apca(ramps.primary.light[anchors.primary]!, neutral.light[surfaces.background.light.step]!)).toFixed(0)} as text on the page in light and Lc ${Math.abs(apca(ramps.primary.dark[primaryFillDark]!, neutral.dark[surfaces.background.dark.step]!)).toFixed(0)} in dark, against a body bar of ${LC_THRESHOLD.body}.`,
         },
         {
             name: "link-hover",
@@ -1020,7 +1030,7 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
                 ]),
             },
             description:
-                "Supporting text inside an `inverse` region — a footer's blurb, its fine print, the label above a link column. Held to the large-text bar, so keep it at `body-lg` or larger, or above a link rather than as the link.",
+                "Supporting text inside an `inverse` region — a footer's blurb, the label above a link column. Held to the **large-text bar**, so keep it at `body-lg` or larger. It cannot carry fine print: small print on an inverse band takes `inverse-foreground`, which clears the body bar, and accepts that fine print there is not quiet.",
         },
         {
             name: "inverse-border",

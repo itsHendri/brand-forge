@@ -837,8 +837,7 @@ ${NOT_DEFINED}
 ## Editorial — running text, figures and code
 
 The component recipes above are app-shaped: buttons, cards, tables, dialogs. A page that is mostly
-*prose* needs different answers, and until run 6 this section did not exist, so roughly seventy per
-cent of a content page had nothing behind it.
+*prose* needs different answers.
 
 None of this is new tokens. It is the existing spacing scale and type roles composed for reading.
 
@@ -883,8 +882,9 @@ which then needs a focus ring like any other focusable thing.
 
 **Button sizes.** The Button recipe above is the default: 40px, \`label\`. A marketing call to action
 at 13px is not a call to action. A large button is 52px tall, \`padding-inline: var(--space-8)\`, set
-at \`body-lg\` with the \`label\` weight — same colours, same radius, same states. There is no
-third size.
+at \`body-lg\` with the \`label\` weight — same colours, same radius, same states. Those are the two
+*designed* sizes; the 44px touch variant of the default is the same button with a bigger hit area,
+not a third size.
 
 **The mark has a floor.** Below about 24px of height the accent path stops reading as a flourish and
 becomes a smudge against the wordmark. Above that it is fine. If you need the brand smaller than

@@ -52,7 +52,7 @@ re-points itself in dark mode. This is the whole API.
 
 | Token | Light | Dark | Use it for |
 | --- | --- | --- | --- |
-| `--link` | `#323397` | `#e6e9ff` | Links in running text, on `background`, `surface` or `muted`. **Underline them** — see the polish rules. Against body text it falls below APCA's noise floor in both modes — it is separated from `foreground` by hue alone, so in greyscale there is no link at all. Never use `primary` for a link: it is a fill colour, and on this palette it measures Lc 67 as text on the page in light and Lc 41 in dark, against a body bar of 75. |
+| `--link` | `#323397` | `#e6e9ff` | Links in running text, on `background`, `surface` or `muted`. **Underline them** — see the polish rules. Against body text it falls below APCA's noise floor in both modes — it is separated from `foreground` by hue alone, so in greyscale there is no link at all. Never use `primary` for a link: it is a fill colour, and on this palette it measures Lc 67 as text on the page in light and Lc 29 in dark, against a body bar of 75. |
 | `--link-hover` | `#1c1f5c` | `#f4f5ff` | Hover state of a link in running text. |
 | `--link-inverse` | `#dce0ff` | `#3734a6` | A link inside an `inverse` region. `link` is measured against the page and goes unreadable there, which is why this exists as its own token. |
 
@@ -133,7 +133,7 @@ re-points itself in dark mode. This is the whole API.
 | --- | --- | --- | --- |
 | `--inverse` | `#36414d` | `#e7ebef` | A region deliberately inverted against the current mode — tooltips, dark chips, a footer band. On a light page this is dark; on a dark page it is light. Everything placed on it takes an `inverse-*` or `-inverse` token. |
 | `--inverse-foreground` | `#dce3eb` | `#3e4b58` | Text and icons on `inverse`. |
-| `--inverse-muted-foreground` | `#c7d2df` | `#556575` | Supporting text inside an `inverse` region — a footer's blurb, its fine print, the label above a link column. Held to the large-text bar, so keep it at `body-lg` or larger, or above a link rather than as the link. |
+| `--inverse-muted-foreground` | `#c7d2df` | `#556575` | Supporting text inside an `inverse` region — a footer's blurb, the label above a link column. Held to the **large-text bar**, so keep it at `body-lg` or larger. It cannot carry fine print: small print on an inverse band takes `inverse-foreground`, which clears the body bar, and accepts that fine print there is not quiet. |
 | `--inverse-border` | `#c7d2df` | `#6d7e90` | Hairline or divider inside an `inverse` region. |
 
 ## Type
@@ -275,10 +275,11 @@ Nothing spans the viewport. Every region sits in one of these, centred with `mar
 
 | Token | Max width | Use it for |
 | --- | --- | --- |
-| `--container-prose` | 42rem (672px) | Running text. ~70 characters at body size — the readable measure. |
+| `--container-prose` | 42rem (672px) | Running text. Sized for a readable measure at body size — check the line length against your own face, since character count depends on it. |
 | `--container-narrow` | 30rem (480px) | Forms, dialogs, sign-in — anything with one column of controls. |
 | `--container-page` | 72rem (1152px) | The default page frame. Most layouts live here. |
 | `--container-wide` | 90rem (1440px) | Dashboards and tables that genuinely need the room. |
+| `--container-intro` | 52rem (832px) | Large type that needs more room than the reading measure — a hero headline, a section intro, a pull quote. At `prose` a display headline wraps to five lines; at `page` it is unreadable. |
 
 **`--container-prose` is the one that gets skipped.** Running text set to the full width of a
 laptop is unreadable regardless of how good the type is, so body copy takes `prose` even when it
@@ -637,8 +638,7 @@ part of the system:
 ## Editorial — running text, figures and code
 
 The component recipes above are app-shaped: buttons, cards, tables, dialogs. A page that is mostly
-*prose* needs different answers, and until run 6 this section did not exist, so roughly seventy per
-cent of a content page had nothing behind it.
+*prose* needs different answers.
 
 None of this is new tokens. It is the existing spacing scale and type roles composed for reading.
 
@@ -683,8 +683,9 @@ which then needs a focus ring like any other focusable thing.
 
 **Button sizes.** The Button recipe above is the default: 40px, `label`. A marketing call to action
 at 13px is not a call to action. A large button is 52px tall, `padding-inline: var(--space-8)`, set
-at `body-lg` with the `label` weight — same colours, same radius, same states. There is no
-third size.
+at `body-lg` with the `label` weight — same colours, same radius, same states. Those are the two
+*designed* sizes; the 44px touch variant of the default is the same button with a bigger hit area,
+not a third size.
 
 **The mark has a floor.** Below about 24px of height the accent path stops reading as a flourish and
 becomes a smudge against the wordmark. Above that it is fine. If you need the brand smaller than

@@ -649,3 +649,51 @@ shows it.
 The budget was raised from 18k to 24k at the same time, and reframed in the code as a smoke alarm
 rather than a limit — see the note on `DOC_BUDGET`. The Editorial section is content the docs were
 missing; an invented ceiling is not a reason to withhold it.
+
+### 34. Acceptance run 7 — a documented token that did not exist — 2026-08-09
+
+Run 7 built a documentation site against the Editorial section written in response to run 6. The
+section worked: coverage went from "roughly seventy per cent had nothing behind it" to "roughly 55%
+of what I wrote was specified", and the run named the Editorial section as "the difference between
+this being usable and not". Colour was complete — it never guessed a colour in either mode.
+
+**The worst finding was a token the docs described and the stylesheet did not contain.**
+`--container-intro` was added to the defaults, documented with a justification, referenced from the
+Editorial section — and never reached the export. `var(--container-intro)` resolves to nothing and
+`max-width` falls back to `none`, so the headline the paragraph exists to cap ran full-bleed.
+Silently, in exactly the way the rest of these docs are careful to warn about.
+
+The cause is **the fourth and deepest instance of one bug**, and each fix has been one level too
+shallow:
+
+1. #12 — a saved brand missing a whole `layout` block crashed at first render.
+2. A renamed `shadows` level kept its old name and lost its dark-mode override.
+3. `layout` gained `zLayers` and `shell`; existing brands got `undefined`.
+4. `layout.containers` gained an *item*; the brand's four-item array replaced the five-item default.
+
+Blocks now merge by key, and **named collections merge item by item**: the brand's version wins where
+it has one, missing defaults are appended, and both are reported. Deleting a default is no longer
+possible, which is the right trade — these are closed sets by design (#10, #11), and a silently
+missing one is how a documented token turns out not to exist.
+
+The same cause had also kept a `--container-prose` note this session had already corrected. The
+freshness test passed throughout, because the export was faithful to the brand file the whole time.
+That test can only prove the export matches the brand; it cannot prove the brand is what anyone
+meant.
+
+Four defects in prose I had written, three of them this session:
+
+- **A computed figure quoted the wrong token.** The link description measured `--primary` in dark
+  using the *start* of `pickFill`'s search rather than the step it lands on, so it printed Lc 41 —
+  which belongs to `--ring`, one ramp step away. Being computed is not the same as being right.
+- **`--inverse-muted-foreground` was named for a job it is forbidden to do**: its description listed
+  "fine print" while holding the token to the large-text bar. Fine print at ≥18px is not fine print.
+- **"There is no third size"** was contradicted two sections up by "on touch, raise it to 44px".
+- **Process notes leaked into the shipped reference** — "until run 6 this section did not exist"
+  means nothing to a consumer and reads as an admission the section is untested.
+
+Left open, in `FUTURE.md`: no syntax-highlighting palette (a documentation system that cannot colour
+a code sample), `--muted` doing five jobs so a content page flattens into one grey texture,
+`--primary-subtle` measuring Lc 2.2 on `--background` while the docs warn only about
+`--secondary-subtle` at Lc 3.0, and the logo accent shifting between modes because the primitive
+ramps re-declare under `[data-theme="dark"]`.

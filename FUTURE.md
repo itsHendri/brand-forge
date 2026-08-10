@@ -117,20 +117,34 @@ a phone.
 argue for a split that would have reduced nothing. It is now a smoke alarm at 24k — useful for
 noticing a jump, not a reason to cut. Standing rule: **cut what restates, keep what warns.**
 
-## Next: acceptance run 7, on content again
+## ~~Acceptance run 7~~ — done 2026-08-09. What it left open.
 
-The editorial layer has never been tested — it was written *in response to* run 6, so run 6 cannot
-validate it. Brief run 7 on the same shape (hero, long article, figures, code, footer) and check
-specifically whether the Editorial section answered the things run 6 had to invent.
+The Editorial section worked: coverage went from "seventy per cent had nothing behind it" to "roughly
+55% specified", and run 7 called it "the difference between this being usable and not". Colour is
+complete — it never guessed a colour in either mode.
 
-Two things to watch that this session could not close:
+Everything it found is fixed except these, which are real and were not worth rushing:
 
-- **`--z-sticky` is documented for sticky table headers, which the Table recipe makes impossible**
-  (run 5, #29). The docs now say the two are mutually exclusive, but nothing has built against that
-  wording.
-- **Run 6 found six false measurements in prose** (#31). They are computed now, but the class will
-  come back the moment somebody writes a number by hand. If a sentence contains a figure about the
-  brand, it must be generated.
+- **No syntax-highlighting palette.** For a documentation system this is the biggest hole: there is
+  nothing for keywords, strings or comments, and the obvious workaround is closed off because the
+  solid `--<status>` tokens are forbidden as text on a page. Run 7's code blocks are monochrome.
+  Carbon ships ~90 `$syntax-*` tokens; that is far more than this needs, but the answer is not zero.
+- **`--muted` is doing five jobs** — table headers, inactive tabs, code blocks, neutral badges, image
+  placeholders — so a content page flattens into one grey texture. In dark mode it is also
+  byte-identical to `--state-active`, so pressing a table row paints it the header's colour.
+- **`--primary-subtle` measures Lc 2.2 on `--background`**, worse than the `--secondary-subtle`
+  (Lc 3.0) the docs explicitly warn about — and `primary` is the role the Badge recipe blesses. The
+  warning names one case and misses the identical one in the sanctioned default.
+- **The logo accent shifts between modes.** The sanctioned pattern is `var(--secondary-500, #f1760f)`,
+  but primitive ramps re-declare under `[data-theme="dark"]`, so the accent is `#f1760f` in light and
+  `#d97736` in dark. The one place the docs sanction reaching into a primitive is the one place the
+  primitive layer's mode-switching bites.
+- **Media geometry** — aspect ratios, figure radius, whether a full-bleed figure's caption aligns to
+  the figure or the text column. And a **footer layout**, an **`hr`**, and **`scroll-padding-top`**
+  for anchors under sticky chrome, which a docs site is made of.
+
+Brief run 8 on whatever these turn into — and keep varying the shape, since seven runs have each
+found a different class.
 
 ## Open, and deliberately not being built yet: a CLI and/or an MCP
 

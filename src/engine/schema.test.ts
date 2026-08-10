@@ -59,14 +59,41 @@ describe("migrateConfig", () => {
         expect(() => resolveTokens(config)).not.toThrow()
     })
 
-    it("keeps the file's own value for a key it does have", () => {
+    it("keeps the file's own version of a named item and appends the ones it lacks", () => {
+        // The fourth instance of the same bug, and the deepest: `layout.containers`
+        // gained an item — `intro` — and every existing brand's four-item array
+        // replaced the five-item default, so a token the docs described did not
+        // exist and `var(--container-intro)` silently resolved to nothing.
         const saved = structuredClone(hendriPreset)
-        saved.layout.containers = [{ name: "only", maxRem: 10, note: "mine" }]
+        saved.layout.containers = [{ name: "prose", maxRem: 10, note: "mine" }]
+
+        const { config, filled } = migrateConfig(saved, hendriPreset)
+        // The hand-edited one survives, untouched…
+        expect(config.layout.containers.find((c) => c.name === "prose")).toEqual({
+            name: "prose",
+            maxRem: 10,
+            note: "mine",
+        })
+        // …and every default the file lacked is back.
+        for (const fallback of hendriPreset.layout.containers) {
+            expect(
+                config.layout.containers.some((c) => c.name === fallback.name),
+                `--container-${fallback.name} went missing`,
+            ).toBe(true)
+        }
+        expect(filled.some((entry) => entry.includes("containers"))).toBe(true)
+    })
+
+    it("restores a missing item in every named collection, not just containers", () => {
+        const saved = structuredClone(hendriPreset)
+        saved.layout.breakpoints = saved.layout.breakpoints.slice(0, 1)
+        saved.layout.zLayers = []
+        saved.typography.roles = saved.typography.roles.slice(0, 2)
 
         const { config } = migrateConfig(saved, hendriPreset)
-        expect(config.layout.containers).toEqual([{ name: "only", maxRem: 10, note: "mine" }])
-        // …while still gaining the keys it was missing.
-        expect(config.layout.zLayers.length).toBeGreaterThan(0)
+        expect(config.layout.breakpoints.length).toBe(hendriPreset.layout.breakpoints.length)
+        expect(config.layout.zLayers.length).toBe(hendriPreset.layout.zLayers.length)
+        expect(config.typography.roles.length).toBe(hendriPreset.typography.roles.length)
     })
 
     it("drops a shadow level whose name the system no longer knows", () => {
