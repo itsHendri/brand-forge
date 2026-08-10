@@ -27,6 +27,7 @@ export const DEFAULT_BREAKPOINTS: Breakpoint[] = [
 export const DEFAULT_CONTAINERS: Container[] = [
     { name: "prose", maxRem: 42, note: "Running text. Sized for a readable measure at body size — check the line length against your own face, since character count depends on it." },
     { name: "narrow", maxRem: 30, note: "Forms, dialogs, sign-in — anything with one column of controls." },
+    { name: "intro", maxRem: 52, note: "Large type that needs more room than the reading measure — a hero headline, a section intro, a pull quote. At `prose` a display headline wraps to five lines; at `page` it is unreadable." },
     { name: "page", maxRem: 72, note: "The default page frame. Most layouts live here." },
     { name: "wide", maxRem: 90, note: "Dashboards and tables that genuinely need the room." },
 ]
@@ -152,6 +153,10 @@ export const DEFAULT_MOTION: BrandConfig["motion"] = {
 export const DEFAULT_SHADOWS: BrandConfig["shadows"] = {
     levels: [
         {
+            // Not an elevation level and, until run 6 asked, not usable anywhere:
+            // every documented context either owns a shadow or forbids one. Its
+            // job is sticky chrome — the hairline that appears under a header
+            // once content has scrolled beneath it.
             name: "sm",
             layers: ["0 1px 2px -1px oklch(0 0 0 / 0.08)", "0 0 0 1px oklch(0 0 0 / 0.04)"],
         },
@@ -185,7 +190,7 @@ export const DARK_SHADOWS: Record<string, string> = {
 export const DEFAULT_TYPE_ROLES: TypeRole[] = [
     // The two roles that hurt on a phone at a desktop size, and the only two
     // worth making fluid — everything below heading level should hold still.
-    { role: "display", family: "display", sizeRem: 3.5, minSizeRem: 2.25, lineHeight: 1.05, weight: 600, tracking: "-0.03em" },
+    { role: "display", family: "display", sizeRem: 3.5, minSizeRem: 2.5, lineHeight: 1.05, weight: 600, tracking: "-0.03em" },
     { role: "heading-lg", family: "sans", sizeRem: 2.25, minSizeRem: 1.75, lineHeight: 1.15, weight: 600, tracking: "-0.02em" },
     { role: "heading", family: "sans", sizeRem: 1.5, lineHeight: 1.25, weight: 600, tracking: "-0.01em" },
     { role: "heading-sm", family: "sans", sizeRem: 1.125, lineHeight: 1.4, weight: 600 },

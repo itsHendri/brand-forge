@@ -115,6 +115,7 @@
     --link-inverse: var(--primary-200);
     --inverse: var(--neutral-900);
     --inverse-foreground: var(--neutral-200);
+    --inverse-muted-foreground: var(--neutral-300);
     --inverse-border: var(--neutral-300);
     --scrim: oklch(26.48% 0.0165 248.45 / 0.6);
     --skeleton-surface: var(--neutral-200);
@@ -351,6 +352,7 @@
     --link-inverse: var(--primary-800);
     --inverse: var(--neutral-100);
     --inverse-foreground: var(--neutral-800);
+    --inverse-muted-foreground: var(--neutral-700);
     --inverse-border: var(--neutral-600);
     --scrim: oklch(24.5% 0.0149 248.45 / 0.7);
     --skeleton-surface: var(--neutral-800);
@@ -427,6 +429,7 @@
     --color-link-inverse: var(--link-inverse);
     --color-inverse: var(--inverse);
     --color-inverse-foreground: var(--inverse-foreground);
+    --color-inverse-muted-foreground: var(--inverse-muted-foreground);
     --color-inverse-border: var(--inverse-border);
     --color-scrim: var(--scrim);
     --color-skeleton-surface: var(--skeleton-surface);

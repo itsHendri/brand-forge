@@ -105,24 +105,32 @@ site with a hero, an article, and an embedded media block. That shape has never 
 current type scale, and it is the one that would exercise `--container-prose` nesting and the display
 face, which the app shell never touched.
 
-## ~~Cut the duplication~~ — done 2026-08-09
+## ~~Cut the duplication~~, ~~and add the editorial layer~~ — done 2026-08-09
 
-The 🚨 deviations section no longer restates seven of `SKILL.md`'s hard rules. See `DECISIONS.md`
-#30 for what stays and why. 528 tokens, which was never the point — seven fewer places for a rule to
-drift was.
+The 🚨 section no longer restates seven of `SKILL.md`'s hard rules (`DECISIONS.md` #30), and the
+reference gained an **Editorial** section — running text, figures, code, button sizes — plus three
+tokens: `--inverse-muted-foreground`, `--container-intro`, and a documented job for `--shadow-sm`,
+which had none (#33). `display`'s floor rose to 2.5rem so a hero stays clear of a section heading on
+a phone.
 
-**The 18k budget is retired as a driver.** It was invented by this tool and then treated as a
-discovered limit; Hendri confirmed it was never his. It remains useful as a *meter* — it is what
-surfaced the duplication — but it is not a reason to cut, and it is not a reason to split the
-reference. Five runs, none has complained about length.
+**The budget is retired as a driver.** It was invented by this tool, never Hendri's, and was used to
+argue for a split that would have reduced nothing. It is now a smoke alarm at 24k — useful for
+noticing a jump, not a reason to cut. Standing rule: **cut what restates, keep what warns.**
 
-**The standing rule for docs edits: cut what restates, keep what warns.** Run 5 named the three
-silent-failure warnings as the highest-value content in the file, and credited rules 4 and 8 by name.
-Repetition inside one file can be doing real work. Repetition of a rule *across* files cannot, because
-only one copy stays right after the next edit.
+## Next: acceptance run 7, on content again
 
-Further trimming is not obviously worth it, and guessing which prose earns its place is exactly what
-the acceptance test exists to answer. Run it rather than reasoning about it.
+The editorial layer has never been tested — it was written *in response to* run 6, so run 6 cannot
+validate it. Brief run 7 on the same shape (hero, long article, figures, code, footer) and check
+specifically whether the Editorial section answered the things run 6 had to invent.
+
+Two things to watch that this session could not close:
+
+- **`--z-sticky` is documented for sticky table headers, which the Table recipe makes impossible**
+  (run 5, #29). The docs now say the two are mutually exclusive, but nothing has built against that
+  wording.
+- **Run 6 found six false measurements in prose** (#31). They are computed now, but the class will
+  come back the moment somebody writes a number by hand. If a sentence contains a figure about the
+  brand, it must be generated.
 
 ## Open, and deliberately not being built yet: a CLI and/or an MCP
 

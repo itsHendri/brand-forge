@@ -538,3 +538,47 @@ describe("stacking order and the app frame", () => {
         expect(darkNames.some((n) => n.startsWith("--shell-"))).toBe(false)
     })
 })
+
+/** The editorial layer — the gap acceptance run 6 found after building a content site. */
+describe("the editorial layer", () => {
+    const value = (name: string, mode: "light" | "dark") => semanticByName(resolved, name)!.values[mode]!
+
+    it("gives an inverse region two text levels, not one", () => {
+        // A footer is a sanctioned `inverse` region and had a single colour for
+        // headings, links, blurb and fine print.
+        for (const mode of ["light", "dark"] as const) {
+            const ground = value("inverse", mode).hex
+            expect(value("inverse-muted-foreground", mode).hex).not.toBe(value("inverse-foreground", mode).hex)
+            expect(
+                Math.abs(apca(value("inverse-muted-foreground", mode).hex, ground)),
+                `inverse-muted-foreground on inverse (${mode})`,
+            ).toBeGreaterThanOrEqual(LC_THRESHOLD.large)
+        }
+    })
+
+    it("keeps the hero clear of a section heading at the narrowest viewport", () => {
+        // Both roles are fluid over the same range but by different amounts, so
+        // they converge as the screen narrows — 1.56x apart at 1280px and 1.29x
+        // at 390px before `display`'s floor was raised. Nothing warned that the
+        // two interact; you only see it by rendering a page that uses both.
+        const px = (name: string, vw: number) => {
+            const css = resolved.declarations.light.find(([n]) => n === name)![1]
+            const m = /clamp\(([\d.]+)rem, ([\d.-]+)rem \+ ([\d.]+)vw, ([\d.]+)rem\)/.exec(css)
+            if (!m) return parseFloat(css) * 16
+            const [min, intercept, slope, max] = m.slice(1).map(Number) as [number, number, number, number]
+            return Math.min(Math.max(min * 16, intercept * 16 + (slope / 100) * vw), max * 16)
+        }
+        const ratio = (vw: number) => px("--text-display", vw) / px("--text-heading-lg", vw)
+        expect(ratio(390), "display vs heading-lg at 390px").toBeGreaterThan(1.35)
+        expect(ratio(1280)).toBeGreaterThan(ratio(390)) // still widens; it just no longer collapses
+    })
+
+    it("has a measure between the reading width and the page", () => {
+        const containers = hendriPreset.layout.containers
+        const prose = containers.find((c) => c.name === "prose")!.maxRem
+        const intro = containers.find((c) => c.name === "intro")!.maxRem
+        const page = containers.find((c) => c.name === "page")!.maxRem
+        expect(intro).toBeGreaterThan(prose)
+        expect(intro).toBeLessThan(page)
+    })
+})

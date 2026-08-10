@@ -608,3 +608,44 @@ preset too.
 
 The general lesson is about the tooling, not the code: **`git add -A` is unsafe in a repo whose dev
 server writes to tracked files.** Review the diff, or stage paths.
+
+### 33. The editorial layer — recipes, and three tokens — 2026-08-09
+
+Run 6 built a long-form content site and reported that "roughly seventy per cent of what I wrote had
+no documentation behind it". Every component recipe was app-shaped — Button, Card, Input, Badge,
+Alert, Table — and the *gap list did not admit it*, naming icon boxes and dialog widths while the
+whole editorial layer went unmentioned.
+
+Almost all of the fix is recipes, per #2: paragraph rhythm, headings that belong to what follows
+them, lists and markers, blockquote, figures and captions, inline and fenced code, button sizes, the
+container gutter. No new tier.
+
+Three things were genuinely missing tokens, each closing a documented use case rather than adding a
+category:
+
+- **`--inverse-muted-foreground`.** A footer is a sanctioned `inverse` region and had *one* text
+  colour for headings, links, blurb and fine print. Held to the large bar and forbidden from taking
+  `inverse-foreground`'s step, so the two are genuinely different levels.
+- **`--container-intro` (52rem).** Nothing sat between `prose` (42rem) and `page` (72rem). A display
+  headline wraps to five lines at the reading measure and is unreadable at page width; run 6 invented
+  52rem and explained why, which is a better argument than any I had.
+- **A job for `--shadow-sm`.** It had none: every documented context either owned a shadow or forbade
+  one, so a token shipped in both modes and forwarded to Tailwind was unusable. It is now the
+  hairline for sticky chrome with content scrolled under it.
+
+Two findings from the same run that are about the *system*, not the docs:
+
+**The two fluid roles were designed in isolation and interact.** `display` grows 1.56× across the
+range and `heading-lg` only 1.29×, so they converge as the screen narrows: 1.56× apart at 1280px and
+1.29× at 390px. A hero a third larger than a section heading is not a hero. Hendri chose to raise
+`display`'s floor from 2.25rem to 2.5rem, which restores it to 1.43× at 390px. You only see this by
+rendering a page that uses both, which is why six runs of reading never found it.
+
+**A placeholder standing in for an image cannot be `--surface-sunken`.** Sunken is opaque and
+collapses into `--background` in dark mode (#27), so the block vanishes and only its border survives.
+`--muted` is translucent and reads on any surface in both modes. Documented, and the preview now
+shows it.
+
+The budget was raised from 18k to 24k at the same time, and reframed in the code as a smoke alarm
+rather than a limit — see the note on `DOC_BUDGET`. The Editorial section is content the docs were
+missing; an invented ceiling is not a reason to withhold it.

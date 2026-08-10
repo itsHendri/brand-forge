@@ -187,6 +187,7 @@ export const CONTRAST_PAIRS: Array<{
     { fg: "ring-inverse", bg: "inverse", usage: "non-text" },
     { fg: "ring-inset", bg: "ring", usage: "non-text" },
     { fg: "inverse-foreground", bg: "inverse", usage: "body" },
+    { fg: "inverse-muted-foreground", bg: "inverse", usage: "large" },
     { fg: "inverse-border", bg: "inverse", usage: "non-text" },
     // A loading placeholder nobody can see is a blank card. Held to the
     // boundary bar against the container it actually sits in.

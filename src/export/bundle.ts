@@ -70,10 +70,25 @@ export const exportAsMap = (files: ExportFile[]): Record<string, string> =>
         ]),
     )
 
-/** Budget meter: the reference file has to stay comfortably loadable in one go. */
+/**
+ * A smoke alarm, not a speed limit.
+ *
+ * This number was invented by this tool and then, for a while, treated as a
+ * discovered constraint — it was used to argue for splitting the reference in
+ * two, which would have reduced nothing. Hendri confirmed it was never his, and
+ * six acceptance runs have never once complained about length; run 5 read the
+ * whole thing and produced the best build of the six.
+ *
+ * What it is good for is noticing a jump. It is what surfaced the duplication
+ * between SKILL.md and the reference. So it stays, set well above the current
+ * size, and crossing it means "look at what just grew", not "cut something".
+ * The real check on whether the docs are the right length is an acceptance run.
+ */
+export const DOC_BUDGET = 24_000
+
 export function exportBudget(files: ExportFile[]): { tokens: number; overBudget: boolean } {
     const reference = files.find((file) => file.path.endsWith("DESIGN_SYSTEM.md"))
     const skill = files.find((file) => file.path.endsWith("SKILL.md"))
     const tokens = estimateTokens((reference?.content ?? "") + (skill?.content ?? ""))
-    return { tokens, overBudget: tokens > 18_000 }
+    return { tokens, overBudget: tokens > DOC_BUDGET }
 }

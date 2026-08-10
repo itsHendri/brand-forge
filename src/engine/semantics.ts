@@ -1001,6 +1001,28 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             description: "Text and icons on `inverse`.",
         },
         {
+            name: "inverse-muted-foreground",
+            group: "inverse",
+            // Held to the large bar and forbidden from taking `inverse-foreground`'s
+            // step, so a footer has two genuinely different levels rather than one
+            // colour used twice. A footer is a sanctioned `inverse` region and had
+            // a single text colour for headings, links, blurb and fine print.
+            light: {
+                scale: "neutral",
+                step: pickAgainst(neutral.light, inverseHex.light, PAPER_CANDIDATES, LC_THRESHOLD.large, "quietest", [
+                    onInverse(neutral, LC_THRESHOLD.body).light.step,
+                ]),
+            },
+            dark: {
+                scale: "neutral",
+                step: pickAgainst(neutral.dark, inverseHex.dark, INK_CANDIDATES, LC_THRESHOLD.large, "quietest", [
+                    onInverse(neutral, LC_THRESHOLD.body).dark.step,
+                ]),
+            },
+            description:
+                "Supporting text inside an `inverse` region — a footer's blurb, its fine print, the label above a link column. Held to the large-text bar, so keep it at `body-lg` or larger, or above a link rather than as the link.",
+        },
+        {
             name: "inverse-border",
             group: "inverse",
             ...onInverse(neutral, LC_THRESHOLD["non-text"]),

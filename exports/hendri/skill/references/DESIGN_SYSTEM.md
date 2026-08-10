@@ -22,7 +22,7 @@ Two layers, and only one of them is yours to use.
 (`primary`, `secondary`, `neutral`, `success`, `warning`, `danger`, `info`), 11 steps each, generated in OKLCH. They exist so a human can tune colour.
 **Do not reference them in code.**
 
-**Semantics** — the 70 tokens below. Every one aliases a primitive, and
+**Semantics** — the 71 tokens below. Every one aliases a primitive, and
 re-points itself in dark mode. This is the whole API.
 
 ### Surfaces
@@ -133,6 +133,7 @@ re-points itself in dark mode. This is the whole API.
 | --- | --- | --- | --- |
 | `--inverse` | `#36414d` | `#e7ebef` | A region deliberately inverted against the current mode — tooltips, dark chips, a footer band. On a light page this is dark; on a dark page it is light. Everything placed on it takes an `inverse-*` or `-inverse` token. |
 | `--inverse-foreground` | `#dce3eb` | `#3e4b58` | Text and icons on `inverse`. |
+| `--inverse-muted-foreground` | `#c7d2df` | `#556575` | Supporting text inside an `inverse` region — a footer's blurb, its fine print, the label above a link column. Held to the large-text bar, so keep it at `body-lg` or larger, or above a link rather than as the link. |
 | `--inverse-border` | `#c7d2df` | `#6d7e90` | Hairline or divider inside an `inverse` region. |
 
 ## Type
@@ -571,6 +572,7 @@ use the one that describes your intent, because the values diverge the moment th
 | light | `#acbccd` | `--border`, `--input` |
 | light | `#574cff` | `--ring`, `--primary` |
 | light | `#323397` | `--link`, `--primary-active` |
+| light | `#c7d2df` | `--inverse-muted-foreground`, `--inverse-border` |
 | light | `#423dc9` | `--primary-hover`, `--primary-subtle-foreground` |
 | light | `#883c00` | `--secondary-active`, `--secondary-subtle-foreground` |
 | light | `#7e4000` | `--warning-active`, `--warning-subtle-foreground` |
@@ -578,6 +580,7 @@ use the one that describes your intent, because the values diverge the moment th
 | light | `#005783` | `--info-active`, `--info-subtle-foreground` |
 | dark | `#1b2127` | `--background`, `--surface-sunken`, `--ring-inverse`, `--secondary-foreground`, `--warning-foreground` |
 | dark | `#3e4b58` | `--surface-raised`, `--border-subtle`, `--inverse-foreground`, `--skeleton-surface` |
+| dark | `#556575` | `--surface-overlay`, `--inverse-muted-foreground` |
 | dark | `#8697a8@0.18` | `--muted`, `--state-active` |
 | dark | `#f4f6f8` | `--foreground`, `--ring-inset`, `--primary-foreground`, `--success-foreground`, `--danger-foreground`, `--info-foreground` |
 | dark | `#e7ebef` | `--muted-foreground`, `--inverse` |
@@ -630,6 +633,66 @@ part of the system:
   preference, and avoiding a flash on first paint are all yours.
 - **Touch-target switching.** The craft rules ask for 44px on touch, but the breakpoint set is
   width-based and CSS cannot detect touch from it. Pick a rule and state it.
+
+## Editorial — running text, figures and code
+
+The component recipes above are app-shaped: buttons, cards, tables, dialogs. A page that is mostly
+*prose* needs different answers, and until run 6 this section did not exist, so roughly seventy per
+cent of a content page had nothing behind it.
+
+None of this is new tokens. It is the existing spacing scale and type roles composed for reading.
+
+**Measure.** Running text takes `--container-prose`. Large type — a hero headline, a section
+intro, a pull quote — takes `--container-intro` (52rem), which exists because a display headline
+wraps to five lines at the reading measure and is unreadable at page width. Both nest inside a
+wider frame; neither ever spans the viewport.
+
+**Vertical rhythm.** Space below a heading is always smaller than the space above it, so a heading
+belongs to the text it introduces rather than floating between two blocks:
+
+```css
+p                { margin-block: var(--space-6); }        /* 24px */
+h2               { margin-block: var(--space-16) var(--space-4); }  /* 64px above, 16px below */
+h3               { margin-block: var(--space-12) var(--space-3); }
+figure, pre      { margin-block: var(--space-8); }
+blockquote       { margin-block: var(--space-12); }
+li               { margin-block: var(--space-2); }
+```
+
+**Lists.** `padding-left: var(--space-6)`. Set the marker in `--muted-foreground`, not
+`--foreground-tertiary` — tertiary is below the reading threshold and a marker is part of the
+sentence.
+
+**Blockquote.** A `3px` rule in `--border-strong` on the leading edge, `padding-left:
+var(--space-6)`, set at `body-lg`. Attribution goes in `body-sm` / `--muted-foreground`. Do
+not italicise the whole quote; long italic runs are slower to read.
+
+**Figures and media.** Caption in `body-sm` / `--muted-foreground`, `margin-top:
+var(--space-3)`. A full-width figure sits in `--container-wide`; a figure in the text column stays
+in `--container-prose`.
+
+**A placeholder standing in for an image must be `--muted`, not `--surface-sunken`.** Sunken is
+opaque and collapses into `--background` in dark mode, so the placeholder disappears and only its
+border survives. `--muted` is translucent and reads on any surface in both modes.
+
+**Code.** Inline `code` takes `--muted`, `--radius-sm` and `--font-mono`; size it relatively
+(`0.9em`) rather than with `--text-code`, because a fixed 0.875rem next to 1rem body text sits
+visibly small mid-sentence. A fenced block takes `--muted`, `--radius-md`, `padding:
+var(--space-4)`, and `overflow-x: auto` with `tabindex="0"` so it can be scrolled by keyboard —
+which then needs a focus ring like any other focusable thing.
+
+**Button sizes.** The Button recipe above is the default: 40px, `label`. A marketing call to action
+at 13px is not a call to action. A large button is 52px tall, `padding-inline: var(--space-8)`, set
+at `body-lg` with the `label` weight — same colours, same radius, same states. There is no
+third size.
+
+**The mark has a floor.** Below about 24px of height the accent path stops reading as a flourish and
+becomes a smudge against the wordmark. Above that it is fine. If you need the brand smaller than
+that, use the wordmark path alone.
+
+**Container gutter.** `padding-inline: var(--space-6)`, widening to `var(--space-8)` from the
+`md` breakpoint. A container caps width; it does not give itself breathing room at the edge of a
+phone.
 
 ## Stacking order
 

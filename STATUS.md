@@ -1,7 +1,7 @@
 # Status — 2026-08-09
 
 **Phases 0–5 done, plus assets. The tool does the whole loop it was built for.**
-Three sessions. 162 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
+Three sessions. 165 tests pass, typecheck clean, preview-colour lint clean, working tree committed.
 
 Type a seed colour → get a complete system → see it on realistic UI → export it as something an AI
 agent can actually build from. That runs end to end today.
@@ -12,7 +12,7 @@ agent can actually build from. That runs end to end today.
 - `generateScale` — seed → 11-step OKLCH ramp. Lightness targets shared across every hue, chroma
   bell, hue rotation centred on the anchor, per-step gamut clamping, and seed warping so the typed
   colour appears verbatim. Dark ramps generated from their own targets, never inverted.
-- `defaultSemanticMapping` — 7 seeds → **70 semantic tokens**, plus the stacking order and the app frame, every text and border colour chosen
+- `defaultSemanticMapping` — 7 seeds → **71 semantic tokens**, plus the stacking order and the app frame, every text and border colour chosen
   by *measuring* APCA against the surface it actually sits on, not by picking a step number.
   Includes links, an inverse region, three focus rings, a translucent scrim and skeletons — the
   batch taken from Carbon and Atlassian on 2026-08-09. The four interactive states are translucent
@@ -35,7 +35,7 @@ with duplicate / new / delete, and an export dialog with a token-budget meter.
 
 **Export** writes `exports/<slug>/`: `skill/SKILL.md`, `skill/references/DESIGN_SYSTEM.md`,
 `tokens.css` (+ Tailwind v4 `@theme`, + `@font-face`), `tokens.json` (DTCG), `brand.json`, and
-`assets/` when the brand carries any. Docs total **~17.0k LLM tokens against an 18k budget — 94%**, which `FUTURE.md` now treats as the next thing to deal with. The
+`assets/` when the brand carries any. Docs total ~17.7k LLM tokens. The budget is a smoke alarm at 24k, not a limit — see `DOC_BUDGET`. The
 shipped brand is Hendri's real one — Signal `#574cff`, Ember `#f1760f`, Space Grotesk with Syne
 for display, and the wordmark lifted from hendri.design. No fonts are bundled.
 

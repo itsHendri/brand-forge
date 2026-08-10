@@ -148,18 +148,200 @@ export function Marketing() {
                     </Grid>
                 </Section>
 
-                <Section title="Long form" lead="Running text stays at the prose measure even though the page frame is wider.">
+                <Section
+                    title="Long form"
+                    lead="Every editorial rule the docs state, rendered — running text at the prose measure, a heading that belongs to what follows it, lists, a quote, a figure and code."
+                >
                     <div style={{ maxWidth: "var(--container-prose)" }}>
-                        <p style={{ ...typeRole("body"), margin: "0 0 var(--space-4)", textWrap: "pretty" }}>
+                        <p style={{ ...typeRole("body"), margin: "0 0 var(--space-6)", textWrap: "pretty" }}>
                             Most design systems are documentation about a design system. The tokens
                             live in one place, the rules live in another, and the gap between them is
-                            filled by whoever happens to be building that week.
+                            filled by whoever happens to be building that week. The alternative is to{" "}
+                            <a
+                                href="#"
+                                onClick={(event) => event.preventDefault()}
+                                style={{
+                                    color: "var(--link)",
+                                    textDecoration: "underline",
+                                    textUnderlineOffset: "0.2em",
+                                }}
+                            >
+                                generate both from the same source
+                            </a>
+                            , so a rule that is written down is one the stylesheet already enforces.
                         </p>
-                        <p style={{ ...typeRole("body"), margin: 0, textWrap: "pretty" }}>
-                            The alternative is to generate both from the same source, so a rule that
-                            is written down is a rule the stylesheet already enforces — and the
-                            documentation cannot drift from the thing it describes, because it is
-                            printed from it.
+
+                        {/* Space below a heading is smaller than the space above it, so
+                            the heading belongs to the text it introduces. */}
+                        <h3
+                            style={{
+                                ...typeRole("heading-sm"),
+                                margin: "var(--space-12) 0 var(--space-3)",
+                                textWrap: "balance",
+                            }}
+                        >
+                            What that costs
+                        </h3>
+                        <p style={{ ...typeRole("body"), margin: "0 0 var(--space-6)", textWrap: "pretty" }}>
+                            Every colour is measured against the surface it sits on, so a token that
+                            reads on a card is checked again on a dialog. Inline{" "}
+                            <code
+                                style={{
+                                    fontFamily: "var(--font-mono)",
+                                    fontSize: "0.9em",
+                                    background: "var(--muted)",
+                                    borderRadius: "var(--radius-sm)",
+                                    padding: "0.1em var(--space-1)",
+                                }}
+                            >
+                                --muted
+                            </code>{" "}
+                            sits behind code so it reads on any surface.
+                        </p>
+
+                        <ul
+                            style={{
+                                ...typeRole("body"),
+                                margin: "0 0 var(--space-6)",
+                                paddingLeft: "var(--space-6)",
+                                color: "var(--foreground)",
+                            }}
+                        >
+                            {[
+                                "The marker takes muted-foreground — tertiary is below the reading bar.",
+                                "List items breathe at space-2, not at paragraph spacing.",
+                                "Running text never leaves the prose measure.",
+                            ].map((item) => (
+                                <li key={item} style={{ margin: "var(--space-2) 0" }}>
+                                    {item}
+                                </li>
+                            ))}
+                        </ul>
+
+                        <blockquote
+                            style={{
+                                ...typeRole("body-lg"),
+                                margin: "var(--space-12) 0",
+                                paddingLeft: "var(--space-6)",
+                                borderLeft: "3px solid var(--border-strong)",
+                                color: "var(--foreground)",
+                            }}
+                        >
+                            A rule nobody has built against is a guess with better formatting.
+                            <footer
+                                style={{
+                                    ...typeRole("body-sm"),
+                                    color: "var(--muted-foreground)",
+                                    marginTop: "var(--space-2)",
+                                }}
+                            >
+                                Acceptance run 6
+                            </footer>
+                        </blockquote>
+
+                        <pre
+                            tabIndex={0}
+                            style={{
+                                ...typeRole("code"),
+                                margin: "var(--space-8) 0",
+                                background: "var(--muted)",
+                                borderRadius: "var(--radius-md)",
+                                padding: "var(--space-4)",
+                                overflowX: "auto",
+                                color: "var(--foreground)",
+                            }}
+                        >
+{`.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+}`}
+                        </pre>
+
+                        {/* A placeholder for media is --muted, never --surface-sunken:
+                            sunken collapses into --background in dark mode and the
+                            block disappears, leaving only its border. */}
+                        <figure style={{ margin: "var(--space-8) 0" }}>
+                            <div
+                                style={{
+                                    background: "var(--muted)",
+                                    borderRadius: "var(--radius-md)",
+                                    aspectRatio: "3 / 2",
+                                    display: "grid",
+                                    placeItems: "center",
+                                    color: "var(--foreground-tertiary)",
+                                    ...typeRole("label"),
+                                }}
+                            >
+                                Media placeholder
+                            </div>
+                            <figcaption
+                                style={{
+                                    ...typeRole("body-sm"),
+                                    color: "var(--muted-foreground)",
+                                    marginTop: "var(--space-3)",
+                                }}
+                            >
+                                A caption sits at body-sm in muted-foreground, space-3 below.
+                            </figcaption>
+                        </figure>
+                    </div>
+                </Section>
+
+                {/* An inverse region with two text levels — the gap run 6 found,
+                    when a footer had one colour for headings, links and fine print. */}
+                <Section title="Footer band" lead="An inverse region needs more than one text colour.">
+                    <div
+                        style={{
+                            background: "var(--inverse)",
+                            color: "var(--inverse-foreground)",
+                            borderRadius: "var(--radius-lg)",
+                            padding: "var(--space-8)",
+                            display: "grid",
+                            gap: "var(--space-6)",
+                        }}
+                    >
+                        <div style={{ display: "flex", gap: "var(--space-12)", flexWrap: "wrap" }}>
+                            {[
+                                ["Product", ["Overview", "Tokens", "Export"]],
+                                ["Company", ["About", "Writing", "Contact"]],
+                            ].map(([heading, links]) => (
+                                <div key={heading as string} style={{ display: "grid", gap: "var(--space-2)" }}>
+                                    <span
+                                        style={{
+                                            ...typeRole("label"),
+                                            textTransform: "uppercase",
+                                            color: "var(--inverse-muted-foreground)",
+                                        }}
+                                    >
+                                        {heading as string}
+                                    </span>
+                                    {(links as string[]).map((link) => (
+                                        <a
+                                            key={link}
+                                            href="#"
+                                            onClick={(event) => event.preventDefault()}
+                                            style={{
+                                                ...typeRole("body-sm"),
+                                                color: "var(--link-inverse)",
+                                                textDecoration: "none",
+                                            }}
+                                        >
+                                            {link}
+                                        </a>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                        <p
+                            style={{
+                                ...typeRole("body-lg"),
+                                margin: 0,
+                                color: "var(--inverse-muted-foreground)",
+                                maxWidth: "var(--container-prose)",
+                            }}
+                        >
+                            Supporting copy on an inverse region takes inverse-muted-foreground, held
+                            to the large-text bar — so keep it at body-lg or larger.
                         </p>
                     </div>
                 </Section>

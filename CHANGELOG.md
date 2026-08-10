@@ -4,6 +4,20 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- **An editorial layer.** Every component recipe was app-shaped, so a long-form content page had
+  nothing behind roughly seventy per cent of what it needed — and the gap list did not admit it. The
+  reference gained an **Editorial** section (paragraph rhythm, headings, lists, blockquote, figures
+  and captions, inline and fenced code, button sizes, the container gutter) and three tokens:
+  `--inverse-muted-foreground` (a footer had one text colour for four levels), `--container-intro`
+  at 52rem (nothing sat between the reading measure and the page frame), and a documented job for
+  `--shadow-sm`, which previously had none. `DECISIONS.md` #33.
+- **`--text-display`'s floor rises to 2.5rem.** The two fluid roles were designed in isolation and
+  converge as the screen narrows — 1.56× apart at 1280px, 1.29× at 390px — so a hero was only a
+  third larger than a section heading on a phone. Now 1.43×.
+- **A placeholder for media must be `--muted`, not `--surface-sunken`** — sunken is opaque and
+  collapses into `--background` in dark mode, so the block disappears and only its border survives.
+- The doc budget is raised to 24k and reframed in the code as a smoke alarm rather than a limit.
+
 - **Acceptance run 5 (app shell) — eight documentation defects fixed**, four of them introduced by
   the same session's token work hours earlier. The worst: the "what this system does not define" list
   still claimed there was no sidebar width, header height, z-index scale or table minimum, forty
