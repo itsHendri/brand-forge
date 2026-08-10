@@ -15,7 +15,7 @@ Full token tables, component recipes and wrong/right pairs live in
 
 1. Check that `tokens.css` is imported. Dark mode is `data-theme="dark"` on `<html>`; light is either `data-theme="light"` or no
    attribute at all — both are defined, so a toggle can write either value or remove it.
-   The brand mark is inline SVG in `brand.json`; set its fills to `currentColor` when you place it, so it follows the surrounding ink and inverts in dark mode.
+   The brand mark is inline SVG in `brand.json`. Its wordmark path takes `currentColor` so it follows the surrounding ink and inverts in dark mode — but check whether the mark has an accent path before you rewrite every fill, because flattening a two-tone mark to one colour is a visible defect. See Logo in the reference.
 2. Work out which semantic tokens the thing you're building needs. If you cannot name them, you do
    not understand the component yet.
 3. If no semantic token fits, **say so and stop**. Do not reach for a primitive or invent a hex.

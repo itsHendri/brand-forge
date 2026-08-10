@@ -39,7 +39,7 @@ Full token tables, component recipes and wrong/right pairs live in
     }. Dark mode is \`data-theme="dark"\` on \`<html>\`; light is either \`data-theme="light"\` or no
    attribute at all — both are defined, so a toggle can write either value or remove it.${
        config.meta.logoSvg
-           ? `\n   The brand mark is inline SVG in \`brand.json\`; set its fills to \`currentColor\` when you place it, so it follows the surrounding ink and inverts in dark mode.`
+           ? `\n   The brand mark is inline SVG in \`brand.json\`. Its wordmark path takes \`currentColor\` so it follows the surrounding ink and inverts in dark mode — but check whether the mark has an accent path before you rewrite every fill, because flattening a two-tone mark to one colour is a visible defect. See Logo in the reference.`
            : config.meta.logoFile
              ? `\n   The brand mark is \`assets/${config.meta.logoFile}\`. It cannot be recoloured — check it against whatever surface you put it on.`
              : ""

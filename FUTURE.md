@@ -90,20 +90,45 @@ Seven stacking layers (`--z-sticky` 100 → `--z-tooltip` 600) and five frame di
 The Dashboard context now uses them instead of the numbers it had invented, which is the honest test
 of whether they are the right ones.
 
-### 5. Then run the acceptance test, on an app shell
+### 5. ~~Run the acceptance test, on an app shell~~ — done 2026-08-09
 
-Brief it on an app shell — the shape never yet used, and the one these tokens are meant to unblock.
+Run 5 built a multi-column shell and returned eight documentation defects, **four of them introduced
+by this same session's token work hours earlier**. Every number it checked was exact; every defect
+was prose. All eight are fixed with a test each. See `DECISIONS.md` #29.
 
-### Cost so far — and the budget is now the binding constraint
+The lesson worth keeping: **run this after a change, not before a release.** The worst finding — the
+"what this system does not define" list still denying tokens added an hour before, forty lines above
+the tables defining them — reads perfectly and is false. No amount of re-reading would have caught it.
 
-Steps 0–4 took the system from 57 to 70 semantic tokens plus the frame, and the docs from ~11.3k to
-**~15.2k against an 18k budget — 84%**. That is no longer comfortable.
+**Brief the next run on something with heavy long-form content and imagery** — a marketing or docs
+site with a hero, an article, and an embedded media block. That shape has never been run against the
+current type scale, and it is the one that would exercise `--container-prose` nesting and the display
+face, which the app shell never touched.
 
-Nothing left in the plan adds much: step 5 is an acceptance run, and Phase 6 is a separate artifact.
-But the next person to add a token family should look at the meter first, and the honest fix when it
-runs out is not a bigger budget — it is that `DESIGN_SYSTEM.md` has grown a lot of prose that an
-acceptance run has never been asked to justify. Splitting the reference so `SKILL.md` points at two
-smaller files is the obvious move, and nobody has tested whether it helps or hurts.
+## The immediate next step is now the budget
+
+**The docs are at ~17.0k against an 18k budget — 94%, about a thousand tokens of headroom.** Run 5's
+fixes alone took it from 84% to 94%, because most of them were "state the thing that was missing".
+The next token family, or the next acceptance run's fixes, will blow it.
+
+The budget is not arbitrary: `references/DESIGN_SYSTEM.md` has to stay loadable in one go by the
+agent that `SKILL.md` points at. Raising the number is not the fix.
+
+The fix is a **split**. `SKILL.md` (~3.3k) is the procedural half and is fine. `DESIGN_SYSTEM.md`
+(~13.7k) is carrying four different jobs at once — token tables, component recipes, craft rules, and
+the gap list. Two reference files, each pointed at from `SKILL.md` for a stated reason, would load
+half as much per question.
+
+Two things to be careful about, both learned the hard way:
+
+- **The generated tables are the part that has never been wrong** (five runs, every number exact).
+  Whatever gets trimmed, it is not those.
+- **Splitting is exactly how contradictions get introduced** — run 5 found four, and every one was a
+  statement that was true when written and stale by the time it shipped. The split needs its own
+  acceptance run afterwards, briefed to look for two sections disagreeing.
+
+An untested guess about what to cut is worth less than the meter. Measure first: the budget helper is
+`exportBudget()` in `src/export/bundle.ts`.
 
 ## After that — Phase 6
 

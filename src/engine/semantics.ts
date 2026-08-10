@@ -728,7 +728,7 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             group: "surface",
             ...surfaces.overlay,
             description:
-                "UI floating over other UI — modals, dropdowns, popovers, tooltips-with-content. The top of the ladder. **Always pair it with `--shadow-overlay`.** Like `surface-raised` this equals `surface` in light mode and lightens in dark.",
+                "UI floating over other UI — modals, dropdowns, popovers, and any tooltip big enough to hold a paragraph. The top of the ladder. A one-line tooltip is an `inverse` chip instead, not a surface: the rule of thumb is that anything you would put a heading or a control inside is a surface, and anything that is a single sentence of explanation is `inverse`. **Always pair it with `--shadow-overlay`.** Like `surface-raised` this equals `surface` in light mode and lightens in dark.",
         },
         {
             name: "surface-sunken",
@@ -766,7 +766,7 @@ export function defaultSemanticMapping(scales: ScaleConfig[]): SemanticTokenDef[
             // is the supporting-text colour that works inside a dialog too.
             ...secondaryRef,
             description:
-                "Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is the only supporting text colour verified against `surface-raised`, so use it inside dialogs and popovers. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it.",
+                "Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is verified against `surface-raised`, so it holds up on a lifted card. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it. **Neither is verified on `surface-overlay`** — the top of the ladder is the lightest ground in dark mode, and both supporting colours fall under the body bar there (`foreground-secondary` Lc 60.9, `muted-foreground` Lc 71.8). Inside a modal or a dropdown, set body copy in plain `foreground` and keep supporting text to `body-lg` or larger.",
         },
         {
             name: "muted-foreground",

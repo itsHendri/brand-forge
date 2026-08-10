@@ -466,3 +466,61 @@ pre-override file look like a current one — it now carried `semanticOverrides:
 conversion would have skipped it and discarded every hand edit. The format check reads `raw`, not the
 merged block. Caught by the test written for #22, which is the argument for testing a migration's
 *behaviour* rather than its output.
+
+### 29. Acceptance run 5 — what the app shell found — 2026-08-09
+
+The fifth run, briefed on a multi-column app shell: the shape the method's own table says stresses
+breakpoints, containers, sticky chrome and overflow, and the one never used before. It built the
+shell, then converted every OKLCH value in `tokens.css` to sRGB and diffed it against both colour
+tables.
+
+**Every number was exact again.** All 70 semantic tokens in both modes, all 24 rows of the
+shared-value table, and both `clamp()` endpoints. Five runs, and the generated tables have never once
+been wrong. **Every defect has been in the prose**, and this run was the sharpest demonstration yet:
+four of the eight findings were introduced by the token work of the same session, hours earlier.
+
+The worst was mine and an hour old. Step 4 added `--shell-*` and `--z-*` and I did not delete the
+"what this system does not define" bullet that said there was no sidebar width, header height,
+z-index scale or table minimum — sitting forty lines above the tables defining all four. That list is
+precisely where a reader goes to decide what to invent, so its rationale ("the numbers every
+implementation otherwise invents, differently, on each screen") was actively producing the outcome it
+warned against.
+
+The rest, in severity order:
+
+- **`--ring` on a primary button is the button's own fill.** In light mode `--ring` and `--primary`
+  are the same value, and the Button recipe still said `--ring` while `--ring-inverse`'s own
+  description named "a button already filled with `primary`" as its case. Two statements, opposite
+  answers, both citable.
+- **Dialog supporting text in dark mode had no compliant colour**, and the docs pointed at the worse
+  of the two. `foreground-secondary` was documented as "verified against `surface-raised`, so use it
+  inside dialogs" — but dialogs became `--surface-overlay` in step 3, a lighter fill, where it
+  measures Lc 60.9 against a body bar of 75. `muted-foreground` is better there at 71.8 and also
+  fails. The fix is to say so and send body copy to `--foreground`.
+- **"In dark mode these become a hairline ring rather than a drop shadow" was false.** Only
+  `--shadow-sm` is ring-only; raised and overlay keep a real drop shadow *and* gain a ring.
+- **A page-sticky table header is impossible under the Table recipe.** `--z-sticky` is documented for
+  "sticky table headers", the recipe mandates an `overflow-x: auto` wrapper, and a `position: sticky`
+  `<thead>` inside a scroll container sticks to the wrapper and can never reach the page. The obvious
+  `top: var(--shell-header)` then hides the first data row. The run shipped that bug and caught it in
+  a screenshot.
+- **"Layer it over the surface it sits on" was stated three times and never demonstrated.** One
+  element cannot take two `background-color`s, so an opaque muted sticky header needs
+  `background-color` plus a `linear-gradient` background-image. That is now in the docs as code.
+- **The `@theme` block does not forward `--z-*`, `--shell-*`, `--duration-*` or `--opacity-*`.**
+  Tailwind has no namespace that would turn them into utilities, and the docs implied everything was
+  forwarded — so a Tailwind user reaches for `z-modal`, gets nothing, and invents a number.
+- **"Replace every explicit `fill` with `currentColor`" flattens a two-tone mark.** The wordmark's
+  accent path is meant to stay the brand orange; obeying the instruction turns the flourish into an
+  ink blob on the letters. The accent fill is now documented as the one sanctioned primitive
+  reference, with the reason — a mark is a brand asset, not component code.
+- **The label-contrast claim understated itself unevenly.** "`--primary-foreground` clears the label
+  bar and no more" is wrong: it measures Lc 77.3 in light. The pair that genuinely sits at the floor
+  is `--success-foreground` on `--success` at Lc 61.0, and that is the one worth citing.
+
+Each fix has a test asserting against the generated docs, because a contradiction returns the moment
+somebody edits one section in isolation.
+
+The lesson to carry: **run this after a change, not before a release.** Half these defects existed
+for under a day, and none would have been found by reading — the "does not define" bullet reads
+perfectly, and is false.

@@ -4,6 +4,18 @@ Keep-a-Changelog style. Newest first.
 
 ## [Unreleased]
 
+- **Acceptance run 5 (app shell) — eight documentation defects fixed**, four of them introduced by
+  the same session's token work hours earlier. The worst: the "what this system does not define" list
+  still claimed there was no sidebar width, header height, z-index scale or table minimum, forty
+  lines above the tables defining all four. Also fixed — a primary button told to use `--ring`, which
+  in light mode *is* its own fill; dialog supporting text pointed at the weaker of two colours that
+  both fail on `--surface-overlay` in dark; "dark mode replaces shadows with a ring" (only
+  `--shadow-sm` does); a documented sticky table header that is impossible under the mandated scroll
+  wrapper; "layer the wash over its surface" stated three times and never shown; a `@theme` block
+  claimed to forward token groups it cannot; and "set every fill to `currentColor`" flattening a
+  two-tone wordmark. Every number the run checked was exact — the defects were all prose.
+  `DECISIONS.md` #29.
+
 - **A stacking order and an app frame**, the last two things every acceptance run had to invent.
   Seven z layers (`--z-sticky` 100 → `--z-tooltip` 600) and five shell dimensions (`--shell-header`,
   `--shell-sidebar`, `--shell-sidebar-collapsed`, `--shell-aside`, `--shell-table-min`). Two values

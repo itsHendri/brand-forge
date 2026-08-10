@@ -39,7 +39,7 @@ re-points itself in dark mode. This is the whole API.
 | `--background` | `#edf0f4` | `#1b2127` | The page. Every screen starts here. |
 | `--surface` | `#f7f9fb` | `#2c353f` | Cards, panels and anything sitting one level above the page. |
 | `--surface-raised` | `#f7f9fb` | `#3e4b58` | A card that lifts off the page — draggable cards, or one card singled out for emphasis. **Always pair it with `--shadow-raised`.** In light mode this is the same fill as `surface`, because there is nothing whiter than white; the shadow is what carries the elevation there. In dark mode the surface itself lightens, because a shadow on a dark ground is nearly invisible. |
-| `--surface-overlay` | `#f7f9fb` | `#556575` | UI floating over other UI — modals, dropdowns, popovers, tooltips-with-content. The top of the ladder. **Always pair it with `--shadow-overlay`.** Like `surface-raised` this equals `surface` in light mode and lightens in dark. |
+| `--surface-overlay` | `#f7f9fb` | `#556575` | UI floating over other UI — modals, dropdowns, popovers, and any tooltip big enough to hold a paragraph. The top of the ladder. A one-line tooltip is an `inverse` chip instead, not a surface: the rule of thumb is that anything you would put a heading or a control inside is a surface, and anything that is a single sentence of explanation is `inverse`. **Always pair it with `--shadow-overlay`.** Like `surface-raised` this equals `surface` in light mode and lightens in dark. |
 | `--surface-sunken` | `#dce3eb` | `#1b2127` | A well the content sits down into — a kanban column, a code block's gutter, an inset panel. Only ever on `surface` or `background`; never inside a raised or overlay surface, which reads as a hole in a floating card. In dark mode this is the same fill as `background`, because there is nothing darker on the ramp. |
 | `--muted` | `#92a2b3` at 18% | `#8697a8` at 18% | Quiet neutral fill — table headers, inactive tabs, code blocks. Translucent, so it reads correctly on whichever surface it lands on rather than being tuned for one of them. It is not an elevation level: for a recessed well use `surface-sunken`. |
 | `--scrim` | `#1f262d` at 60% | `#1b2127` at 70% | The backdrop behind a modal or drawer. Translucent on purpose, so the page stays legible underneath. Dark mode carries more of it, because a dim scrim over an already-dark page does not read as a layer. |
@@ -51,7 +51,7 @@ re-points itself in dark mode. This is the whole API.
 | Token | Light | Dark | Use it for |
 | --- | --- | --- | --- |
 | `--foreground` | `#1f262d` | `#f4f6f8` | Primary text and icons. The default ink for body copy and headings. |
-| `--foreground-secondary` | `#475664` | `#d3dae1` | Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is the only supporting text colour verified against `surface-raised`, so use it inside dialogs and popovers. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it. |
+| `--foreground-secondary` | `#475664` | `#d3dae1` | Supporting copy set at `body-lg` or larger — subtitles, section intros, lead paragraphs. It is verified against `surface-raised`, so it holds up on a lifted card. For anything at `body-sm` or below on a flat surface use `muted-foreground`, which carries more contrast because small text needs it. **Neither is verified on `surface-overlay`** — the top of the ladder is the lightest ground in dark mode, and both supporting colours fall under the body bar there (`foreground-secondary` Lc 60.9, `muted-foreground` Lc 71.8). Inside a modal or a dropdown, set body copy in plain `foreground` and keep supporting text to `body-lg` or larger. |
 | `--muted-foreground` | `#36414d` | `#e7ebef` | Small supporting text — captions, helper text, metadata — on `background`, `surface` or `muted`. Verified against those three only; on `surface-raised` use `foreground-secondary`. |
 | `--foreground-tertiary` | `#92a2b3` | `#8697a8` | Deliberately faint text: placeholders, disabled labels, watermarks. NEVER body copy — it does not meet contrast for reading. |
 
@@ -197,18 +197,34 @@ somebody who needs it.
 ### Logo
 
 The mark ships as **inline SVG inside `brand.json`** rather than as a file, and that is a
-functional choice, not a packaging one: inline means its fills can be set to `currentColor`, so one
+functional choice, not a packaging one: inline means a path can be set to `currentColor`, so the
 mark follows whatever text colour surrounds it and inverts in dark mode without a second asset.
 
+**This mark is two-tone, so "set every fill to `currentColor`" is wrong for it.** Count the paths
+before you place it. The wordmark path takes `currentColor` and follows the surrounding ink. The
+accent path carries the brand's secondary at its anchor and is *meant* to stay that colour —
+flattening it to `currentColor` turns the flourish into an ink blob sitting on the letters, which is
+a visible defect rather than a subtle one.
+
 ```html
-<!-- ✅ inherits the surrounding ink; correct in both modes -->
+<!-- OK: the wordmark follows the ink, the accent stays the brand colour -->
 <span style="color: var(--foreground)">
-    <svg viewBox="…"><path fill="currentColor" d="…"/></svg>
+    <svg viewBox="…">
+        <path fill="currentColor" d="…"/>
+        <path fill="var(--secondary-500, #f1760f)" d="…"/>
+    </svg>
 </span>
 ```
 
-Replace every explicit `fill` with `currentColor` when you place it. Do not hardcode the brand
-colour into the mark — on a `--primary` field it would disappear into its own background.
+**The accent fill is the one sanctioned exception to "never reference a primitive".** A mark is a
+brand asset, not component code: the flourish is a specific drawn colour, not a semantic role, and
+`--secondary` is the wrong answer because it resolves to a darkened step chosen to carry a label.
+The literal after the comma is a fallback for contexts where `tokens.css` is not loaded — an email
+client, a favicon pipeline. Do not copy this pattern into a component.
+
+On a `--primary` or otherwise coloured field, set the wrapper's `color` to that fill's
+`-foreground` so the wordmark stays legible, and check the accent against the fill by eye — it is
+not in the validated set.
 
 ### Typefaces
 
@@ -250,6 +266,14 @@ treat the table above as the source of truth for which values are legitimate:
 
 If you use Tailwind, these are already its variants (`md:`, `lg:`) — the `@theme` block in
 `tokens.css` defines them, so no config file is needed.
+
+**Not everything in `tokens.css` is in that `@theme` block.** Colours, radius, spacing,
+containers, shadows, easings, fonts, type roles and breakpoints are forwarded and become utilities.
+`--z-*`, `--shell-*`, `--duration-*` and `--opacity-*` are **not** — Tailwind has no theme
+namespace that turns them into utilities, so they stay plain custom properties. Use them as
+`z-index: var(--z-modal)`, `width: var(--shell-sidebar)` and so on, in a stylesheet or an
+arbitrary value like `w-[var(--shell-sidebar)]`. Reaching for `duration-fast` or `z-modal` as a
+utility class gets you nothing, silently.
 
 ### Containers
 
@@ -303,9 +327,11 @@ produce values off the radius scale (a 15px panel with 8px padding gives 7px); t
 use the computed number, don't snap it.
 
 Elevation is `--shadow-sm` | `--shadow-raised` | `--shadow-overlay`, and the last two are named for the surface they pair with — `--surface-raised` and `--surface-overlay`. Never mix a surface with another level's shadow. In dark mode
-these become a hairline ring rather than a drop shadow — depth there comes from surface lightness,
-which `--surface` and `--surface-raised` already provide. Use shadow for things that float and
-`--border` for things that divide; never both for the same job.
+`--shadow-sm` becomes a hairline ring and nothing else — but `--shadow-raised` and
+`--shadow-overlay` keep a real drop shadow *and* gain a ring, because at those levels the surface
+lift alone is not enough separation. Do not assume "dark mode has no shadows"; check the token.
+Use shadow for things that float and `--border` for things that divide; never both for the same
+job.
 
 ## Motion
 
@@ -345,9 +371,14 @@ separate decision — so set them individually:
 
 **Button (primary)** — `background: var(--primary)`, `color: var(--primary-foreground)`,
 `border-radius: var(--radius-md)` (10px), height 40px, padding `0 var(--space-4)`, type role
-`label`. Hover swaps the background to `--primary-hover`, active to `--primary-active`. Focus
-adds `outline: 2px solid var(--ring); outline-offset: 2px`. The 40px height is the dense-desktop
-minimum; on touch, raise it to 44px or extend the hit area with a pseudo-element.
+`label`. Hover swaps the background to `--primary-hover`, active to `--primary-active`.
+**Focus is `outline: 2px solid var(--ring-inverse); outline-offset: 2px`, not `--ring`.** In light
+mode `--ring` and `--primary` resolve to the *same colour*, so the default ring on a primary
+button is the button's own fill — it survives only because the offset lands it on whatever is behind,
+and it disappears the moment the button sits on a brand band. `--ring-inverse` is the token for a
+control on a coloured ground. Everything with a neutral fill — secondary, outline, ghost, inputs —
+keeps plain `--ring`. The 40px height is the dense-desktop minimum; on touch, raise it to 44px or
+extend the hit area with a pseudo-element.
 
 **Button (secondary)** — identical, with `--secondary` / `--secondary-foreground`.
 
@@ -402,8 +433,12 @@ this case:
 .brand-band .button:focus-visible { outline: 2px solid var(--ring); }
 ```
 
-**Set copy on a brand field at `body-lg` or larger.** `--primary-foreground` is validated as a
-label colour (Lc 60), not as body text (Lc 75) — it clears the label bar on its fill and no more.
+**Set copy on a brand field at `body-lg` or larger.** Every `-foreground` is validated as a
+label colour (Lc 60), not as body text (Lc 75). Some clear the body bar comfortably —
+`--primary-foreground` on `--primary` measures Lc 77.3 in light — but you cannot rely on that
+per-fill: `--success-foreground` on `--success` is Lc 61.0, a point over the label bar and
+nowhere near the body one. Set small print on a brand or status band and it will be unreadable on
+some of them.
 Small print on a brand band has no compliant colour in this system, so don't put any there.
 
 **Card** — `background: var(--surface)`, `border: 1px solid var(--border)`,
@@ -450,7 +485,36 @@ like version strings or reference numbers.
 
 A table is the most common thing to break a narrow screen. Wrap it in an element with
 `overflow-x: auto` and give that element `tabindex="0"` so it can be scrolled by keyboard; let the
-table scroll inside the page rather than making the page scroll.
+table scroll inside the page rather than making the page scroll. The table itself takes
+`min-width: var(--shell-table-min)`, which is the width it refuses to squeeze below. That wrapper
+is focusable, so it needs a visible focus ring like anything else:
+`outline: 2px solid var(--ring); outline-offset: 2px`.
+
+**A page-sticky header row and that scroll wrapper are mutually exclusive — pick one.** An element
+with `overflow-x: auto` is a scroll container, so a `position: sticky` `<thead>` inside it sticks
+to *the wrapper*, not to the page, and can never slide under the app header. Worse, the obvious
+`top: var(--shell-header)` then pushes the header row down *over* the first data row and hides it.
+If the table must scroll horizontally, let the header scroll away with it. If a sticky header
+matters more, drop the wrapper and let the page scroll — and accept that narrow screens will need a
+different layout for that table entirely. `--z-sticky` is for the second case.
+
+**Layering a translucent token.** `--muted` and the four `--state-*` tokens are washes, not
+fills: they have no colour until something is behind them. Nesting one inside a surface usually
+needs nothing — put `background: var(--state-hover)` on the row and it composites over the card it
+sits in. But one element cannot take two `background-color`s, so when a wash needs to sit on a
+*specific* surface rather than whatever it inherits — an opaque sticky table header being the case
+that forces it, since rows would otherwise scroll visibly through it — stack them:
+
+```css
+/* ✅ an opaque muted header: a surface underneath, the wash painted on top */
+.table thead {
+    background-color: var(--surface);
+    background-image: linear-gradient(var(--muted), var(--muted));
+}
+
+/* ❌ the wash alone — transparent, so rows scroll through it */
+.table thead { background: var(--muted); }
+```
 
 **Asymmetric hover timing.** "Exits are faster than entrances" needs two declarations in CSS — the
 base rule times the exit, the `:hover` rule times the entrance. One `transition` cannot do it:
@@ -543,14 +607,33 @@ part of the system:
 
 - **Icon box size.** The icon *stroke* is specified (see the craft rules); the box is not. The
   stroke rule also covers weight 400 and 600 only, and every button uses `label` at weight 500.
-- **App-shell dimensions.** No sidebar or column widths, no header height, no z-index scale, no
-  minimum table width. `--container-*` bound the page frame, not its interior.
+- **The inside of the app frame.** `--shell-*` gives the sidebar, header, aside and table
+  minimum; `--z-*` gives the stacking order. What they do *not* give is the furniture's own
+  padding: nav item height, sidebar inset, table cell padding, dialog width. Those are still yours.
 - **Emphasis on a card.** No token or recipe for marking one of several cards as recommended or
   selected. `--primary` as a border is the obvious move and it measures poorly against
   `--surface` — if you need it, verify it rather than assuming.
 - **A wordmark treatment.** Even with a mark defined, nothing says which type role, weight or
   colour the brand name takes when it is set in type.
 - **Font weights as standalone tokens.** Weight arrives with a type role and nothing else.
+- **Loading animation.** `--skeleton` and `--skeleton-surface` give the colours; the sweep does
+  not exist. There is no highlight colour to build a shimmer gradient from, and no duration long
+  enough — the slowest token is `--duration-slow`, which is a UI transition, not a loop. Pick a
+  loop duration and say so; do not reach for `--duration-*`.
+- **Overlay geometry.** Dialog width and radius, tooltip placement and offset, dropdown width — all
+  yours. The tokens say what colour and which layer, never how big or where.
+- **The furniture's own padding.** `--shell-*` gives the sidebar and header their size and nothing
+  about their insides: nav item height, sidebar padding, table cell padding. Two screens in the same
+  app will not match unless you pick these once.
+- **Which narrow-screen pattern the sidebar uses.** The widths are defined and the breakpoints are
+  defined; whether the sidebar collapses to the icon rail or slides in as a drawer is not, and the
+  two need different z-layers and different dismiss behaviour.
+- **`--opacity-loading` has no documented consumer.** It exists and nothing in these docs tells you
+  where it goes — skeletons are explicitly forbidden from using opacity. Treat it as available
+  rather than as guidance.
+- **Concentric radius when the parent has no radius.** The formula gives 0 for every child of an
+  unrounded padded container — a sidebar, a page shell — which squares every nav item inside one.
+  That follows from the rule; whether you want it is a judgement the rule does not make for you.
 - **Blur.** Not modelled. (Opacity is — `--opacity-disabled` and `--opacity-loading` — but only
   those two, and neither is for live text.)
 - **Theme persistence.** The attribute is defined; storing the choice, seeding it from the OS

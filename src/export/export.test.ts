@@ -465,3 +465,84 @@ describe("tokens.json (DTCG)", () => {
         }
     })
 })
+
+/**
+ * Findings from acceptance run 5 (multi-column app shell). Every number the run
+ * reported was verified independently and every one was exact; all five defects
+ * below were in the prose. Four of them were introduced by the token work of the
+ * same session, which is the argument for running this after a change rather
+ * than before a release.
+ */
+describe("findings from acceptance run 5", () => {
+    const md = fileAt("DESIGN_SYSTEM.md")
+    const css = fileAt("tokens.css")
+
+    it("does not list app-shell dimensions as undefined, now that they are defined", () => {
+        // The single most dangerous error the run found: the "what this system
+        // does not define" list still claimed there was no sidebar width, header
+        // height, z-index scale or table minimum — forty lines above the tables
+        // that define all four. That list is exactly where a reader goes to
+        // decide what to invent.
+        const gaps = md.slice(md.indexOf("does not define"))
+        expect(gaps).not.toContain("no header height")
+        expect(gaps).not.toContain("no z-index scale")
+        expect(md).toContain("--shell-sidebar")
+        expect(md).toContain("--z-modal")
+    })
+
+    it("does not claim dark mode replaces every shadow with a ring", () => {
+        // Only `--shadow-sm` is ring-only; raised and overlay keep a real drop
+        // shadow and gain a ring. The flat claim changes how someone reasons
+        // about depth in dark mode.
+        expect(md).not.toContain("these become a hairline ring rather than a drop shadow")
+        const darkShadows = resolved.declarations.dark.filter(([name]) => name.startsWith("--shadow-"))
+        expect(darkShadows.filter(([, value]) => value.includes("oklch(0 0 0")).length).toBeGreaterThan(0)
+    })
+
+    it("tells a primary button to use ring-inverse, since --ring IS its fill", () => {
+        const button = md.slice(md.indexOf("**Button (primary)**"), md.indexOf("**Button (secondary)**"))
+        expect(button).toContain("--ring-inverse")
+        // And the reason, because the reason is what makes it stick.
+        expect(button).toContain("same colour")
+    })
+
+    it("warns that a sticky table header and the scroll wrapper are exclusive", () => {
+        // `--z-sticky` is documented for "sticky table headers", and the Table
+        // recipe mandates an overflow-x wrapper. A sticky thead inside a scroll
+        // container sticks to the wrapper and can never reach the page.
+        expect(md).toContain("mutually exclusive")
+    })
+
+    it("shows how to layer a translucent token, not just that you should", () => {
+        // "Layer it over the surface it sits on" was stated three times for the
+        // washes and never once demonstrated — and one element cannot take two
+        // background-colors.
+        expect(md).toContain("background-image: linear-gradient(var(--muted), var(--muted))")
+    })
+
+    it("says which token groups the @theme block does not forward", () => {
+        // A Tailwind user gets no `z-modal` or `duration-fast` utility, silently.
+        // Slice from the block, not from the header comment that mentions it.
+        const theme = css.slice(css.indexOf("@theme inline"))
+        for (const prefix of ["--z-", "--shell-", "--duration-", "--opacity-"]) {
+            expect(theme.includes(`\n    ${prefix}`), `${prefix} should not be in @theme`).toBe(false)
+        }
+        expect(md).toContain("Not everything in `tokens.css` is in that `@theme` block")
+    })
+
+    it("describes the mark it actually ships, which is two-tone", () => {
+        // "Replace every explicit fill with currentColor" flattened a deliberate
+        // two-tone wordmark into an ink blob.
+        expect(md).not.toContain("Replace every explicit `fill` with `currentColor`")
+        expect(md).toContain("two-tone")
+    })
+
+    it("does not send dialog supporting text to a colour that fails on an overlay", () => {
+        // `foreground-secondary` was documented as "the only supporting text
+        // colour verified against surface-raised, so use it inside dialogs" —
+        // but dialogs are `surface-overlay`, a lighter fill, where it measures
+        // Lc 60.9 against a body bar of 75.
+        expect(md).not.toContain("so use it inside dialogs and popovers")
+        expect(md).toContain("Neither is verified on `surface-overlay`")
+    })
+})
